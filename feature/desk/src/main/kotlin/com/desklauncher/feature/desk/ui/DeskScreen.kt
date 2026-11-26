@@ -43,15 +43,26 @@ import com.desklauncher.feature.desk.clock.rememberCurrentMinute
 import com.desklauncher.feature.desk.ui.component.DeskClock
 import com.desklauncher.feature.desk.ui.preview.DeskPreviewData
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 @Composable
 fun DeskRoute(
+    homePresses: Flow<Unit>,
     onOpenTool: (toolId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeskViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val stripState = rememberIndexScrubState()
+
+    // 이미 책상에서 홈 버튼: 펼친 서류철을 접는다 (SHELL-06).
+    LaunchedEffect(stripState, homePresses) {
+        homePresses.collect { stripState.reset() }
+    }
+    // 런처의 첫 화면에서는 뒤로가기로 앱을 닫지 않는다. (펼친 상태의 뒤로가기는 DeskScreen이 먼저 처리)
+    BackHandler { }
+
     val now = rememberCurrentMinute()
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
@@ -67,6 +78,7 @@ fun DeskRoute(
             }
         },
         modifier = modifier,
+        stripState = stripState,
         toolPreview = { tab, previewModifier ->
             val tool = remember(tab.toolId) { viewModel.findTool(tab.toolId) }
             if (tool != null) {

@@ -1,6 +1,7 @@
 package com.desklauncher.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -11,6 +12,7 @@ import com.desklauncher.core.designsystem.motion.DeskTransitions
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.feature.desk.navigation.DeskDestination
 import com.desklauncher.feature.desk.navigation.deskScreen
+import kotlinx.coroutines.flow.Flow
 
 /**
  * 앱 내비게이션 조립. 셸 화면 + 레지스트리에 등록된 모든 도구의 그래프를 붙인다.
@@ -19,9 +21,19 @@ import com.desklauncher.feature.desk.navigation.deskScreen
 @Composable
 fun DeskNavHost(
     toolRegistry: ToolRegistry,
+    homePresses: Flow<Unit>,
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
+
+    // 홈 버튼: 어떤 도구에 있든 책상으로 (SHELL-06, PRD §4.1). 책상 자체의 초기화는 deskScreen이 맡는다.
+    LaunchedEffect(navController, homePresses) {
+        homePresses.collect {
+            if (navController.currentDestination?.isDesk() == false) {
+                navController.popBackStack(DeskDestination, inclusive = false)
+            }
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = DeskDestination,
@@ -40,6 +52,7 @@ fun DeskNavHost(
         },
     ) {
         deskScreen(
+            homePresses = homePresses,
             onOpenTool = { toolId ->
                 toolRegistry.findTool(toolId)?.let { tool ->
                     navController.navigate(tool.startDestination) { launchSingleTop = true }
