@@ -45,6 +45,7 @@ dependencies {
     implementation(projects.feature.diary)
     implementation(projects.feature.scanner)
     implementation(projects.feature.calculator)
+    implementation(projects.feature.doodle)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

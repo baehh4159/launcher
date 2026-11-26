@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="doodle_tool_title">낙서장</string>
+    <string name="doodle_tool_description">손가락으로 자유롭게 끄적여요</string>
+    <string name="doodle_back">뒤로</string>
+    <string name="doodle_pen">펜</string>
+    <string name="doodle_eraser">지우개</string>
+    <string name="doodle_width_thin">가늘게</string>
+    <string name="doodle_width_medium">보통</string>
+    <string name="doodle_width_thick">굵게</string>
+    <string name="doodle_color_ink">검정</string>
+    <string name="doodle_color_blue">파랑</string>
+    <string name="doodle_color_red">빨강</string>
+    <string name="doodle_color_green">초록</string>
+    <string name="doodle_color_yellow">노랑</string>
+    <string name="doodle_canvas">그림판</string>
+</resources>

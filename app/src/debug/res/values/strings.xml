@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="sample_tool_doodle">낙서장</string>
     <string name="sample_tool_alarm">알람</string>
     <string name="sample_tool_files">내파일</string>
     <string name="sample_tool_description">debug 빌드 전용 샘플 도구 (M1 스트립 검증용)</string>
