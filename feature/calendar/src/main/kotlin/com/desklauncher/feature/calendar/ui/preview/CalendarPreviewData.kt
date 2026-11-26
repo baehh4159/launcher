@@ -2,11 +2,13 @@ package com.desklauncher.feature.calendar.ui.preview
 
 import com.desklauncher.feature.calendar.domain.MonthGrid
 import com.desklauncher.feature.calendar.domain.model.CalendarEvent
+import com.desklauncher.feature.calendar.domain.model.DueTodo
 import com.desklauncher.feature.calendar.ui.AgendaItem
 import com.desklauncher.feature.calendar.ui.CalendarUiState
 import com.desklauncher.feature.calendar.ui.DayCell
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneId
 
@@ -29,8 +31,9 @@ internal object CalendarPreviewData {
         selected = today,
         cells = MonthGrid.days(month).map { date ->
             val dayEvents = MonthGrid.eventsOn(date, events, zone)
-            DayCell(date, YearMonth.from(date) == month, date == today, date == today, dayEvents.map { it.colorName }, dayEvents.size)
+            DayCell(date, YearMonth.from(date) == month, date == today, date == today, dayEvents.map { it.colorName }, date == today || date.dayOfMonth == 30, dayEvents.size)
         },
-        agenda = MonthGrid.eventsOn(today, events, zone).map(AgendaItem::Event),
+        agenda = MonthGrid.eventsOn(today, events, zone).map(AgendaItem::Event) +
+            listOf(AgendaItem.Todo(DueTodo("t1", "관리비 납부", today, LocalTime.of(18, 0), false)), AgendaItem.Todo(DueTodo("t2", "우유 사기", today, null, true))),
     )
 }

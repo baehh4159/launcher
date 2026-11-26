@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -104,6 +105,8 @@ private fun DayCellView(cell: DayCell, onClick: () -> Unit, modifier: Modifier =
                 val color = DeskTabColor.fromNameOrNull(colorName)?.container ?: MaterialTheme.colorScheme.secondary
                 Box(Modifier.size(5.dp).background(color, CircleShape))
             }
+            // 할일 마감은 네모로 구분 (할일정리 탭 색)
+            if (cell.hasOpenTodos) Box(Modifier.size(5.dp).background(DeskTabColor.Orange.container, RoundedCornerShape(1.dp)))
         }
     }
 }

@@ -2,6 +2,7 @@ package com.desklauncher.feature.calendar.ui
 
 import androidx.compose.runtime.Immutable
 import com.desklauncher.feature.calendar.domain.model.CalendarEvent
+import com.desklauncher.feature.calendar.domain.model.DueTodo
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -25,6 +26,8 @@ data class DayCell(
     val isSelected: Boolean,
     /** 점으로 보일 일정 색 (최대 3개), null = 기본색 */
     val dots: List<String?>,
+    /** 미완료 마감 할일이 있음 */
+    val hasOpenTodos: Boolean = false,
     val itemCount: Int,
 )
 
@@ -33,6 +36,11 @@ sealed interface AgendaItem {
 
     data class Event(val event: CalendarEvent) : AgendaItem {
         override val key: String get() = "e_${event.id}"
+    }
+
+    /** 할일정리의 마감 (읽기 전용, CAL-03) */
+    data class Todo(val todo: DueTodo) : AgendaItem {
+        override val key: String get() = "t_${todo.id}"
     }
 }
 

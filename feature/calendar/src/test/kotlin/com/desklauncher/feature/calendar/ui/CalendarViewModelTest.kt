@@ -62,6 +62,24 @@ class CalendarViewModelTest {
         assertEquals(LocalDate.of(2026, 11, 26), viewModel.uiState.value.selected)
     }
 
+    // 마감 할일이 일정 다음에 나오고 격자에 표시된다 (미완료 먼저)
+    @Test
+    fun dueTodos_appearInAgendaAndGrid() = runTest {
+        val today = LocalDate.of(2026, 11, 26)
+        repository.events.value = listOf(event("e1", 26, 9, 10))
+        repository.todos.value = listOf(
+            DueTodo("done", "끝낸 일", today, null, isDone = true),
+            DueTodo("open", "할 일", today, java.time.LocalTime.of(18, 0), isDone = false),
+        )
+        val viewModel = CalendarViewModel(repository, clock, SavedStateHandle())
+        collectInBackground(viewModel.uiState)
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf("e_e1", "t_open", "t_done"), state.agenda.map { it.key })
+        assertTrue(state.cells.first { it.date == today }.hasOpenTodos)
+        assertEquals(3, state.cells.first { it.date == today }.itemCount)
+    }
+
     // 새 일정 → 저장 → 편집 → 삭제
     @Test
     fun eventLifecycle() = runTest {

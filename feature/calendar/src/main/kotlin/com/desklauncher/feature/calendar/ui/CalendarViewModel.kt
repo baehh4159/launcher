@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desklauncher.feature.calendar.domain.MonthGrid
 import com.desklauncher.feature.calendar.domain.model.CalendarEvent
+import com.desklauncher.feature.calendar.domain.model.DueTodo
 import com.desklauncher.feature.calendar.domain.repository.CalendarRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,7 +39,12 @@ class CalendarViewModel @Inject constructor(
     val uiState: StateFlow<CalendarUiState> = combine(month, selected, ::Pair)
         .flatMapLatest { (m, sel) ->
             val (from, to) = MonthGrid.gridRange(m, clock.zone)
-            combine(repository.events(from, to), editor) { events, edit -> buildState(m, sel, events).copy(editor = edit) }
+            val days = MonthGrid.days(m)
+            combine(
+                repository.events(from, to),
+                repository.dueTodos(days.first(), days.last()),
+                editor,
+            ) { events, todos, edit -> buildState(m, sel, events, todos).copy(editor = edit) }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CalendarUiState())
 
@@ -73,7 +79,8 @@ class CalendarViewModel @Inject constructor(
         savedStateHandle[MonthKey] = YearMonth.from(date).toString()
     }
 
-    private fun buildState(month: YearMonth, selected: LocalDate, events: List<CalendarEvent>): CalendarUiState {
+    private fun buildState(month: YearMonth, selected: LocalDate, events: List<CalendarEvent>, todos: List<DueTodo>): CalendarUiState {
+        val todosByDate = todos.groupBy { it.date }
         val zone = clock.zone
         val today = today
         val cells = MonthGrid.days(month).map { date ->
@@ -84,7 +91,8 @@ class CalendarViewModel @Inject constructor(
                 isToday = date == today,
                 isSelected = date == selected,
                 dots = dayEvents.take(MaxDots).map { it.colorName },
-                itemCount = dayEvents.size,
+                hasOpenTodos = todosByDate[date].orEmpty().any { !it.isDone },
+                itemCount = dayEvents.size + todosByDate[date].orEmpty().size,
             )
         }
         return CalendarUiState(
@@ -93,7 +101,11 @@ class CalendarViewModel @Inject constructor(
             today = today,
             selected = selected,
             cells = cells,
-            agenda = MonthGrid.eventsOn(selected, events, zone).map(AgendaItem::Event),
+            // 일정 다음에 할일(미완료 → 시각 순)
+            agenda = MonthGrid.eventsOn(selected, events, zone).map(AgendaItem::Event) +
+                todosByDate[selected].orEmpty()
+                    .sortedWith(compareBy<DueTodo> { it.isDone }.thenBy(nullsLast()) { it.time })
+                    .map(AgendaItem::Todo),
         )
     }
 

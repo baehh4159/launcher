@@ -142,6 +142,14 @@ fun CalendarScreen(
                             supporting = item.event.location,
                             onClick = { onAction(CalendarAction.EditEvent(item.event.id)) },
                         )
+                        is AgendaItem.Todo -> AgendaRow(
+                            color = DeskTabColor.Orange.container,
+                            timeText = item.todo.time?.format(DateTimeFormatter.ofPattern(if (is24Hour) "HH:mm" else "a h:mm", locale))
+                                ?: stringResource(R.string.calendar_todo_label),
+                            title = item.todo.title,
+                            supporting = if (item.todo.isDone) stringResource(R.string.calendar_todo_done) else stringResource(R.string.calendar_todo_label),
+                            struck = item.todo.isDone,
+                        )
                     }
                 }
             }
