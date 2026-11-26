@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desk_empty_title">아직 책상에 꺼내 둔 도구가 없어요</string>
+    <string name="desk_empty_body">도구함에서 필요한 도구를 켜면 오른쪽에 서류철이 꽂힙니다.</string>
+    <string name="desk_tab_open">%1$s 서류철 열기</string>
+    <string name="desk_tab_list">서류철 목록</string>
+</resources>

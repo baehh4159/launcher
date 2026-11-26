@@ -51,7 +51,8 @@
 | 문서 스캐너 | Google ML Kit Document Scanner API | `play-services-mlkit-document-scanner`, 카메라 권한 불필요 |
 | 아키텍처 | Clean Architecture + 기능별 모듈 | §7 참고 |
 | DI / 내비게이션 / 설정 저장 | Hilt / Navigation Compose / DataStore | 허용 목록은 `AGENTS.md` §3 |
-| SDK | minSdk 34, compileSdk·targetSdk 36 | Android 14 미만 미지원 (S24+ 기준). targetSdk는 Play 정책 요구 수준에 맞춰 조정 |
+| SDK | minSdk 34, targetSdk 36, compileSdk 37.2 | Android 14 미만 미지원 (S24+ 기준). targetSdk는 Play 정책 요구 수준에 맞춰 조정. compileSdk는 최신 AndroidX가 37.1 이상을 요구해 37.2 (컴파일용 API 수준일 뿐, 런타임 동작은 targetSdk가 결정 — §13) |
+| 빌드 | AGP 9.5 (내장 Kotlin), Gradle 9.9, JDK 17+ | 공통 설정은 `build-logic/` 컨벤션 플러그인, 버전은 `gradle/libs.versions.toml` |
 
 > 위 목록 외 라이브러리는 `AGENTS.md`의 **임의 라이브러리 추가 금지** 규칙에 따라 사용자 승인 후에만 추가한다.
 
@@ -316,7 +317,7 @@ AlarmRingActivity (별도, 잠금화면 위 표시 · 화면 켜기)  ← featur
 - 셸(`feature:desk`)은 개별 도구를 **전혀 모르고** `DeskTool` 인터페이스만 안다.
 - 컴파일 타임 레지스트리다. (원격 다운로드형 동적 플러그인은 P2 이후 검토)
 
-### 6.2 `DeskTool` 계약 (명세 — 구현 시 세부 시그니처는 조정 가능)
+### 6.2 `DeskTool` 계약 (`core/tool-api/.../DeskTool.kt`가 기준)
 | 멤버 | 설명 |
 |---|---|
 | `id: String` | 영구 불변 키 (`todo`, `calendar` …). DB의 `tool_config.toolId`와 매칭. **한번 출시하면 변경 금지** |
@@ -324,13 +325,14 @@ AlarmRingActivity (별도, 잠금화면 위 표시 · 화면 켜기)  ← featur
 | `icon` | 탭/도구함 아이콘 |
 | `defaultTabColor` | 기본 탭 색상 (디자인시스템 팔레트 토큰) |
 | `defaultEnabled`, `defaultOrder` | 최초 설치 시 기본값 |
-| `registerGraph(builder, navController)` | 자기 화면들을 `tool/{id}` 하위 중첩 그래프로 등록 |
-| `DeskPreview()` (선택) | 스크럽 중 책상 위에 보일 미리보기 Composable. 기본 구현 = 아이콘 + 제목 |
+| `startDestination` | 도구를 열 때 이동할 `@Serializable` 라우트 객체 (보통 도구의 중첩 그래프 라우트) |
+| `NavGraphBuilder.toolGraph(navController)` | 자기 화면들을 중첩 그래프로 등록 (타입 안전 내비게이션). 다른 도구의 라우트는 등록하지 않음 |
+| `DeskPreview(tabColor, modifier)` (선택) | 스크럽 중 책상 위에 보일 미리보기 Composable. 기본 구현 = `ToolPreviewCard`(아이콘 + 제목) |
 | `DeskSummary()` (선택, P1) | Idle 상태 '오늘 요약' 카드 |
 | `quickAction` (선택, P1) | 탭 길게 누르기 메뉴의 "빠른 추가" 동작 |
 
 ### 6.3 레지스트리 동작
-- `ToolRegistry`(셸 소속)가 `Set<DeskTool>` × `tool_config` 테이블을 합쳐 `Flow<List<ActiveTool>>` 제공.
+- `ToolRegistry`(계약: `core:tool-api`, 구현: `core:tool-registry`)가 `Set<DeskTool>` × `tool_config` 테이블을 합쳐 `Flow<List<ActiveTool>>` 제공.
 - 코드에 있는데 DB에 없는 도구 → 기본값으로 행 추가.
 - DB에 있는데 코드에 없는 도구(삭제된 모듈) → 무시(행은 보존).
 - 도구를 꺼도 그 도구의 데이터는 삭제하지 않는다.
@@ -353,13 +355,14 @@ core/
   common/                     공용 유틸, Dispatcher 주입, 결과 타입, 시간 유틸
   designsystem/               테마(책상·종이 질감), 색/타이포 토큰, 공용 컴포넌트,
                               IndexScrubStrip(스크럽 컴포넌트), DeskMotion, DeskHaptics, @DeskPreviews
-  tool-api/                   DeskTool 계약, ActiveTool 모델 (구현 없음)
+  tool-api/                   DeskTool 계약, ActiveTool 모델, ToolRegistry 인터페이스 (구현 없음)
+  tool-registry/              ToolRegistry 구현 (Set<DeskTool> × tool_config). 셸과 도구함이 함께 쓰므로 core에 둔다
   database/                   Room DB, 모든 Entity·DAO·TypeConverter·Migration
   datastore/                  앱 설정(DataStore Preferences)
   storage/                    앱 내부 파일 저장소 경로·FileProvider 규약
   testing/                    테스트 공용 Fake, 테스트 Dispatcher 규칙
 feature/
-  desk/                       책상 메인, 인덱스 탭 스트립 화면, ToolRegistry
+  desk/                       책상 메인, 인덱스 탭 스트립 화면
   apps/                       앱 서랍
   store/                      내 상점(도구함)
   settings/                   설정, 온보딩
@@ -372,6 +375,8 @@ feature/
 app ──▶ feature:* ──▶ core:tool-api, core:designsystem, core:database, core:datastore, core:storage, core:common
                          (core 모듈끼리는 단방향, 순환 금지)
 ```
+> M0 시점에 생성된 모듈: `app`, `core:{common, designsystem, tool-api, tool-registry, database}`, `feature:desk`. 나머지는 해당 기능 작업을 시작할 때 만든다 (`AGENTS.md` §6).
+
 - **feature → feature 의존 금지.** 다른 도구의 데이터가 필요하면 `core:database`의 DAO를 *읽기 전용*으로 사용하고 자기 도메인 모델로 매핑한다 (예: 캘린더가 `TodoDao`로 마감일 할일 조회).
 - `core:tool-api`는 Compose·Navigation 외 의존 없음.
 
@@ -578,8 +583,8 @@ doodles/{id}.png
 | `RECEIVE_BOOT_COMPLETED` | 재부팅 후 알람 재예약 | `TIME_SET`, `TIMEZONE_CHANGED`, `MY_PACKAGE_REPLACED`도 수신 |
 | `VIBRATE` | 알람 진동, Vibrator 기반 햅틱 | |
 | CAMERA / 저장소 권한 | **불필요** | 스캐너는 ML Kit(Play 서비스) UI, 파일은 SAF |
-| `INTERNET` | **앱 기능에서 사용 안 함** | 의존 라이브러리가 병합하는 권한은 merged manifest로 확인 후 이 표에 기록 |
-| `android:allowBackup="false"` | 자동 백업·기기 간 이전 비활성화 | 개인일기 등 개인 데이터 보호 (§13). 백업은 BACKUP-01(P2)로 별도 제공 |
+| `INTERNET` | **앱 기능에서 사용 안 함** | 의존 라이브러리가 병합하는 권한은 merged manifest로 확인 후 이 표에 기록. M0 기준 병합 권한: `{applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`(androidx.core 내부용)뿐 |
+| `android:allowBackup="false"` + `dataExtractionRules` | 자동 백업·기기 간 이전 비활성화 | 개인일기 등 개인 데이터 보호 (§13). targetSdk 31+에서는 allowBackup만으로 기기 간 이전이 막히지 않아 `res/xml/data_extraction_rules.xml`에서 모든 도메인을 제외. 백업은 BACKUP-01(P2)로 별도 제공 |
 
 ---
 
@@ -615,7 +620,8 @@ doodles/{id}.png
 |---|---|---|
 | 2026-11-26 | 앱 서랍 포함 | SHELL-07 앱 서랍(ㄱㄴㄷ 초성/알파벳 인덱스 스트립) MVP P0로 승인 |
 | 2026-11-26 | 허용 라이브러리 | Hilt, Navigation Compose, DataStore, kotlinx-serialization 승인 (`AGENTS.md` §3) |
-| 2026-11-26 | SDK 버전 | minSdk 34, compileSdk·targetSdk 36 승인 |
+| 2026-11-26 | SDK 버전 | minSdk 34, targetSdk 36 승인 |
+| 2026-11-26 | compileSdk 37.2 (M0 중 변경, 확인 요청) | 최신 AndroidX(Compose 1.13, core 1.19, navigation 2.10, lifecycle 2.11, hilt-navigation-compose 1.4)가 compileSdk 37.1 이상을 요구 → compileSdk만 37.2로 올림. minSdk·targetSdk는 승인값 유지. 대안: AndroidX를 compileSdk 36 호환 구버전으로 낮추기 |
 | 2026-11-26 | 서류정리함 모듈 | 서류정리함 UI와 ML Kit 스캐너를 `feature/scanner` 단일 모듈로 통합 (toolId `cabinet`) |
-| 2026-11-26 | 자동 백업 비활성화 | 개인일기 포함 **전체 비활성화**: `android:allowBackup="false"` (Auto Backup·기기 간 이전 모두 제외). 백업은 추후 로컬 백업/내보내기 기능(JSON/ZIP)으로 별도 처리 → BACKUP-01 |
+| 2026-11-26 | 자동 백업 비활성화 | 개인일기 포함 **전체 비활성화**: `android:allowBackup="false"` + `dataExtractionRules` 전 도메인 제외 (Auto Backup·기기 간 이전 모두 제외). 백업은 추후 로컬 백업/내보내기 기능(JSON/ZIP)으로 별도 처리 → BACKUP-01 |
 | 2026-11-26 | 데이터 내보내기 | **P2**(MVP 이후)로 분류 → BACKUP-01 |

@@ -97,8 +97,9 @@ Kotlin · Jetpack Compose · Material 3 · Room · ML Kit Document Scanner · Cl
 app ──▶ feature:* ──▶ core:*
 ```
 - **feature → feature 의존 금지.** 다른 도구의 데이터는 `core:database` DAO를 읽기 전용으로 쓰고 자기 도메인 모델로 매핑한다.
-- `core` 모듈 간 순환 의존 금지. `core:tool-api`는 구현 코드 없이 계약만 둔다.
-- 셸(`feature:desk`)은 특정 도구를 import하지 않는다. `Set<DeskTool>`만 사용한다.
+- `core` 모듈 간 순환 의존 금지. `core:tool-api`는 구현 코드 없이 계약만 둔다 (`DeskTool`, `ActiveTool`, `ToolRegistry`).
+- `ToolRegistry` 구현은 `core:tool-registry`에 있다. feature 모듈은 `ToolRegistry` 인터페이스만 주입받는다.
+- 셸(`feature:desk`)은 특정 도구를 import하지 않는다. `ToolRegistry`/`DeskTool`만 사용한다.
 
 ### 4.2 feature 모듈 내부 계층
 ```
@@ -128,7 +129,8 @@ XxxTool.kt  DeskTool 구현
 
 ### 4.5 플러그인(도구) 규칙
 - `DeskTool.id`는 출시 후 **절대 변경 금지** (DB `tool_config` 키).
-- 도구는 자기 화면을 `tool/{id}` 하위 중첩 그래프로만 등록한다.
+- 도구는 자기 화면을 `toolGraph()` 안의 중첩 그래프로만 등록하고, `startDestination`은 그 그래프의 라우트로 한다.
+- 내비게이션 목적지는 타입 안전 `@Serializable` 객체이며 이름은 `XxxDestination`(화면) / `XxxGraph`(중첩 그래프). `XxxRoute`는 Composable 이름이므로 목적지에 쓰지 않는다.
 - 도구를 꺼도 데이터는 삭제하지 않는다.
 
 ---
@@ -146,12 +148,13 @@ XxxTool.kt  DeskTool 구현
 - **권한/매니페스트**: PRD §9 표에 없는 권한 추가 금지. 특히 `QUERY_ALL_PACKAGES`, `MANAGE_EXTERNAL_STORAGE`, `USE_EXACT_ALARM`, `INTERNET`(앱 기능용) 금지.
 - **파일**: 앱 내부 저장소 경로는 `core:storage` 규약을 사용, 외부 공유는 `FileProvider`만.
 - **주석**: 코드로 드러나지 않는 "왜"만 한국어로 짧게. 터치 수치·물리 상수에는 근거를 남긴다.
+- **테스트 이름**: 함수 이름은 ASCII(`subject_expectedResult_condition`)로 쓰고 한국어 설명은 바로 위 주석에 둔다. 백틱 한글 이름은 람다 클래스 파일명이 되어 UTF-8이 아닌 빌드 환경에서 컴파일이 실패한다.
 
 ---
 
 ## 6. 새 도구(플러그인) 추가 체크리스트
 1. [ ] PRD §5에 도구 섹션과 기능 ID 추가 (사용자 승인)
-2. [ ] `feature/<name>` 모듈 생성 — 기존 도구 모듈의 패키지 구조(§4.2) 그대로
+2. [ ] `feature/<name>` 모듈 생성 — 기존 도구 모듈의 패키지 구조(§4.2) 그대로. `build.gradle.kts`는 `alias(libs.plugins.desk.android.feature)` + `namespace = "com.desklauncher.feature.<name>"`
 3. [ ] `<Name>Tool : DeskTool` 구현, 불변 `id` 결정
 4. [ ] `di/<Name>ToolModule` — `@Binds @IntoSet`
 5. [ ] (필요 시) `core:database`에 Entity/DAO + Migration + 마이그레이션 테스트
@@ -162,7 +165,26 @@ XxxTool.kt  DeskTool 구현
 ---
 
 ## 7. 빌드·검증 명령
-> 프로젝트 골격(M0) 생성 전에는 아래 명령이 존재하지 않는다. 생성 후 실제 태스크명과 다르면 이 절을 갱신한다.
+
+### 7.1 환경
+- JDK 17 이상 (M0 검증: JDK 21), Gradle은 Wrapper(`./gradlew`, 9.9.x) 사용.
+- Android SDK: `platforms;android-37.2`(compileSdk), `build-tools`. SDK 경로는 `local.properties`의 `sdk.dir` 또는 `ANDROID_HOME` (커밋 금지).
+- 빌드 구성:
+  - `gradle/libs.versions.toml` — 모든 버전·SDK 수준의 유일한 출처
+  - `build-logic/convention` — 컨벤션 플러그인. 모듈 `build.gradle.kts`에는 아래 플러그인과 `namespace`, 모듈 고유 의존성만 쓴다.
+
+| 플러그인 ID | 용도 |
+|---|---|
+| `desk.android.application` | `app` 모듈 (SDK 수준, Java 17) |
+| `desk.android.library` | 모든 Android 라이브러리 모듈 (+ JUnit, coroutines-test) |
+| `desk.android.compose` | Compose 사용 모듈 (+ BOM, ui-tooling-preview, debug ui-tooling) |
+| `desk.android.feature` | feature 모듈 = library + compose + hilt + serialization + 공통 core/AndroidX 의존 |
+| `desk.hilt` | Hilt + KSP |
+| `desk.room` | Room + KSP + 스키마 내보내기(`schemas/`) |
+
+- AGP 9 내장 Kotlin을 쓰므로 모듈에 `org.jetbrains.kotlin.android` 플러그인을 적용하지 않는다.
+
+### 7.2 명령
 
 ```bash
 ./gradlew assembleDebug            # 빌드
@@ -172,6 +194,7 @@ XxxTool.kt  DeskTool 구현
 ```
 - 테스트 필수 대상: UseCase, ViewModel 상태 전이, Room 마이그레이션, 계산기 파서, 알람 다음 울림 시각 계산, 스트립의 `focus → 인덱스/햅틱 경계` 계산(순수 함수로 분리).
 - 햅틱·제스처 충돌·알람 잠금화면 표시는 에뮬레이터로 검증 불가 → 보고서의 "실기기 확인 필요"에 기록.
+- `lintDebug`의 `OldTargetApi` 경고(targetSdk 36 < 최신)는 승인된 결정(PRD §13)이므로 무시한다.
 
 ---
 
