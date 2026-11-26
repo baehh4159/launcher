@@ -66,6 +66,12 @@ class DeskHaptics internal constructor(
         }
     }
 
+    /** 키패드 누름 (계산기 등) */
+    fun keyTap() {
+        if (level == HapticLevel.Off) return
+        view?.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
     /** 서류철 열기 확정. */
     fun confirm() {
         if (level == HapticLevel.Off) return
