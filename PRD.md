@@ -29,6 +29,7 @@
 | 기본 런처(HOME)로 매일 사용 가능한 안정성 | 클라우드 동기화, 계정/로그인 |
 | 한 손 서류철 스크럽 인터랙션의 완성도 | 홈 화면 위젯(AppWidgetHost) |
 | 9개 내장 도구의 핵심 기능 | 원격 다운로드형 플러그인, 결제/유료 상점 |
+| | 데이터 백업/내보내기(JSON/ZIP) — P2, §5.11 |
 | 완전 오프라인 동작 (앱 기능에 네트워크 미사용) | 태블릿·폴더블·가로 모드 최적화 |
 | 도구 켜기/끄기·순서 변경 | 아이콘 팩, 알림 배지(NotificationListener) |
 
@@ -297,6 +298,13 @@ AlarmRingActivity (별도, 잠금화면 위 표시 · 화면 켜기)  ← featur
 | FILES-04 | 정렬(이름/날짜/크기), 검색 | P1 |
 
 > 전체 저장소 접근(`MANAGE_EXTERNAL_STORAGE`)은 사용하지 않는다. 기기 전체 파일 탐색기가 아니라 '책상 위에 꺼내 둔 파일'을 모아 보는 개념.
+
+### 5.11 백업/내보내기 — `feature:settings` (MVP 이후)
+| ID | 기능 | 우선 |
+|---|---|---|
+| BACKUP-01 | 로컬 백업/내보내기: DB 데이터(JSON) + 내부 파일(PDF·이미지·획 데이터)을 ZIP 하나로 묶어 SAF로 저장, 같은 ZIP에서 복원 | P2 |
+
+> 시스템 자동 백업은 사용하지 않는다(`allowBackup="false"`, §13). 사용자가 직접 만든 백업 파일만이 공식 백업 수단이다.
 
 ---
 
@@ -571,6 +579,7 @@ doodles/{id}.png
 | `VIBRATE` | 알람 진동, Vibrator 기반 햅틱 | |
 | CAMERA / 저장소 권한 | **불필요** | 스캐너는 ML Kit(Play 서비스) UI, 파일은 SAF |
 | `INTERNET` | **앱 기능에서 사용 안 함** | 의존 라이브러리가 병합하는 권한은 merged manifest로 확인 후 이 표에 기록 |
+| `android:allowBackup="false"` | 자동 백업·기기 간 이전 비활성화 | 개인일기 등 개인 데이터 보호 (§13). 백업은 BACKUP-01(P2)로 별도 제공 |
 
 ---
 
@@ -599,6 +608,14 @@ doodles/{id}.png
 | 리스크 | Galaxy 기기의 Composition 햅틱 primitive 지원 편차 | 지원 여부 확인 + `HapticFeedbackConstants` 대체 |
 | 리스크 | 화면 꺼짐 상태에서 알람 울림 재생 유지(포그라운드 서비스 필요 여부) | M2에서 실기기 검증 후 방식 확정 |
 | 리스크 | ML Kit 스캐너 모듈 미설치/Play 서비스 없는 환경 | 오류 상태 안내 UI |
-| 질문 | 자동 백업(Android Auto Backup)에 일기 등 개인 데이터를 포함할지 | M3 전 결정 |
-| 질문 | 데이터 내보내기/가져오기(백업 파일) MVP 포함 여부 | 현재 P2 |
 | 질문 | 업무 프로필(Work profile) 앱 표시 | 현재 P2 |
+
+## 13. 결정 기록
+| 날짜 | 결정 | 내용 |
+|---|---|---|
+| 2026-11-26 | 앱 서랍 포함 | SHELL-07 앱 서랍(ㄱㄴㄷ 초성/알파벳 인덱스 스트립) MVP P0로 승인 |
+| 2026-11-26 | 허용 라이브러리 | Hilt, Navigation Compose, DataStore, kotlinx-serialization 승인 (`AGENTS.md` §3) |
+| 2026-11-26 | SDK 버전 | minSdk 34, compileSdk·targetSdk 36 승인 |
+| 2026-11-26 | 서류정리함 모듈 | 서류정리함 UI와 ML Kit 스캐너를 `feature/scanner` 단일 모듈로 통합 (toolId `cabinet`) |
+| 2026-11-26 | 자동 백업 비활성화 | 개인일기 포함 **전체 비활성화**: `android:allowBackup="false"` (Auto Backup·기기 간 이전 모두 제외). 백업은 추후 로컬 백업/내보내기 기능(JSON/ZIP)으로 별도 처리 → BACKUP-01 |
+| 2026-11-26 | 데이터 내보내기 | **P2**(MVP 이후)로 분류 → BACKUP-01 |

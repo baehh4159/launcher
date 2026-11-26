@@ -84,6 +84,8 @@ Kotlin · Jetpack Compose · Material 3 · Room · ML Kit Document Scanner · Cl
 | 빌드 | Android Gradle Plugin, Kotlin Gradle Plugin, Compose Compiler 플러그인, KSP, Hilt 플러그인, Room 플러그인 | |
 | 테스트 | junit4, kotlinx-coroutines-test, androidx-test-ext-junit, androidx-test-runner, compose-ui-test-junit4, compose-ui-test-manifest(debug) | 테스트 |
 
+- 승인 기록: 위 표 전체 — 2026-11-26 사용자 승인 (Hilt, Navigation Compose, DataStore, kotlinx-serialization 포함). 실제 버전은 `gradle/libs.versions.toml`이 기준.
+
 **명시적으로 금지(승인 전)**: 이미지 로더(Coil/Glide), 네트워크(Retrofit/OkHttp/Ktor), 다른 DI(Koin), RxJava, Accompanist, 분석·광고·크래시 SDK, 포맷터/정적분석 플러그인(ktlint/detekt), Turbine·MockK 등 추가 테스트 라이브러리, `androidx.biometric`(DIARY-03 착수 시 승인 요청).
 
 ---
