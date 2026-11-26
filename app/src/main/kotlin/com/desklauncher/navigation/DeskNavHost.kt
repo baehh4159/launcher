@@ -10,6 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.desklauncher.core.designsystem.motion.DeskTransitions
 import com.desklauncher.core.toolapi.ToolRegistry
+import com.desklauncher.feature.apps.navigation.AppsDestination
+import com.desklauncher.feature.apps.navigation.appsScreen
+import com.desklauncher.feature.apps.navigation.navigateToApps
 import com.desklauncher.feature.desk.navigation.DeskDestination
 import com.desklauncher.feature.desk.navigation.deskScreen
 import com.desklauncher.feature.store.navigation.navigateToStore
@@ -41,7 +44,11 @@ fun DeskNavHost(
         startDestination = DeskDestination,
         modifier = modifier,
         enterTransition = {
-            if (initialState.destination.isDesk()) DeskTransitions.folderOpen else DeskTransitions.innerEnter
+            when {
+                targetState.destination.isApps() -> DeskTransitions.drawerOpen
+                initialState.destination.isDesk() -> DeskTransitions.folderOpen
+                else -> DeskTransitions.innerEnter
+            }
         },
         exitTransition = {
             if (initialState.destination.isDesk()) DeskTransitions.deskRecede else DeskTransitions.innerExit
@@ -50,7 +57,11 @@ fun DeskNavHost(
             if (targetState.destination.isDesk()) DeskTransitions.deskReturn else DeskTransitions.innerPopEnter
         },
         popExitTransition = {
-            if (targetState.destination.isDesk()) DeskTransitions.folderClose else DeskTransitions.innerPopExit
+            when {
+                initialState.destination.isApps() -> DeskTransitions.drawerClose
+                targetState.destination.isDesk() -> DeskTransitions.folderClose
+                else -> DeskTransitions.innerPopExit
+            }
         },
     ) {
         deskScreen(
@@ -61,7 +72,9 @@ fun DeskNavHost(
                 }
             },
             onOpenToolStore = navController::navigateToStore,
+            onOpenAppDrawer = navController::navigateToApps,
         )
+        appsScreen(onBack = navController::popBackStack, onOpenStore = navController::navigateToStore)
         storeScreen(onBack = navController::popBackStack)
         toolRegistry.registeredTools.forEach { tool ->
             with(tool) { toolGraph(navController) }
@@ -70,3 +83,5 @@ fun DeskNavHost(
 }
 
 private fun NavDestination.isDesk(): Boolean = hierarchy.any { it.hasRoute(DeskDestination::class) }
+
+private fun NavDestination.isApps(): Boolean = hierarchy.any { it.hasRoute(AppsDestination::class) }

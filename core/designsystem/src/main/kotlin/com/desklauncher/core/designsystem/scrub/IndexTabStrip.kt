@@ -27,13 +27,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -50,7 +48,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.desklauncher.core.designsystem.component.DeskSurface
-import com.desklauncher.core.designsystem.haptics.DeskHaptics
 import com.desklauncher.core.designsystem.haptics.rememberDeskHaptics
 import com.desklauncher.core.designsystem.motion.DeskMotion
 import com.desklauncher.core.designsystem.preview.DeskPreviews
@@ -87,7 +84,7 @@ fun IndexTabStrip(
     if (count == 0) return
 
     val haptics = rememberDeskHaptics()
-    ScrubHaptics(state, haptics)
+    IndexScrubHaptics(state, haptics)
     val currentOnOpen by rememberUpdatedState(onOpen)
     val openWithHaptic: (Int) -> Unit = remember(haptics) {
         { index ->
@@ -156,31 +153,6 @@ fun IndexTabStrip(
                         onOpen = openWithHaptic,
                     ),
             )
-        }
-    }
-}
-
-/** 포커스 변화를 햅틱으로 바꾼다 (SHELL-04). 잡는 순간 1회 + 경계마다 1회 + 벽. */
-@Composable
-private fun ScrubHaptics(state: IndexScrubState, haptics: DeskHaptics) {
-    LaunchedEffect(state, haptics) {
-        val tracker = ScrubHapticTracker()
-        var previousPhase = state.phase
-        snapshotFlow { state.phase to state.focus }.collect { (phase, focus) ->
-            val count = state.itemCount
-            when {
-                phase == ScrubPhase.Idle -> tracker.reset(focus, count)
-                previousPhase == ScrubPhase.Idle && phase == ScrubPhase.Scrubbing -> {
-                    tracker.reset(focus, count)
-                    haptics.segmentTick()
-                }
-                else -> when (tracker.update(focus, count)) {
-                    is ScrubHapticEvent.Tick -> haptics.segmentTick()
-                    ScrubHapticEvent.Edge -> haptics.edge()
-                    null -> Unit
-                }
-            }
-            previousPhase = phase
         }
     }
 }

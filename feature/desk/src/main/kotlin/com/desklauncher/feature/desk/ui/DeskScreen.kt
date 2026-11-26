@@ -11,7 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,7 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -53,6 +61,7 @@ fun DeskRoute(
     homePresses: Flow<Unit>,
     onOpenTool: (toolId: String) -> Unit,
     onOpenToolStore: () -> Unit,
+    onOpenAppDrawer: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeskViewModel = hiltViewModel(),
 ) {
@@ -79,6 +88,7 @@ fun DeskRoute(
             when (action) {
                 is DeskAction.OpenTool -> onOpenTool(action.toolId)
                 DeskAction.OpenToolStore -> onOpenToolStore()
+                DeskAction.OpenAppDrawer -> onOpenAppDrawer()
             }
         },
         modifier = modifier,
@@ -118,8 +128,29 @@ fun DeskScreen(
         scope.launch { stripState.reset() }
     }
 
-    DeskSurface(modifier = modifier) {
+    val swipeThresholdPx = with(LocalDensity.current) { AppDrawerSwipeThreshold.toPx() }
+    DeskSurface(
+        // 책상 아무 곳에서나 위로 밀면 앱 서랍 (스트립은 자기 제스처를 먼저 소비한다).
+        modifier = modifier.pointerInput(swipeThresholdPx) {
+            var dragged = 0f
+            detectVerticalDragGestures(
+                onDragStart = { dragged = 0f },
+                onVerticalDrag = { change, amount ->
+                    dragged += amount
+                    if (dragged < -swipeThresholdPx) {
+                        change.consume()
+                        dragged = 0f
+                        onAction(DeskAction.OpenAppDrawer)
+                    }
+                },
+            )
+        },
+    ) {
         Box(modifier = Modifier.safeDrawingPadding()) {
+            AppDrawerHint(
+                onClick = { onAction(DeskAction.OpenAppDrawer) },
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp),
+            )
             DeskClock(
                 clock = clock,
                 modifier = Modifier
@@ -175,6 +206,21 @@ fun DeskScreen(
         }
     }
 }
+
+/** 하단 손잡이: 위로 밀기 안내 + 접근성용 버튼. */
+@Composable
+private fun AppDrawerHint(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    TextButton(onClick = onClick, modifier = modifier) {
+        Icon(Icons.Outlined.KeyboardArrowUp, contentDescription = null, tint = DeskTheme.colors.onDesk)
+        Text(
+            text = stringResource(R.string.desk_app_drawer_hint),
+            style = MaterialTheme.typography.labelMedium,
+            color = DeskTheme.colors.onDesk,
+        )
+    }
+}
+
+private val AppDrawerSwipeThreshold = 72.dp
 
 @Composable
 private fun DefaultToolPreview(tab: DeskTabUi, modifier: Modifier = Modifier) {

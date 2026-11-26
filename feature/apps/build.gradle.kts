@@ -1,0 +1,11 @@
+plugins {
+    alias(libs.plugins.desk.android.feature)
+}
+
+android {
+    namespace = "com.desklauncher.feature.apps"
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+}

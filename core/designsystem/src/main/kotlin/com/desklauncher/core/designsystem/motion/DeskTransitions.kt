@@ -12,7 +12,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.IntOffset
 
@@ -51,6 +53,10 @@ object DeskTransitions {
 
     val deskReturn: EnterTransition =
         scaleIn(tween(CloseMillis), initialScale = 0.96f) + fadeIn(tween(CloseMillis), initialAlpha = 0.5f)
+
+    /** 앱 서랍: 아래에서 올라오고 아래로 내려간다. */
+    val drawerOpen: EnterTransition = slideInVertically(slideSpring) { it / 3 } + fadeIn(tween(OpenMillis / 2))
+    val drawerClose: ExitTransition = slideOutVertically(tween(CloseMillis)) { it / 3 } + fadeOut(tween(CloseMillis))
 
     /** 도구 내부 화면 이동 (책상과 무관). */
     val innerEnter: EnterTransition = slideInHorizontally(slideSpring) { it / 3 } + fadeIn(tween(180))

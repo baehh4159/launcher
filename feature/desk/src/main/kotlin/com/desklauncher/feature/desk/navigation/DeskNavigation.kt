@@ -14,8 +14,14 @@ fun NavGraphBuilder.deskScreen(
     homePresses: Flow<Unit>,
     onOpenTool: (toolId: String) -> Unit,
     onOpenToolStore: () -> Unit,
+    onOpenAppDrawer: () -> Unit,
 ) {
     composable<DeskDestination> {
-        DeskRoute(homePresses = homePresses, onOpenTool = onOpenTool, onOpenToolStore = onOpenToolStore)
+        DeskRoute(
+            homePresses = homePresses,
+            onOpenTool = onOpenTool,
+            onOpenToolStore = onOpenToolStore,
+            onOpenAppDrawer = onOpenAppDrawer,
+        )
     }
 }
