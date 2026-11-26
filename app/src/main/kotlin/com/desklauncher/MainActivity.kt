@@ -22,21 +22,22 @@ class MainActivity : ComponentActivity() {
     lateinit var toolRegistry: ToolRegistry
 
     // singleTask라 홈 버튼은 onNewIntent로 들어온다 (SHELL-06).
-    private val homePresses = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val homePressEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val homePresses = homePressEvents.asSharedFlow()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             DeskTheme {
-                DeskNavHost(toolRegistry = toolRegistry, homePresses = homePresses.asSharedFlow())
+                DeskNavHost(toolRegistry = toolRegistry, homePresses = homePresses)
             }
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.isHomeIntent()) homePresses.tryEmit(Unit)
+        if (intent.isHomeIntent()) homePressEvents.tryEmit(Unit)
     }
 
     private fun Intent.isHomeIntent(): Boolean =
