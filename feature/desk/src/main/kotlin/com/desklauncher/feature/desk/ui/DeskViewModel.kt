@@ -2,6 +2,7 @@ package com.desklauncher.feature.desk.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.desklauncher.core.toolapi.DeskTool
 import com.desklauncher.core.toolapi.ToolRegistry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeskViewModel @Inject constructor(
-    toolRegistry: ToolRegistry,
+    private val toolRegistry: ToolRegistry,
 ) : ViewModel() {
 
     val uiState: StateFlow<DeskUiState> = toolRegistry.enabledTools
@@ -22,4 +23,6 @@ class DeskViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
             initialValue = DeskUiState(),
         )
+
+    fun findTool(toolId: String): DeskTool? = toolRegistry.findTool(toolId)
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sample_tool_todo">할일정리</string>
+    <string name="sample_tool_calendar">캘린더</string>
+    <string name="sample_tool_memo">프로젝트 메모</string>
+    <string name="sample_tool_diary">개인일기</string>
+    <string name="sample_tool_cabinet">서류정리함</string>
+    <string name="sample_tool_calculator">계산기</string>
+    <string name="sample_tool_doodle">낙서장</string>
+    <string name="sample_tool_alarm">알람</string>
+    <string name="sample_tool_files">내파일</string>
+    <string name="sample_tool_description">debug 빌드 전용 샘플 도구 (M1 스트립 검증용)</string>
+    <string name="sample_tool_body">이 서류철은 서류철 스트립 실기기 검증을 위한 debug 전용 샘플입니다. 실제 도구는 M3~M5에서 구현됩니다.</string>
+</resources>

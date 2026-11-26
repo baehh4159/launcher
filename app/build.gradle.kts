@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.desk.android.application)
     alias(libs.plugins.desk.android.compose)
     alias(libs.plugins.desk.hilt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -38,4 +39,5 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.kotlinx.serialization.json)
 }
