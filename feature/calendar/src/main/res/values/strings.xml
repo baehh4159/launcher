@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="calendar_tool_title">캘린더</string>
+    <string name="calendar_tool_description">월간 일정과 할일 마감을 한눈에</string>
+    <string name="calendar_back">책상으로</string>
+    <string name="calendar_prev_month">이전 달</string>
+    <string name="calendar_next_month">다음 달</string>
+    <string name="calendar_today">오늘</string>
+    <string name="calendar_all_day">종일</string>
+    <string name="calendar_agenda_empty">이 날은 일정이 없어요</string>
+    <string name="calendar_day_description">%1$s, 일정 %2$d개</string>
+</resources>

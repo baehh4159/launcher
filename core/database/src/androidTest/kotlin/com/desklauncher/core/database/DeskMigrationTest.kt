@@ -79,6 +79,22 @@ class DeskMigrationTest {
         }
     }
 
+    // v4 → v5: calendar_event 생성
+    @Test
+    fun migrate4To5_addsCalendarEvent() {
+        helper.createDatabase(TestDb, 4).close()
+
+        val db = helper.runMigrationsAndValidate(TestDb, 5, true)
+
+        db.execSQL("INSERT INTO calendar_event (id, title, startAt, endAt, createdAt, updatedAt) VALUES ('e1', '회의', 10, 20, 0, 0)")
+        db.query("SELECT allDay, note, recurrenceRule FROM calendar_event").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+            assertEquals("", cursor.getString(1))
+            assertTrue(cursor.isNull(2))
+        }
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }

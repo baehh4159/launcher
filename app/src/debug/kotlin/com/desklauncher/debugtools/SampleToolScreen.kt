@@ -43,6 +43,6 @@ internal fun SampleToolScreen(
 @Composable
 private fun SampleToolScreenPreview() {
     DeskTheme {
-        SampleToolScreen(titleRes = R.string.sample_tool_calendar)
+        SampleToolScreen(titleRes = R.string.sample_tool_diary)
     }
 }

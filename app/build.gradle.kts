@@ -41,6 +41,7 @@ dependencies {
     // 책상 도구 (DeskTool @IntoSet)
     implementation(projects.feature.todo)
     implementation(projects.feature.memo)
+    implementation(projects.feature.calendar)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

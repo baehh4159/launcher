@@ -4,11 +4,13 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.desklauncher.core.database.dao.AppPrefDao
+import com.desklauncher.core.database.dao.CalendarEventDao
 import com.desklauncher.core.database.dao.MemoDao
 import com.desklauncher.core.database.dao.ProjectDao
 import com.desklauncher.core.database.dao.TodoDao
 import com.desklauncher.core.database.dao.ToolConfigDao
 import com.desklauncher.core.database.entity.AppPrefEntity
+import com.desklauncher.core.database.entity.CalendarEventEntity
 import com.desklauncher.core.database.entity.MemoEntity
 import com.desklauncher.core.database.entity.ProjectEntity
 import com.desklauncher.core.database.entity.TodoEntity
@@ -27,8 +29,9 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         ProjectEntity::class,
         TodoEntity::class,
         MemoEntity::class,
+        CalendarEventEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         // v2: app_pref 추가 (SHELL-08)
@@ -37,6 +40,8 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         AutoMigration(from = 2, to = 3),
         // v4: memo 추가 (MEMO-02)
         AutoMigration(from = 3, to = 4),
+        // v5: calendar_event 추가 (CAL-01)
+        AutoMigration(from = 4, to = 5),
     ],
 )
 abstract class DeskDatabase : RoomDatabase() {
@@ -45,6 +50,7 @@ abstract class DeskDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao
     abstract fun todoDao(): TodoDao
     abstract fun memoDao(): MemoDao
+    abstract fun calendarEventDao(): CalendarEventDao
 
     companion object {
         const val NAME = "desk.db"
