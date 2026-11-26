@@ -2,8 +2,12 @@ package com.desklauncher.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.desklauncher.core.designsystem.motion.DeskTransitions
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.feature.desk.navigation.DeskDestination
 import com.desklauncher.feature.desk.navigation.deskScreen
@@ -22,10 +26,24 @@ fun DeskNavHost(
         navController = navController,
         startDestination = DeskDestination,
         modifier = modifier,
+        enterTransition = {
+            if (initialState.destination.isDesk()) DeskTransitions.folderOpen else DeskTransitions.innerEnter
+        },
+        exitTransition = {
+            if (initialState.destination.isDesk()) DeskTransitions.deskRecede else DeskTransitions.innerExit
+        },
+        popEnterTransition = {
+            if (targetState.destination.isDesk()) DeskTransitions.deskReturn else DeskTransitions.innerPopEnter
+        },
+        popExitTransition = {
+            if (targetState.destination.isDesk()) DeskTransitions.folderClose else DeskTransitions.innerPopExit
+        },
     ) {
         deskScreen(
             onOpenTool = { toolId ->
-                toolRegistry.findTool(toolId)?.let { tool -> navController.navigate(tool.startDestination) }
+                toolRegistry.findTool(toolId)?.let { tool ->
+                    navController.navigate(tool.startDestination) { launchSingleTop = true }
+                }
             },
         )
         toolRegistry.registeredTools.forEach { tool ->
@@ -33,3 +51,5 @@ fun DeskNavHost(
         }
     }
 }
+
+private fun NavDestination.isDesk(): Boolean = hierarchy.any { it.hasRoute(DeskDestination::class) }
