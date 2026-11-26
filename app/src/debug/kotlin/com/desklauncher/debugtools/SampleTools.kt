@@ -9,7 +9,6 @@ import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Brush
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.FolderOpen
 
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,11 +38,11 @@ internal class SampleTool(
     override val startDestination: Any = SampleToolDestination(id)
 
     override fun NavGraphBuilder.toolGraph(navController: NavController) {
-        // 모든 샘플이 같은 라우트 타입을 쓰므로 첫 번째 샘플만 등록한다.
-        if (defaultOrder != 0) return
+        // 모든 샘플이 같은 라우트 타입을 쓰므로 목록의 첫 샘플만 등록한다.
+        if (SampleTools.all.firstOrNull() !== this@SampleTool) return
         composable<SampleToolDestination> { entry ->
             val toolId = entry.toRoute<SampleToolDestination>().toolId
-            val title = SampleTools.all.firstOrNull { it.id == toolId }?.titleRes ?: R.string.sample_tool_todo
+            val title = SampleTools.all.firstOrNull { it.id == toolId }?.titleRes ?: R.string.sample_tool_calendar
             SampleToolScreen(titleRes = title)
         }
     }
@@ -54,7 +53,6 @@ internal data class SampleToolDestination(val toolId: String)
 
 internal object SampleTools {
     val all: List<SampleTool> = listOf(
-        SampleTool("todo", R.string.sample_tool_todo, Icons.Outlined.Checklist, DeskTabColor.Orange, 0),
         SampleTool("calendar", R.string.sample_tool_calendar, Icons.Outlined.CalendarMonth, DeskTabColor.Red, 1),
         SampleTool("memo", R.string.sample_tool_memo, Icons.AutoMirrored.Outlined.StickyNote2, DeskTabColor.Yellow, 2),
         SampleTool("diary", R.string.sample_tool_diary, Icons.Outlined.AutoStories, DeskTabColor.Pink, 3),

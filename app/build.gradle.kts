@@ -38,6 +38,9 @@ dependencies {
     implementation(projects.feature.store)
     implementation(projects.feature.settings)
 
+    // 책상 도구 (DeskTool @IntoSet)
+    implementation(projects.feature.todo)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

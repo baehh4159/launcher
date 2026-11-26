@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="sample_tool_todo">할일정리</string>
     <string name="sample_tool_calendar">캘린더</string>
     <string name="sample_tool_memo">프로젝트 메모</string>
     <string name="sample_tool_diary">개인일기</string>

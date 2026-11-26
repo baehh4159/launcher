@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.desklauncher.core.database.DeskDatabase
 import com.desklauncher.core.database.dao.AppPrefDao
+import com.desklauncher.core.database.dao.ProjectDao
+import com.desklauncher.core.database.dao.TodoDao
 import com.desklauncher.core.database.dao.ToolConfigDao
 import com.desklauncher.core.database.migration.DeskMigrations
 import dagger.Module
@@ -29,4 +31,10 @@ object DatabaseModule {
 
     @Provides
     fun provideAppPrefDao(database: DeskDatabase): AppPrefDao = database.appPrefDao()
+
+    @Provides
+    fun provideProjectDao(database: DeskDatabase): ProjectDao = database.projectDao()
+
+    @Provides
+    fun provideTodoDao(database: DeskDatabase): TodoDao = database.todoDao()
 }

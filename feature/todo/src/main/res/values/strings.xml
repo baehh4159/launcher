@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="todo_tool_title">할일정리</string>
+    <string name="todo_tool_description">오늘 할 일과 마감일을 정리해요</string>
+    <string name="todo_back">책상으로</string>
+    <string name="todo_quick_add_placeholder">할 일을 적고 Enter</string>
+    <string name="todo_quick_add_send">추가</string>
+    <string name="todo_empty_title">할 일이 없어요</string>
+    <string name="todo_empty_body">아래 입력칸에 적으면 서류철에 바로 끼워 둘게요.</string>
+    <string name="todo_deleted">할 일을 지웠어요</string>
+    <string name="todo_undo">실행 취소</string>
+    <string name="todo_editor_title">할 일 편집</string>
+    <string name="todo_editor_name">할 일</string>
+    <string name="todo_editor_note">메모</string>
+    <string name="todo_editor_save">저장</string>
+    <string name="todo_editor_delete">삭제</string>
+</resources>
