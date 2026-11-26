@@ -12,6 +12,8 @@ import com.desklauncher.core.designsystem.motion.DeskTransitions
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.feature.desk.navigation.DeskDestination
 import com.desklauncher.feature.desk.navigation.deskScreen
+import com.desklauncher.feature.store.navigation.navigateToStore
+import com.desklauncher.feature.store.navigation.storeScreen
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -58,7 +60,9 @@ fun DeskNavHost(
                     navController.navigate(tool.startDestination) { launchSingleTop = true }
                 }
             },
+            onOpenToolStore = navController::navigateToStore,
         )
+        storeScreen(onBack = navController::popBackStack)
         toolRegistry.registeredTools.forEach { tool ->
             with(tool) { toolGraph(navController) }
         }

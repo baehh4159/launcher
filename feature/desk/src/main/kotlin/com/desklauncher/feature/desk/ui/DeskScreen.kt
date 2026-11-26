@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +52,7 @@ import kotlinx.coroutines.launch
 fun DeskRoute(
     homePresses: Flow<Unit>,
     onOpenTool: (toolId: String) -> Unit,
+    onOpenToolStore: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeskViewModel = hiltViewModel(),
 ) {
@@ -75,6 +78,7 @@ fun DeskRoute(
         onAction = { action ->
             when (action) {
                 is DeskAction.OpenTool -> onOpenTool(action.toolId)
+                DeskAction.OpenToolStore -> onOpenToolStore()
             }
         },
         modifier = modifier,
@@ -128,6 +132,11 @@ fun DeskScreen(
                 state.tabs.isEmpty() -> DeskEmptyState(
                     title = stringResource(R.string.desk_empty_title),
                     body = stringResource(R.string.desk_empty_body),
+                    action = {
+                        FilledTonalButton(onClick = { onAction(DeskAction.OpenToolStore) }) {
+                            Text(stringResource(R.string.desk_empty_action))
+                        }
+                    },
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(horizontal = 32.dp),

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,6 +27,7 @@ fun DeskEmptyState(
     body: String,
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Outlined.Inventory2,
+    action: (@Composable () -> Unit)? = null,
 ) {
     val colors = DeskTheme.colors
     Surface(
@@ -48,6 +50,7 @@ fun DeskEmptyState(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            action?.invoke()
         }
     }
 }
@@ -61,6 +64,7 @@ private fun DeskEmptyStatePreview() {
             title = "아직 책상에 꺼내 둔 도구가 없어요",
             body = "도구함에서 필요한 도구를 켜면 오른쪽에 서류철이 꽂힙니다.",
             modifier = Modifier.padding(24.dp),
+            action = { FilledTonalButton(onClick = {}) { Text("도구함 열기") } },
         )
     }
 }

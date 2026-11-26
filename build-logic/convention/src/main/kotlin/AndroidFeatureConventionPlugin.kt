@@ -23,6 +23,8 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             add("implementation", libs.lib("androidx-navigation-compose"))
             add("implementation", libs.lib("androidx-hilt-navigation-compose"))
             add("implementation", libs.lib("kotlinx-serialization-json"))
+
+            add("testImplementation", project(":core:testing"))
         }
     }
 }

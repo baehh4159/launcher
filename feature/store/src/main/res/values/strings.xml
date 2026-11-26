@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="store_title">내 상점 · 도구함</string>
+    <string name="store_back">뒤로</string>
+    <string name="store_guide">책상에 꺼낼 도구를 켜고, 손잡이를 끌어 서류철 순서를 바꾸세요. 도구를 꺼도 기록은 지워지지 않아요.</string>
+    <string name="store_reorder_handle">%1$s 순서 바꾸기 손잡이</string>
+    <string name="store_move_up">위로 옮기기</string>
+    <string name="store_move_down">아래로 옮기기</string>
+    <string name="store_tab_color">%1$s 탭 색상 바꾸기</string>
+    <string name="store_color_dialog_title">탭 색상</string>
+    <string name="store_color_default">기본 색</string>
+    <string name="store_color_close">닫기</string>
+    <string name="store_empty_title">설치된 도구가 없어요</string>
+    <string name="store_empty_body">앱 업데이트로 새 책상 도구가 추가되면 여기에 나타납니다.</string>
+    <string name="store_color_red">빨강</string>
+    <string name="store_color_orange">주황</string>
+    <string name="store_color_yellow">노랑</string>
+    <string name="store_color_green">초록</string>
+    <string name="store_color_teal">청록</string>
+    <string name="store_color_blue">파랑</string>
+    <string name="store_color_indigo">남색</string>
+    <string name="store_color_purple">보라</string>
+    <string name="store_color_pink">분홍</string>
+    <string name="store_color_brown">갈색</string>
+    <string name="store_color_gray">회색</string>
+</resources>

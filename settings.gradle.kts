@@ -32,6 +32,8 @@ include(":core:designsystem")
 include(":core:tool-api")
 include(":core:tool-registry")
 include(":core:database")
+include(":core:testing")
 
 // feature — 도구 모듈은 각 기능 작업을 시작할 때 추가한다 (AGENTS.md §6)
 include(":feature:desk")
+include(":feature:store")
