@@ -29,4 +29,22 @@
     <string name="todo_empty_upcoming_body">할 일을 눌러 마감일을 정하면 여기에 모여요.</string>
     <string name="todo_empty_done_title">아직 완료한 일이 없어요</string>
     <string name="todo_empty_done_body">체크하거나 오른쪽으로 밀면 완료돼요.</string>
+    <string name="todo_priority_none">없음</string>
+    <string name="todo_priority_low">낮음</string>
+    <string name="todo_priority_medium">보통</string>
+    <string name="todo_priority_high">높음</string>
+    <string name="todo_due_yesterday">어제</string>
+    <string name="todo_due_today">오늘</string>
+    <string name="todo_due_tomorrow">내일</string>
+    <string name="todo_editor_due">마감</string>
+    <string name="todo_editor_pick_date">날짜 정하기</string>
+    <string name="todo_editor_pick_time">시각</string>
+    <string name="todo_editor_no_time">시각 없음</string>
+    <string name="todo_editor_clear_due">마감 지우기</string>
+    <string name="todo_editor_priority">우선순위</string>
+    <string name="todo_editor_project">프로젝트</string>
+    <string name="todo_editor_no_project">프로젝트 없음</string>
+    <string name="todo_editor_project_hint">프로젝트는 프로젝트 메모 도구에서 만들 수 있어요.</string>
+    <string name="todo_editor_ok">확인</string>
+    <string name="todo_editor_cancel">취소</string>
 </resources>

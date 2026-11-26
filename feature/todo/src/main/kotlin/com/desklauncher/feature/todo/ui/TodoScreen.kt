@@ -1,5 +1,6 @@
 package com.desklauncher.feature.todo.ui
 
+import android.text.format.DateFormat
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -36,6 +37,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -50,8 +53,10 @@ import com.desklauncher.feature.todo.domain.TodoFilter
 import com.desklauncher.feature.todo.domain.model.Todo
 import com.desklauncher.feature.todo.ui.component.QuickAddBar
 import com.desklauncher.feature.todo.ui.component.TodoEditorSheet
+import com.desklauncher.feature.todo.ui.component.TodoMeta
 import com.desklauncher.feature.todo.ui.component.TodoRow
 import com.desklauncher.feature.todo.ui.preview.TodoPreviewData
+import java.time.LocalDate
 
 @Composable
 fun TodoRoute(
@@ -72,7 +77,24 @@ fun TodoScreen(
     state: TodoUiState,
     onAction: (TodoAction) -> Unit,
     modifier: Modifier = Modifier,
+    today: LocalDate = LocalDate.now(),
 ) {
+    val context = LocalContext.current
+    val is24Hour = remember(context) { DateFormat.is24HourFormat(context) }
+    val words = DueLabelFormatter.RelativeWords(
+        stringResource(R.string.todo_due_yesterday),
+        stringResource(R.string.todo_due_today),
+        stringResource(R.string.todo_due_tomorrow),
+    )
+    val locale = LocalConfiguration.current.locales[0]
+    val projectsById = remember(state.projects) { state.projects.associateBy { it.id } }
+    val rowMeta: @Composable (Todo) -> Unit = { todo ->
+        TodoMeta(
+            due = todo.dueDate?.let { DueLabelFormatter.format(it, todo.dueTime, today, is24Hour, locale, words) },
+            priority = todo.priority,
+            project = todo.projectId?.let(projectsById::get),
+        )
+    }
     val snackbarHostState = remember { SnackbarHostState() }
     val deletedMessage = stringResource(R.string.todo_deleted)
     val undoLabel = stringResource(R.string.todo_undo)
@@ -112,7 +134,7 @@ fun TodoScreen(
                     }
                     else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 8.dp)) {
                         items(state.items, key = { it.id }) { todo ->
-                            TodoListRow(todo, onAction, Modifier.animateItem())
+                            TodoListRow(todo, onAction, rowMeta, Modifier.animateItem())
                         }
                         if (state.done.isNotEmpty()) {
                             item(key = "done_header") {
@@ -125,7 +147,7 @@ fun TodoScreen(
                             }
                             if (state.showDone) {
                                 items(state.done, key = { it.id }) { todo ->
-                                    TodoListRow(todo, onAction, Modifier.animateItem())
+                                    TodoListRow(todo, onAction, rowMeta, Modifier.animateItem())
                                 }
                             }
                         }
@@ -138,6 +160,9 @@ fun TodoScreen(
     state.editing?.let { todo ->
         TodoEditorSheet(
             todo = todo,
+            projects = state.projects,
+            today = today,
+            is24Hour = is24Hour,
             onSave = { onAction(TodoAction.Save(it)) },
             onDelete = { onAction(TodoAction.Delete(todo.id)) },
             onDismiss = { onAction(TodoAction.DismissEditor) },
@@ -146,12 +171,18 @@ fun TodoScreen(
 }
 
 @Composable
-private fun TodoListRow(todo: Todo, onAction: (TodoAction) -> Unit, modifier: Modifier = Modifier) {
+private fun TodoListRow(
+    todo: Todo,
+    onAction: (TodoAction) -> Unit,
+    meta: @Composable (Todo) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier) {
         TodoRow(
             todo = todo,
             onClick = { onAction(TodoAction.OpenEditor(todo.id)) },
             onDoneChange = { done -> onAction(TodoAction.SetDone(todo.id, done)) },
+            meta = { meta(todo) },
         )
         HorizontalDivider()
     }
@@ -213,19 +244,19 @@ private val ToolColor = DeskTabColor.Orange
 @DeskPreviews
 @Composable
 private fun TodoScreenPreview() {
-    DeskTheme { TodoScreen(state = TodoPreviewData.loaded, onAction = {}) }
+    DeskTheme { TodoScreen(state = TodoPreviewData.loaded, onAction = {}, today = TodoPreviewData.today) }
 }
 
 @DeskPreviews
 @Composable
 private fun TodoScreenDoneExpandedPreview() {
-    DeskTheme { TodoScreen(state = TodoPreviewData.loaded.copy(filter = TodoFilter.All, showDone = true), onAction = {}) }
+    DeskTheme { TodoScreen(state = TodoPreviewData.loaded.copy(filter = TodoFilter.All, showDone = true), onAction = {}, today = TodoPreviewData.today) }
 }
 
 @DeskPreviews
 @Composable
 private fun TodoScreenTodayPreview() {
-    DeskTheme { TodoScreen(state = TodoPreviewData.todayView, onAction = {}) }
+    DeskTheme { TodoScreen(state = TodoPreviewData.todayView, onAction = {}, today = TodoPreviewData.today) }
 }
 
 @DeskPreviews
