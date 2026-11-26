@@ -13,6 +13,8 @@ data class CalendarUiState(
     val selected: LocalDate = LocalDate.of(2026, 1, 1),
     val cells: List<DayCell> = emptyList(),
     val agenda: List<AgendaItem> = emptyList(),
+    /** 일정 편집 시트 */
+    val editor: EventDraft? = null,
 )
 
 @Immutable
@@ -39,5 +41,10 @@ sealed interface CalendarAction {
     data object NextMonth : CalendarAction
     data object GoToday : CalendarAction
     data class Select(val date: LocalDate) : CalendarAction
+    data object NewEvent : CalendarAction
+    data class EditEvent(val id: String) : CalendarAction
+    data class SaveEvent(val draft: EventDraft) : CalendarAction
+    data class DeleteEvent(val id: String) : CalendarAction
+    data object DismissEditor : CalendarAction
     data object Back : CalendarAction
 }

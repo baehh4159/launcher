@@ -12,8 +12,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +41,7 @@ import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.calendar.R
 import com.desklauncher.feature.calendar.ui.component.AgendaRow
+import com.desklauncher.feature.calendar.ui.component.EventEditorSheet
 import com.desklauncher.feature.calendar.ui.component.MonthGridView
 import com.desklauncher.feature.calendar.ui.preview.CalendarPreviewData
 import java.time.ZoneId
@@ -68,6 +71,7 @@ fun CalendarScreen(
     val locale = LocalConfiguration.current.locales[0]
     val context = LocalContext.current
     val is24Hour = remember(context) { DateFormat.is24HourFormat(context) }
+    EditorHost(state, is24Hour, onAction)
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -88,6 +92,11 @@ fun CalendarScreen(
                     }
                 },
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { onAction(CalendarAction.NewEvent) }) {
+                Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.calendar_add_event))
+            }
         },
     ) { padding ->
         if (state.isLoading) {
@@ -131,6 +140,7 @@ fun CalendarScreen(
                             timeText = EventTimeText.format(item.event, state.selected, zone, is24Hour, locale, allDay),
                             title = item.event.title,
                             supporting = item.event.location,
+                            onClick = { onAction(CalendarAction.EditEvent(item.event.id)) },
                         )
                     }
                 }
@@ -140,6 +150,18 @@ fun CalendarScreen(
 }
 
 private val ToolColor = DeskTabColor.Red
+
+@Composable
+private fun EditorHost(state: CalendarUiState, is24Hour: Boolean, onAction: (CalendarAction) -> Unit) {
+    val draft = state.editor ?: return
+    EventEditorSheet(
+        draft = draft,
+        is24Hour = is24Hour,
+        onSave = { onAction(CalendarAction.SaveEvent(it)) },
+        onDelete = draft.id?.let { id -> { onAction(CalendarAction.DeleteEvent(id)) } },
+        onDismiss = { onAction(CalendarAction.DismissEditor) },
+    )
+}
 
 @DeskPreviews
 @Composable

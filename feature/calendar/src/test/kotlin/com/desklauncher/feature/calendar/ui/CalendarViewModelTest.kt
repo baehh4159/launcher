@@ -62,6 +62,26 @@ class CalendarViewModelTest {
         assertEquals(LocalDate.of(2026, 11, 26), viewModel.uiState.value.selected)
     }
 
+    // 새 일정 → 저장 → 편집 → 삭제
+    @Test
+    fun eventLifecycle() = runTest {
+        val viewModel = CalendarViewModel(repository, clock, SavedStateHandle())
+        collectInBackground(viewModel.uiState)
+
+        viewModel.onAction(CalendarAction.NewEvent)
+        val draft = viewModel.uiState.value.editor!!
+        assertEquals(LocalDate.of(2026, 11, 26), draft.startDate)
+        viewModel.onAction(CalendarAction.SaveEvent(draft.copy(title = "점심")))
+        assertEquals(null, viewModel.uiState.value.editor)
+        val saved = viewModel.uiState.value.agenda.single() as AgendaItem.Event
+        assertEquals("점심", saved.event.title)
+
+        viewModel.onAction(CalendarAction.EditEvent(saved.event.id))
+        assertEquals("점심", viewModel.uiState.value.editor?.title)
+        viewModel.onAction(CalendarAction.DeleteEvent(saved.event.id))
+        assertTrue(viewModel.uiState.value.agenda.isEmpty())
+    }
+
     private fun event(id: String, day: Int, startHour: Int, endHour: Int) = CalendarEvent(
         id = id, title = id,
         start = LocalDateTime.of(2026, 11, day, startHour, 0).atZone(zone).toInstant(),

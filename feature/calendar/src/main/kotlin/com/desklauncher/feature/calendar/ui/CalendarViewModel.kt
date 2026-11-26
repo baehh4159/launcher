@@ -8,14 +8,17 @@ import com.desklauncher.feature.calendar.domain.model.CalendarEvent
 import com.desklauncher.feature.calendar.domain.repository.CalendarRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import javax.inject.Inject
 
@@ -30,11 +33,12 @@ class CalendarViewModel @Inject constructor(
     private val today: LocalDate get() = LocalDate.now(clock)
     private val month = savedStateHandle.getStateFlow(MonthKey, YearMonth.now(clock).toString()).map(YearMonth::parse)
     private val selected = savedStateHandle.getStateFlow(SelectedKey, LocalDate.now(clock).toString()).map(LocalDate::parse)
+    private val editor = MutableStateFlow<EventDraft?>(null)
 
     val uiState: StateFlow<CalendarUiState> = combine(month, selected, ::Pair)
         .flatMapLatest { (m, sel) ->
             val (from, to) = MonthGrid.gridRange(m, clock.zone)
-            repository.events(from, to).map { events -> buildState(m, sel, events) }
+            combine(repository.events(from, to), editor) { events, edit -> buildState(m, sel, events).copy(editor = edit) }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CalendarUiState())
 
@@ -45,6 +49,21 @@ class CalendarViewModel @Inject constructor(
             CalendarAction.NextMonth -> savedStateHandle[MonthKey] = current.plusMonths(1).toString()
             CalendarAction.GoToday -> select(today)
             is CalendarAction.Select -> select(action.date)
+            CalendarAction.NewEvent -> editor.value = EventDraft.new(uiState.value.selected, LocalDateTime.now(clock))
+            is CalendarAction.EditEvent -> viewModelScope.launch {
+                repository.getEvent(action.id)?.let { editor.value = EventDraft.from(it, clock.zone) }
+            }
+            is CalendarAction.SaveEvent -> {
+                editor.value = null
+                if (action.draft.title.isNotBlank()) {
+                    viewModelScope.launch { repository.saveEvent(action.draft.toEvent(clock.zone, clock.instant())) }
+                }
+            }
+            is CalendarAction.DeleteEvent -> {
+                editor.value = null
+                viewModelScope.launch { repository.deleteEvent(action.id) }
+            }
+            CalendarAction.DismissEditor -> editor.value = null
             CalendarAction.Back -> Unit // Route가 처리
         }
     }
