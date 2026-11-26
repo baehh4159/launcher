@@ -12,4 +12,10 @@
     <string name="diary_mood_good">좋음</string>
     <string name="diary_mood_very_good">아주 좋음</string>
     <string name="diary_delete">이 날 일기 지우기</string>
+    <string name="diary_write_today">오늘 일기 쓰기</string>
+    <string name="diary_continue_today">오늘 일기 이어 쓰기</string>
+    <string name="diary_prev_month">이전 달</string>
+    <string name="diary_next_month">다음 달</string>
+    <string name="diary_written">일기 있음</string>
+    <string name="diary_empty">아직 쓴 일기가 없어요. 오늘 한 줄부터 남겨 보세요.</string>
 </resources>
