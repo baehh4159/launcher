@@ -2,6 +2,11 @@
 <resources>
     <string name="settings_title">설정</string>
     <string name="settings_back">뒤로</string>
+    <string name="settings_section_launcher">기본 런처</string>
+    <string name="settings_launcher_is_default">책상 런처가 기본 홈 앱이에요</string>
+    <string name="settings_launcher_not_default">홈 버튼을 누르면 책상이 나오도록 기본 홈 앱으로 지정하세요.</string>
+    <string name="settings_launcher_request">기본 홈 앱으로 지정</string>
+    <string name="settings_launcher_system">시스템 설정에서 지정</string>
     <string name="settings_section_desk">책상</string>
     <string name="settings_section_display">화면</string>
     <string name="settings_section_about">정보</string>

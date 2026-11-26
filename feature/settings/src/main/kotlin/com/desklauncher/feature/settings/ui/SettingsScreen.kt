@@ -1,6 +1,8 @@
 package com.desklauncher.feature.settings.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -8,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -15,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +37,7 @@ import com.desklauncher.core.datastore.ThemePreference
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.settings.R
+import com.desklauncher.feature.settings.role.rememberHomeRoleState
 import com.desklauncher.feature.settings.ui.component.ChoiceSettingRow
 import com.desklauncher.feature.settings.ui.component.SettingsSectionHeader
 import com.desklauncher.feature.settings.ui.component.SwitchSettingRow
@@ -48,9 +53,13 @@ fun SettingsRoute(
     val version = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
     }
+    val homeRole = rememberHomeRoleState()
     SettingsScreen(
         state = uiState,
         appVersion = version,
+        isDefaultLauncher = homeRole.isDefault,
+        onRequestDefaultLauncher = homeRole.request,
+        onOpenHomeSettings = homeRole.openSystemSettings,
         onAction = { action -> if (action == SettingsAction.Back) onBack() else viewModel.onAction(action) },
         modifier = modifier,
     )
@@ -61,9 +70,11 @@ fun SettingsRoute(
 fun SettingsScreen(
     state: SettingsUiState,
     appVersion: String,
+    isDefaultLauncher: Boolean,
     onAction: (SettingsAction) -> Unit,
     modifier: Modifier = Modifier,
-    extraContent: @Composable () -> Unit = {},
+    onRequestDefaultLauncher: () -> Unit = {},
+    onOpenHomeSettings: () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -82,7 +93,14 @@ fun SettingsScreen(
             if (state.isLoading) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             } else {
-                SettingsContent(state.settings, appVersion, onAction, extraContent)
+                SettingsContent(
+                    settings = state.settings,
+                    appVersion = appVersion,
+                    onAction = onAction,
+                    launcherSection = {
+                        DefaultLauncherSection(isDefaultLauncher, onRequestDefaultLauncher, onOpenHomeSettings)
+                    },
+                )
             }
         }
     }
@@ -93,10 +111,10 @@ private fun SettingsContent(
     settings: DeskSettings,
     appVersion: String,
     onAction: (SettingsAction) -> Unit,
-    extraContent: @Composable () -> Unit,
+    launcherSection: @Composable () -> Unit,
 ) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        extraContent()
+        launcherSection()
         SettingsSectionHeader(stringResource(R.string.settings_section_desk))
         ChoiceSettingRow(
             title = stringResource(R.string.settings_haptic),
@@ -153,11 +171,40 @@ private fun SettingsContent(
     }
 }
 
+@Composable
+private fun DefaultLauncherSection(
+    isDefault: Boolean,
+    onRequest: () -> Unit,
+    onOpenSystemSettings: () -> Unit,
+) {
+    SettingsSectionHeader(stringResource(R.string.settings_section_launcher))
+    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(if (isDefault) R.string.settings_launcher_is_default else R.string.settings_launcher_not_default),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        if (!isDefault) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onRequest) { Text(stringResource(R.string.settings_launcher_request)) }
+                TextButton(onClick = onOpenSystemSettings) { Text(stringResource(R.string.settings_launcher_system)) }
+            }
+        }
+    }
+}
+
 @DeskPreviews
 @Composable
 private fun SettingsScreenPreview() {
     DeskTheme {
-        SettingsScreen(state = SettingsUiState(isLoading = false), appVersion = "0.1.0", onAction = {})
+        SettingsScreen(state = SettingsUiState(isLoading = false), appVersion = "0.1.0", isDefaultLauncher = false, onAction = {})
+    }
+}
+
+@DeskPreviews
+@Composable
+private fun SettingsScreenDefaultLauncherPreview() {
+    DeskTheme {
+        SettingsScreen(state = SettingsUiState(isLoading = false), appVersion = "0.1.0", isDefaultLauncher = true, onAction = {})
     }
 }
 
@@ -165,6 +212,6 @@ private fun SettingsScreenPreview() {
 @Composable
 private fun SettingsScreenLoadingPreview() {
     DeskTheme {
-        SettingsScreen(state = SettingsUiState(isLoading = true), appVersion = "0.1.0", onAction = {})
+        SettingsScreen(state = SettingsUiState(isLoading = true), appVersion = "0.1.0", isDefaultLauncher = false, onAction = {})
     }
 }
