@@ -17,4 +17,13 @@
     <string name="doodle_undo">실행 취소</string>
     <string name="doodle_redo">다시 실행</string>
     <string name="doodle_clear">전체 지우기</string>
+    <string name="doodle_save">저장</string>
+    <string name="doodle_saved">낙서를 저장했어요</string>
+    <string name="doodle_new">새 낙서</string>
+    <string name="doodle_empty_title">아직 낙서가 없어요</string>
+    <string name="doodle_empty_body">+ 버튼을 눌러 종이 한 장을 꺼내 보세요.</string>
+    <string name="doodle_delete">낙서 삭제</string>
+    <string name="doodle_delete_title">낙서를 삭제할까요?</string>
+    <string name="doodle_cancel">취소</string>
+    <string name="doodle_item">%1$s에 그린 낙서</string>
 </resources>

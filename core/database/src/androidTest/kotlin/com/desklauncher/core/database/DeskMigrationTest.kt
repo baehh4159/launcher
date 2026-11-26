@@ -127,6 +127,20 @@ class DeskMigrationTest {
         }
     }
 
+    // v7 → v8: doodle 생성
+    @Test
+    fun migrate7To8_addsDoodle() {
+        helper.createDatabase(TestDb, 7).close()
+
+        val db = helper.runMigrationsAndValidate(TestDb, 8, true)
+
+        db.execSQL("INSERT INTO doodle (id, strokesPath, thumbnailPath, canvasWidth, canvasHeight, createdAt, updatedAt) VALUES ('n1', 'doodles/n1.json', 'doodles/n1.png', 1080, 1800, 0, 0)")
+        db.query("SELECT title FROM doodle").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("", cursor.getString(0))
+        }
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }

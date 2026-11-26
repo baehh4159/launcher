@@ -7,6 +7,7 @@ import com.desklauncher.core.database.dao.AppPrefDao
 import com.desklauncher.core.database.dao.CalendarEventDao
 import com.desklauncher.core.database.dao.DiaryDao
 import com.desklauncher.core.database.dao.DocumentDao
+import com.desklauncher.core.database.dao.DoodleDao
 import com.desklauncher.core.database.dao.MemoDao
 import com.desklauncher.core.database.dao.ProjectDao
 import com.desklauncher.core.database.dao.TodoDao
@@ -16,6 +17,7 @@ import com.desklauncher.core.database.entity.CalendarEventEntity
 import com.desklauncher.core.database.entity.DiaryEntryEntity
 import com.desklauncher.core.database.entity.DocumentEntity
 import com.desklauncher.core.database.entity.DocumentFolderEntity
+import com.desklauncher.core.database.entity.DoodleEntity
 import com.desklauncher.core.database.entity.MemoEntity
 import com.desklauncher.core.database.entity.ProjectEntity
 import com.desklauncher.core.database.entity.TodoEntity
@@ -38,8 +40,9 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         DiaryEntryEntity::class,
         DocumentFolderEntity::class,
         DocumentEntity::class,
+        DoodleEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
     autoMigrations = [
         // v2: app_pref 추가 (SHELL-08)
@@ -54,6 +57,8 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         AutoMigration(from = 5, to = 6),
         // v7: document_folder, document 추가 (DOC-01/02)
         AutoMigration(from = 6, to = 7),
+        // v8: doodle 추가 (DOODLE-03)
+        AutoMigration(from = 7, to = 8),
     ],
 )
 abstract class DeskDatabase : RoomDatabase() {
@@ -65,6 +70,7 @@ abstract class DeskDatabase : RoomDatabase() {
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun diaryDao(): DiaryDao
     abstract fun documentDao(): DocumentDao
+    abstract fun doodleDao(): DoodleDao
 
     companion object {
         const val NAME = "desk.db"

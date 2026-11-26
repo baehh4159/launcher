@@ -8,10 +8,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.LayersClear
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
@@ -37,8 +42,15 @@ fun DoodleEditorRoute(
     modifier: Modifier = Modifier,
     viewModel: DoodleEditorViewModel = hiltViewModel(),
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val savedMessage = stringResource(R.string.doodle_saved)
+    LaunchedEffect(viewModel.savedTick) {
+        if (viewModel.savedTick > 0) snackbarHostState.showSnackbar(savedMessage)
+    }
     DoodleEditorScreen(
         doodle = viewModel.doodle,
+        onCanvasSize = viewModel::onCanvasSize,
+        snackbarHostState = snackbarHostState,
         color = viewModel.color,
         width = viewModel.width,
         eraser = viewModel.eraser,
@@ -57,6 +69,9 @@ fun DoodleEditorRoute(
                 onRedo = viewModel::redo,
                 onClear = viewModel::clear,
             )
+            IconButton(onClick = viewModel::save, enabled = viewModel.isDirty) {
+                Icon(Icons.Outlined.Save, contentDescription = stringResource(R.string.doodle_save))
+            }
         },
     )
 }
@@ -94,6 +109,8 @@ fun DoodleEditorScreen(
     onEraser: (Boolean) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onCanvasSize: (Int, Int) -> Unit = { _, _ -> },
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     topBarActions: @Composable () -> Unit = {},
 ) {
     val density = LocalDensity.current
@@ -108,6 +125,7 @@ fun DoodleEditorScreen(
                 actions = { topBarActions() },
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             DoodleToolbar(
                 color = color,
@@ -129,6 +147,7 @@ fun DoodleEditorScreen(
                 },
                 onStrokeFinished = onStroke,
                 contentDescription = stringResource(R.string.doodle_canvas),
+                onSizeChanged = onCanvasSize,
             )
         }
     }

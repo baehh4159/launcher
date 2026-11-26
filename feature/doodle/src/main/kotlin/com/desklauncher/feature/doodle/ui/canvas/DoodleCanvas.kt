@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke as DrawStroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.desklauncher.core.designsystem.preview.DeskPreviews
@@ -44,6 +45,7 @@ internal fun DoodleCanvas(
     onStrokeFinished: (Stroke) -> Unit,
     contentDescription: String,
     modifier: Modifier = Modifier,
+    onSizeChanged: (width: Int, height: Int) -> Unit = { _, _ -> },
 ) {
     // 그리는 중인 획: 점은 버퍼에 쌓고 version만 올려 '그리기'만 다시 일어나게 한다(재구성 없음)
     val buffer = remember { ArrayList<Float>(512) }
@@ -58,6 +60,7 @@ internal fun DoodleCanvas(
         modifier = modifier
             .fillMaxSize()
             .background(DeskDoodlePaper)
+            .onSizeChanged { onSizeChanged(it.width, it.height) }
             .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
             .semantics { this.contentDescription = contentDescription }
             .pointerInput(Unit) {
