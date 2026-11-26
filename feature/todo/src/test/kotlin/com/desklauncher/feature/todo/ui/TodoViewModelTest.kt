@@ -42,6 +42,22 @@ class TodoViewModelTest {
         assertEquals("메모", viewModel.uiState.value.items.single().note)
     }
 
+    // 완료하면 완료 목록으로, 되돌리면 다시 할 일로
+    @Test
+    fun setDone_movesBetweenActiveAndDone() = runTest {
+        val repository = FakeTodoRepository(listOf(todo("1"), todo("2")))
+        val viewModel = TodoViewModel(repository)
+        collectInBackground(viewModel.uiState)
+
+        viewModel.onAction(TodoAction.SetDone("1", true))
+        assertEquals(listOf("2"), viewModel.uiState.value.items.map { it.id })
+        assertEquals(listOf("1"), viewModel.uiState.value.done.map { it.id })
+
+        viewModel.onAction(TodoAction.SetDone("1", false))
+        assertEquals(setOf("1", "2"), viewModel.uiState.value.items.map { it.id }.toSet())
+        assertEquals(emptyList<String>(), viewModel.uiState.value.done.map { it.id })
+    }
+
     // 삭제 후 실행 취소로 그대로 되살린다
     @Test
     fun delete_thenUndo_restoresTodo() = runTest {

@@ -22,7 +22,7 @@ internal object TodoPreviewData {
         Todo("5", "우유 사기", isDone = true, completedAt = now, createdAt = now, updatedAt = now),
     )
 
-    val loaded = TodoUiState(isLoading = false, items = todos.filterNot { it.isDone }, projects = projects)
+    val loaded = TodoUiState(isLoading = false, items = todos.filterNot { it.isDone }, done = todos.filter { it.isDone }, projects = projects)
     val empty = TodoUiState(isLoading = false)
     val loading = TodoUiState(isLoading = true)
 }

@@ -1,6 +1,11 @@
 package com.desklauncher.feature.todo.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -9,13 +14,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +42,7 @@ import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.todo.R
+import com.desklauncher.feature.todo.domain.model.Todo
 import com.desklauncher.feature.todo.ui.component.QuickAddBar
 import com.desklauncher.feature.todo.ui.component.TodoEditorSheet
 import com.desklauncher.feature.todo.ui.component.TodoRow
@@ -83,7 +94,7 @@ fun TodoScreen(
         Box(Modifier.fillMaxSize().padding(padding)) {
             when {
                 state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                state.items.isEmpty() -> DeskEmptyState(
+                state.items.isEmpty() && state.done.isEmpty() -> DeskEmptyState(
                     title = stringResource(R.string.todo_empty_title),
                     body = stringResource(R.string.todo_empty_body),
                     icon = Icons.Outlined.Checklist,
@@ -91,8 +102,22 @@ fun TodoScreen(
                 )
                 else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 8.dp)) {
                     items(state.items, key = { it.id }) { todo ->
-                        TodoRow(todo = todo, onClick = { onAction(TodoAction.OpenEditor(todo.id)) }, modifier = Modifier.animateItem())
-                        HorizontalDivider()
+                        TodoListRow(todo, onAction, Modifier.animateItem())
+                    }
+                    if (state.done.isNotEmpty()) {
+                        item(key = "done_header") {
+                            DoneSectionHeader(
+                                count = state.done.size,
+                                expanded = state.showDone,
+                                onToggle = { onAction(TodoAction.ToggleDoneSection) },
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
+                        if (state.showDone) {
+                            items(state.done, key = { it.id }) { todo ->
+                                TodoListRow(todo, onAction, Modifier.animateItem())
+                            }
+                        }
                     }
                 }
             }
@@ -109,12 +134,46 @@ fun TodoScreen(
     }
 }
 
+@Composable
+private fun TodoListRow(todo: Todo, onAction: (TodoAction) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        TodoRow(
+            todo = todo,
+            onClick = { onAction(TodoAction.OpenEditor(todo.id)) },
+            onDoneChange = { done -> onAction(TodoAction.SetDone(todo.id, done)) },
+        )
+        HorizontalDivider()
+    }
+}
+
+@Composable
+private fun DoneSectionHeader(count: Int, expanded: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    val toggleLabel = stringResource(R.string.todo_done_section_toggle)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClickLabel = toggleLabel, onClick = onToggle)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, contentDescription = null)
+        Text(stringResource(R.string.todo_done_section, count), style = MaterialTheme.typography.titleSmall)
+    }
+}
+
 private val ToolColor = DeskTabColor.Orange
 
 @DeskPreviews
 @Composable
 private fun TodoScreenPreview() {
     DeskTheme { TodoScreen(state = TodoPreviewData.loaded, onAction = {}) }
+}
+
+@DeskPreviews
+@Composable
+private fun TodoScreenDoneExpandedPreview() {
+    DeskTheme { TodoScreen(state = TodoPreviewData.loaded.copy(showDone = true), onAction = {}) }
 }
 
 @DeskPreviews

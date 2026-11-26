@@ -2,6 +2,7 @@ package com.desklauncher.feature.todo.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.desklauncher.feature.todo.domain.TodoListing
 import com.desklauncher.feature.todo.domain.model.Todo
 import com.desklauncher.feature.todo.domain.model.TodoDraft
 import com.desklauncher.feature.todo.domain.repository.TodoRepository
@@ -21,16 +22,20 @@ class TodoViewModel @Inject constructor(
 
     private val editingId = MutableStateFlow<String?>(null)
     private val recentlyDeleted = MutableStateFlow<Todo?>(null)
+    private val showDone = MutableStateFlow(false)
 
     val uiState: StateFlow<TodoUiState> = combine(
         repository.todos,
         repository.projects,
         editingId,
         recentlyDeleted,
-    ) { todos, projects, editId, deleted ->
+        showDone,
+    ) { todos, projects, editId, deleted, doneOpen ->
         TodoUiState(
             isLoading = false,
-            items = todos.filterNot { it.isDone },
+            items = TodoListing.active(todos),
+            done = TodoListing.done(todos),
+            showDone = doneOpen,
             projects = projects,
             editing = todos.firstOrNull { it.id == editId },
             recentlyDeleted = deleted,
@@ -45,6 +50,8 @@ class TodoViewModel @Inject constructor(
             }
             is TodoAction.OpenEditor -> editingId.value = action.id
             TodoAction.DismissEditor -> editingId.value = null
+            is TodoAction.SetDone -> viewModelScope.launch { repository.setDone(action.id, action.done) }
+            TodoAction.ToggleDoneSection -> showDone.value = !showDone.value
             is TodoAction.Save -> {
                 editingId.value = null
                 if (action.todo.title.isNotBlank()) viewModelScope.launch { repository.update(action.todo) }
