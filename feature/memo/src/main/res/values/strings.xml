@@ -20,4 +20,16 @@
     <string name="memo_archived_section">보관함</string>
     <string name="memo_projects_empty_title">프로젝트가 없어요</string>
     <string name="memo_projects_empty_body">+ 버튼으로 첫 프로젝트 서류철을 만들어 보세요.</string>
+    <string name="memo_count">메모 %1$d개</string>
+    <string name="memo_add">메모 쓰기</string>
+    <string name="memo_untitled">제목 없는 메모</string>
+    <string name="memo_empty_title">아직 메모가 없어요</string>
+    <string name="memo_empty_body">+ 버튼으로 이 프로젝트의 첫 메모를 남겨 보세요.</string>
+    <string name="memo_editor_title_hint">제목</string>
+    <string name="memo_editor_body_hint">내용을 적으면 자동으로 저장돼요</string>
+    <string name="memo_editor_delete">메모 삭제</string>
+    <string name="memo_editor_saved">저장됨</string>
+    <string name="memo_editor_pin">고정</string>
+    <string name="memo_editor_unpin">고정 해제</string>
+    <string name="memo_updated_at">%1$s 수정</string>
 </resources>

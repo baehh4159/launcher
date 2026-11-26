@@ -50,6 +50,7 @@ fun ProjectListRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ProjectListScreen(
         state = uiState,
+        subtitle = { project -> stringResource(R.string.memo_count, uiState.memoCounts[project.id] ?: 0) },
         onAction = { action ->
             when (action) {
                 ProjectListAction.Back -> onBack()
@@ -66,7 +67,7 @@ fun ProjectListScreen(
     state: ProjectListUiState,
     onAction: (ProjectListAction) -> Unit,
     modifier: Modifier = Modifier,
-    subtitle: (Project) -> String? = { null },
+    subtitle: @Composable (Project) -> String? = { null },
 ) {
     Scaffold(
         modifier = modifier,

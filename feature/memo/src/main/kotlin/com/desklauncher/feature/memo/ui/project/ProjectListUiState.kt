@@ -11,6 +11,7 @@ data class ProjectListUiState(
     /** 추가/편집 대화상자. id가 null이면 새 프로젝트 */
     val editor: ProjectEditor? = null,
     val confirmDelete: Project? = null,
+    val memoCounts: Map<String, Int> = emptyMap(),
 )
 
 @Immutable

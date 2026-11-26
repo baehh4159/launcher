@@ -22,8 +22,14 @@ class ProjectListViewModel @Inject constructor(
     private val editor = MutableStateFlow<ProjectEditor?>(null)
     private val confirmDelete = MutableStateFlow<Project?>(null)
 
-    val uiState: StateFlow<ProjectListUiState> = combine(repository.projects, editor, confirmDelete) { projects, edit, delete ->
+    val uiState: StateFlow<ProjectListUiState> = combine(
+        repository.projects,
+        repository.memoCounts,
+        editor,
+        confirmDelete,
+    ) { projects, counts, edit, delete ->
         ProjectListUiState(
+            memoCounts = counts,
             isLoading = false,
             active = projects.filterNot { it.archived },
             archived = projects.filter { it.archived },

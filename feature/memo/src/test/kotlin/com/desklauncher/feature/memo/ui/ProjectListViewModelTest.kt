@@ -2,11 +2,13 @@ package com.desklauncher.feature.memo.ui
 
 import com.desklauncher.core.testing.MainDispatcherRule
 import com.desklauncher.core.testing.collectInBackground
+import com.desklauncher.feature.memo.domain.model.Memo
 import com.desklauncher.feature.memo.domain.model.Project
 import com.desklauncher.feature.memo.domain.repository.MemoRepository
 import com.desklauncher.feature.memo.ui.project.ProjectListAction
 import com.desklauncher.feature.memo.ui.project.ProjectListViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -61,8 +63,19 @@ class ProjectListViewModelTest {
 
 internal class FakeMemoRepository : MemoRepository {
     private val state = MutableStateFlow<List<Project>>(emptyList())
+    val memoState = MutableStateFlow<List<Memo>>(emptyList())
     private var next = 1
     override val projects = state
+    override val memoCounts = memoState.map { list -> list.groupingBy { it.projectId }.eachCount() }
+    override fun project(id: String) = state.map { list -> list.firstOrNull { it.id == id } }
+    override fun memos(projectId: String) = memoState.map { list -> list.filter { it.projectId == projectId } }
+    override suspend fun getMemo(id: String) = memoState.value.firstOrNull { it.id == id }
+    override suspend fun saveMemo(memo: Memo) {
+        memoState.value = memoState.value.filterNot { it.id == memo.id } + memo
+    }
+    override suspend fun deleteMemo(id: String) {
+        memoState.value = memoState.value.filterNot { it.id == id }
+    }
 
     override suspend fun addProject(name: String, colorName: String): String {
         val id = "p${next++}"

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.desklauncher.core.database.DeskDatabase
 import com.desklauncher.core.database.dao.AppPrefDao
+import com.desklauncher.core.database.dao.MemoDao
 import com.desklauncher.core.database.dao.ProjectDao
 import com.desklauncher.core.database.dao.TodoDao
 import com.desklauncher.core.database.dao.ToolConfigDao
@@ -37,4 +38,7 @@ object DatabaseModule {
 
     @Provides
     fun provideTodoDao(database: DeskDatabase): TodoDao = database.todoDao()
+
+    @Provides
+    fun provideMemoDao(database: DeskDatabase): MemoDao = database.memoDao()
 }

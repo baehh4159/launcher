@@ -1,7 +1,10 @@
 package com.desklauncher.feature.memo.data
 
+import com.desklauncher.core.database.dao.MemoDao
 import com.desklauncher.core.database.dao.ProjectDao
+import com.desklauncher.core.database.entity.MemoEntity
 import com.desklauncher.core.database.entity.ProjectEntity
+import com.desklauncher.feature.memo.domain.model.Memo
 import com.desklauncher.feature.memo.domain.model.Project
 import com.desklauncher.feature.memo.domain.repository.MemoRepository
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +16,7 @@ import javax.inject.Inject
 
 internal class RoomMemoRepository @Inject constructor(
     private val projectDao: ProjectDao,
+    private val memoDao: MemoDao,
     private val clock: Clock,
 ) : MemoRepository {
 
@@ -30,7 +34,33 @@ internal class RoomMemoRepository @Inject constructor(
     }
 
     override suspend fun deleteProject(id: String) = projectDao.delete(id)
+
+    override val memoCounts: Flow<Map<String, Int>> =
+        memoDao.observeCounts().map { list -> list.associate { it.projectId to it.count } }
+
+    override fun project(id: String): Flow<Project?> = projectDao.observe(id).map { it?.toDomain() }
+
+    override fun memos(projectId: String): Flow<List<Memo>> =
+        memoDao.observeByProject(projectId).map { list -> list.map { it.toDomain() } }
+
+    override suspend fun getMemo(id: String): Memo? = memoDao.get(id)?.toDomain()
+
+    override suspend fun saveMemo(memo: Memo) {
+        memoDao.upsert(memo.copy(updatedAt = clock.instant()).toEntity())
+    }
+
+    override suspend fun deleteMemo(id: String) = memoDao.delete(id)
 }
+
+internal fun MemoEntity.toDomain() = Memo(
+    id = id, projectId = projectId, title = title, body = body, pinned = pinned,
+    createdAt = Instant.ofEpochMilli(createdAt), updatedAt = Instant.ofEpochMilli(updatedAt),
+)
+
+internal fun Memo.toEntity() = MemoEntity(
+    id = id, projectId = projectId, title = title, body = body, pinned = pinned,
+    createdAt = createdAt.toEpochMilli(), updatedAt = updatedAt.toEpochMilli(),
+)
 
 internal fun ProjectEntity.toDomain() = Project(
     id = id, name = name, colorName = color, archived = archived, sortOrder = sortOrder,

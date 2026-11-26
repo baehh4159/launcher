@@ -60,6 +60,25 @@ class DeskMigrationTest {
         }
     }
 
+    // v3 → v4: memo 생성, 프로젝트 삭제 시 메모도 삭제(CASCADE)
+    @Test
+    fun migrate3To4_addsMemoWithCascade() {
+        helper.createDatabase(TestDb, 3).apply {
+            execSQL("INSERT INTO project (id, name, color, createdAt, updatedAt) VALUES ('p1', '책상', 'Blue', 0, 0)")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TestDb, 4, true)
+
+        db.execSQL("PRAGMA foreign_keys = ON")
+        db.execSQL("INSERT INTO memo (id, projectId, createdAt, updatedAt) VALUES ('m1', 'p1', 0, 0)")
+        db.execSQL("DELETE FROM project WHERE id = 'p1'")
+        db.query("SELECT COUNT(*) FROM memo").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }
