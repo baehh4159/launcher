@@ -43,3 +43,4 @@ include(":feature:settings")
 
 // 책상 도구
 include(":feature:todo")
+include(":feature:memo")

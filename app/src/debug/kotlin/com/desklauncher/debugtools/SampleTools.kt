@@ -3,7 +3,6 @@ package com.desklauncher.debugtools
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
-import androidx.compose.material.icons.automirrored.outlined.StickyNote2
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Brush
@@ -54,7 +53,6 @@ internal data class SampleToolDestination(val toolId: String)
 internal object SampleTools {
     val all: List<SampleTool> = listOf(
         SampleTool("calendar", R.string.sample_tool_calendar, Icons.Outlined.CalendarMonth, DeskTabColor.Red, 1),
-        SampleTool("memo", R.string.sample_tool_memo, Icons.AutoMirrored.Outlined.StickyNote2, DeskTabColor.Yellow, 2),
         SampleTool("diary", R.string.sample_tool_diary, Icons.Outlined.AutoStories, DeskTabColor.Pink, 3),
         SampleTool("cabinet", R.string.sample_tool_cabinet, Icons.Outlined.FolderOpen, DeskTabColor.Brown, 4),
         SampleTool("calculator", R.string.sample_tool_calculator, Icons.Outlined.Calculate, DeskTabColor.Teal, 5),

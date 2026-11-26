@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="desk_color_red">빨강</string>
+    <string name="desk_color_orange">주황</string>
+    <string name="desk_color_yellow">노랑</string>
+    <string name="desk_color_green">초록</string>
+    <string name="desk_color_teal">청록</string>
+    <string name="desk_color_blue">파랑</string>
+    <string name="desk_color_indigo">남색</string>
+    <string name="desk_color_purple">보라</string>
+    <string name="desk_color_pink">분홍</string>
+    <string name="desk_color_brown">갈색</string>
+    <string name="desk_color_gray">회색</string>
+</resources>
