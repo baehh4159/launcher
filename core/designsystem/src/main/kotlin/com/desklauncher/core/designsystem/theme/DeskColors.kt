@@ -9,6 +9,10 @@ import androidx.compose.ui.graphics.Color
 data class DeskColors(
     val deskTop: Color,
     val deskBottom: Color,
+    /** 책상 상판 위 글자(시계 등) */
+    val onDesk: Color,
+    /** 나뭇결 무늬 선 색 (알파 포함) */
+    val deskGrain: Color,
     val paper: Color,
     val onPaper: Color,
 )
@@ -16,6 +20,8 @@ data class DeskColors(
 internal val LightDeskColors = DeskColors(
     deskTop = DeskTopLight,
     deskBottom = DeskBottomLight,
+    onDesk = Walnut10,
+    deskGrain = DeskGrainLight,
     paper = Paper98,
     onPaper = Ink10,
 )
@@ -23,6 +29,8 @@ internal val LightDeskColors = DeskColors(
 internal val DarkDeskColors = DeskColors(
     deskTop = DeskTopDark,
     deskBottom = DeskBottomDark,
+    onDesk = Ink90,
+    deskGrain = DeskGrainDark,
     paper = Night20,
     onPaper = Ink90,
 )

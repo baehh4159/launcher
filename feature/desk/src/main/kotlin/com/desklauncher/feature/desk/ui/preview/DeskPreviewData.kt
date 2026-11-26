@@ -8,11 +8,14 @@ import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.FolderOpen
 import com.desklauncher.core.designsystem.text.UiText
 import com.desklauncher.core.designsystem.theme.DeskTabColor
+import com.desklauncher.feature.desk.clock.DeskClockText
 import com.desklauncher.feature.desk.ui.DeskTabUi
 import com.desklauncher.feature.desk.ui.DeskUiState
 
 /** Preview 전용 가짜 데이터 (Hilt·DB 없이 동작). */
 internal object DeskPreviewData {
+
+    val clock = DeskClockText(time = "오후 3:24", date = "11월 26일 목요일")
 
     val loading = DeskUiState(isLoading = true)
 
