@@ -5,6 +5,7 @@ import com.desklauncher.feature.scanner.CabinetTool
 import com.desklauncher.feature.scanner.data.RoomDocumentRepository
 import com.desklauncher.feature.scanner.domain.repository.DocumentRepository
 import com.desklauncher.feature.scanner.ui.component.FileThumbnailLoader
+import com.desklauncher.feature.scanner.ui.viewer.PdfSupport
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.EntryPoint
@@ -27,4 +28,5 @@ internal abstract class ScannerModule {
 @InstallIn(SingletonComponent::class)
 internal interface ThumbnailEntryPoint {
     fun thumbnailLoader(): FileThumbnailLoader
+    fun pdfSupport(): PdfSupport
 }

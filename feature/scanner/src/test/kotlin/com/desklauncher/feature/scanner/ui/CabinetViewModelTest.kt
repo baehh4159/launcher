@@ -13,6 +13,7 @@ import com.desklauncher.feature.scanner.ui.cabinet.FolderFilter
 import com.desklauncher.feature.scanner.ui.cabinet.CabinetMessage
 import com.desklauncher.feature.scanner.ui.cabinet.CabinetViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -86,6 +87,7 @@ internal class FakeDocumentRepository(private val fail: Boolean = false) : Docum
     val folderState = MutableStateFlow<List<DocumentFolder>>(emptyList())
     override val documents = docs
     override val folders = folderState
+    override fun document(id: String) = docs.map { list -> list.firstOrNull { it.id == id } }
     private var next = 1
 
     override suspend fun renameDocument(id: String, title: String) = update(id) { it.copy(title = title.trim()) }

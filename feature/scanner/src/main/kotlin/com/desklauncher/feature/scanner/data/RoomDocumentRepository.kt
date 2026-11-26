@@ -49,6 +49,8 @@ internal class RoomDocumentRepository @Inject constructor(
 
     override val folders: Flow<List<DocumentFolder>> = dao.observeFolders().map { list -> list.map { it.toDomain() } }
 
+    override fun document(id: String): Flow<Document?> = dao.observeDocument(id).map { it?.toDomain() }
+
     override suspend fun importScan(result: ScanResult, folderId: String?): Document = withContext(ioDispatcher) {
         val id = UUID.randomUUID().toString()
         val pdf = storage.documentPdf(id)

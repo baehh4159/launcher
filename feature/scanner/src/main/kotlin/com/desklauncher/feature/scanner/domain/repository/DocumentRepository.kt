@@ -10,6 +10,8 @@ interface DocumentRepository {
     val documents: Flow<List<Document>>
     val folders: Flow<List<DocumentFolder>>
 
+    fun document(id: String): Flow<Document?>
+
     /** 스캔 결과를 내부 저장소로 복사하고(PDF + 첫 장 썸네일) 서류로 등록한다. 실패하면 예외. */
     suspend fun importScan(result: ScanResult, folderId: String?): Document
 
