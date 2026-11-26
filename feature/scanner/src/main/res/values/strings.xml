@@ -12,4 +12,22 @@
     <string name="cabinet_saved">서류를 보관했어요</string>
     <string name="cabinet_save_failed">스캔한 서류를 저장하지 못했어요</string>
     <string name="cabinet_scanner_unavailable">스캐너를 열 수 없어요. Google Play 서비스가 최신인지, 네트워크로 스캐너 모듈을 받을 수 있는지 확인해 주세요.</string>
+    <string name="cabinet_filter_all">전체</string>
+    <string name="cabinet_filter_unfiled">미분류</string>
+    <string name="cabinet_folder_add">폴더 추가</string>
+    <string name="cabinet_folder_new">새 폴더</string>
+    <string name="cabinet_folder_rename">폴더 이름 바꾸기</string>
+    <string name="cabinet_folder_delete">폴더 삭제</string>
+    <string name="cabinet_folder_delete_body">"%1$s" 폴더를 지워요. 안의 서류는 미분류로 옮겨져요.</string>
+    <string name="cabinet_folder_menu">%1$s 폴더 메뉴</string>
+    <string name="cabinet_name">이름</string>
+    <string name="cabinet_doc_menu">%1$s 메뉴</string>
+    <string name="cabinet_doc_rename">이름 바꾸기</string>
+    <string name="cabinet_doc_move">폴더로 옮기기</string>
+    <string name="cabinet_doc_delete">삭제</string>
+    <string name="cabinet_doc_delete_title">서류를 삭제할까요?</string>
+    <string name="cabinet_doc_delete_body">"%1$s" PDF가 기기에서 지워져요. 되돌릴 수 없어요.</string>
+    <string name="cabinet_ok">확인</string>
+    <string name="cabinet_cancel">취소</string>
+    <string name="cabinet_delete">삭제</string>
 </resources>

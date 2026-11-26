@@ -12,10 +12,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -23,9 +28,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -40,7 +48,10 @@ import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.scanner.R
 import com.desklauncher.feature.scanner.di.ThumbnailEntryPoint
+import com.desklauncher.feature.scanner.domain.model.Document
+import com.desklauncher.feature.scanner.ui.component.CabinetDialogHost
 import com.desklauncher.feature.scanner.ui.component.DocumentCard
+import com.desklauncher.feature.scanner.ui.component.FolderFilterRow
 import com.desklauncher.feature.scanner.ui.component.ThumbnailLoader
 import com.desklauncher.feature.scanner.ui.preview.CabinetPreviewData
 import com.desklauncher.feature.scanner.ui.scan.rememberDocumentScannerLauncher
@@ -97,6 +108,7 @@ fun CabinetScreen(
             onAction(CabinetAction.DismissMessage)
         }
     }
+    CabinetDialogHost(dialog = state.dialog, folders = state.folders, onAction = onAction)
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -119,6 +131,7 @@ fun CabinetScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
+            FolderFilterRow(folders = state.folders, selected = state.filter, onAction = onAction)
             if (state.isSaving) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
                 Text(stringResource(R.string.cabinet_saving), modifier = Modifier.padding(16.dp))
@@ -145,12 +158,35 @@ fun CabinetScreen(
                                 thumbnailLoader = thumbnailLoader,
                                 onClick = { onAction(CabinetAction.Open(document)) },
                                 modifier = Modifier.animateItem(),
+                                menu = { DocumentMenu(document, onAction) },
                             )
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DocumentMenu(document: Document, onAction: (CabinetAction) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    IconButton(onClick = { open = true }) {
+        Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.cabinet_doc_menu, document.title), tint = Color.DarkGray)
+    }
+    DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+        DropdownMenuItem(text = { Text(stringResource(R.string.cabinet_doc_rename)) }, onClick = {
+            open = false
+            onAction(CabinetAction.ShowDialog(CabinetDialog.RenameDocument(document)))
+        })
+        DropdownMenuItem(text = { Text(stringResource(R.string.cabinet_doc_move)) }, onClick = {
+            open = false
+            onAction(CabinetAction.ShowDialog(CabinetDialog.MoveDocument(document)))
+        })
+        DropdownMenuItem(text = { Text(stringResource(R.string.cabinet_doc_delete), color = MaterialTheme.colorScheme.error) }, onClick = {
+            open = false
+            onAction(CabinetAction.ShowDialog(CabinetDialog.DeleteDocument(document)))
+        })
     }
 }
 

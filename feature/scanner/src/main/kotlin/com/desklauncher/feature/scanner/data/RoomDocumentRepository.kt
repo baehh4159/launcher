@@ -24,6 +24,7 @@ import com.desklauncher.feature.scanner.domain.repository.DocumentRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -81,6 +82,34 @@ internal class RoomDocumentRepository @Inject constructor(
             throw error
         }
     }
+
+    override suspend fun renameDocument(id: String, title: String) {
+        val trimmed = title.trim()
+        if (trimmed.isNotEmpty()) dao.rename(id, trimmed, clock.millis())
+    }
+
+    override suspend fun moveDocument(id: String, folderId: String?) = dao.move(id, folderId, clock.millis())
+
+    override suspend fun deleteDocument(id: String) = withContext(ioDispatcher) {
+        val existing = dao.getDocument(id) ?: return@withContext
+        dao.deleteDocument(id)
+        storage.delete(existing.pdfPath)
+        storage.delete(existing.thumbnailPath)
+    }
+
+    override suspend fun addFolder(name: String): String {
+        val now = clock.millis()
+        val id = UUID.randomUUID().toString()
+        dao.upsertFolder(DocumentFolderEntity(id = id, name = name.trim(), sortOrder = Int.MAX_VALUE / 2, createdAt = now, updatedAt = now))
+        return id
+    }
+
+    override suspend fun renameFolder(id: String, name: String) {
+        val folder = dao.observeFolders().first().firstOrNull { it.id == id } ?: return
+        dao.upsertFolder(folder.copy(name = name.trim(), updatedAt = clock.millis()))
+    }
+
+    override suspend fun deleteFolder(id: String) = dao.deleteFolder(id)
 
     private fun copy(source: Uri, target: File) {
         val input = resolver.openInputStream(source) ?: error("스캔 결과를 열 수 없음: $source")
