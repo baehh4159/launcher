@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="sample_tool_cabinet">서류정리함</string>
     <string name="sample_tool_calculator">계산기</string>
     <string name="sample_tool_doodle">낙서장</string>
     <string name="sample_tool_alarm">알람</string>

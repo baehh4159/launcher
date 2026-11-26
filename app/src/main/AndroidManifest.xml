@@ -3,6 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
+        앱 기능은 네트워크를 쓰지 않는다 (PRD §9). ML Kit 클라이언트가 병합하는 권한(사용 통계 전송용)을 뺀다.
+        문서 스캐너 UI와 모듈 다운로드는 Google Play 서비스 프로세스가 맡으므로 스캔 자체에는 필요 없다.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+
+    <!--
         자동 백업·기기 간 이전 모두 비활성화 (PRD §13).
         targetSdk 31+에서는 allowBackup="false"만으로 기기 간 이전이 막히지 않으므로
         dataExtractionRules에서 모든 도메인을 제외한다.

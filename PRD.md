@@ -584,7 +584,7 @@ doodles/{id}.png
 | `VIBRATE` | 알람 진동, Vibrator 기반 햅틱 | |
 | `REQUEST_DELETE_PACKAGES` | 앱 서랍 길게 누르기 → 제거 (SHELL-08) | 시스템 제거 확인 대화상자만 띄움 (일반 권한) |
 | CAMERA / 저장소 권한 | **불필요** | 스캐너는 ML Kit(Play 서비스) UI, 파일은 SAF |
-| `INTERNET` | **앱 기능에서 사용 안 함** | 의존 라이브러리가 병합하는 권한은 merged manifest로 확인 후 이 표에 기록. M0 기준 병합 권한: `{applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`(androidx.core 내부용)뿐 |
+| `INTERNET` | **앱 기능에서 사용 안 함** | 의존 라이브러리가 병합하는 권한은 merged manifest로 확인 후 이 표에 기록. M0 기준 병합 권한: `{applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`(androidx.core 내부용)뿐. M4: ML Kit가 병합하는 `INTERNET`·`ACCESS_NETWORK_STATE`는 `tools:node="remove"`로 제거 (스캐너 UI·모듈 다운로드는 Play 서비스 담당 — **실기기에서 스캔 동작 확인 필요**) |
 | `android:allowBackup="false"` + `dataExtractionRules` | 자동 백업·기기 간 이전 비활성화 | 개인일기 등 개인 데이터 보호 (§13). targetSdk 31+에서는 allowBackup만으로 기기 간 이전이 막히지 않아 `res/xml/data_extraction_rules.xml`에서 모든 도메인을 제외. 백업은 BACKUP-01(P2)로 별도 제공 |
 
 ---

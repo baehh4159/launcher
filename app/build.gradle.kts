@@ -43,6 +43,7 @@ dependencies {
     implementation(projects.feature.memo)
     implementation(projects.feature.calendar)
     implementation(projects.feature.diary)
+    implementation(projects.feature.scanner)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

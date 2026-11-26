@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import com.desklauncher.core.database.dao.AppPrefDao
 import com.desklauncher.core.database.dao.CalendarEventDao
 import com.desklauncher.core.database.dao.DiaryDao
+import com.desklauncher.core.database.dao.DocumentDao
 import com.desklauncher.core.database.dao.MemoDao
 import com.desklauncher.core.database.dao.ProjectDao
 import com.desklauncher.core.database.dao.TodoDao
@@ -13,6 +14,8 @@ import com.desklauncher.core.database.dao.ToolConfigDao
 import com.desklauncher.core.database.entity.AppPrefEntity
 import com.desklauncher.core.database.entity.CalendarEventEntity
 import com.desklauncher.core.database.entity.DiaryEntryEntity
+import com.desklauncher.core.database.entity.DocumentEntity
+import com.desklauncher.core.database.entity.DocumentFolderEntity
 import com.desklauncher.core.database.entity.MemoEntity
 import com.desklauncher.core.database.entity.ProjectEntity
 import com.desklauncher.core.database.entity.TodoEntity
@@ -33,8 +36,10 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         MemoEntity::class,
         CalendarEventEntity::class,
         DiaryEntryEntity::class,
+        DocumentFolderEntity::class,
+        DocumentEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
     autoMigrations = [
         // v2: app_pref 추가 (SHELL-08)
@@ -47,6 +52,8 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         AutoMigration(from = 4, to = 5),
         // v6: diary_entry 추가 (DIARY-01)
         AutoMigration(from = 5, to = 6),
+        // v7: document_folder, document 추가 (DOC-01/02)
+        AutoMigration(from = 6, to = 7),
     ],
 )
 abstract class DeskDatabase : RoomDatabase() {
@@ -57,6 +64,7 @@ abstract class DeskDatabase : RoomDatabase() {
     abstract fun memoDao(): MemoDao
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun diaryDao(): DiaryDao
+    abstract fun documentDao(): DocumentDao
 
     companion object {
         const val NAME = "desk.db"

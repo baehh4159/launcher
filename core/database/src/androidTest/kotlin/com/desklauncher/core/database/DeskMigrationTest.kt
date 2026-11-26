@@ -109,6 +109,24 @@ class DeskMigrationTest {
         assertTrue(duplicated.isFailure)
     }
 
+    // v6 → v7: 폴더를 지우면 서류는 루트로 (SET NULL)
+    @Test
+    fun migrate6To7_addsDocumentsWithFolderSetNull() {
+        helper.createDatabase(TestDb, 6).close()
+
+        val db = helper.runMigrationsAndValidate(TestDb, 7, true)
+
+        db.execSQL("PRAGMA foreign_keys = ON")
+        db.execSQL("INSERT INTO document_folder (id, name, createdAt, updatedAt) VALUES ('f1', '영수증', 0, 0)")
+        db.execSQL("INSERT INTO document (id, folderId, title, pdfPath, createdAt, updatedAt) VALUES ('d1', 'f1', '스캔', 'documents/d1.pdf', 0, 0)")
+        db.execSQL("DELETE FROM document_folder WHERE id = 'f1'")
+        db.query("SELECT folderId, source FROM document WHERE id = 'd1'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertTrue(cursor.isNull(0))
+            assertEquals("SCAN", cursor.getString(1))
+        }
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }
