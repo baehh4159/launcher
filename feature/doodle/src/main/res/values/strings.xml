@@ -14,4 +14,7 @@
     <string name="doodle_color_green">초록</string>
     <string name="doodle_color_yellow">노랑</string>
     <string name="doodle_canvas">그림판</string>
+    <string name="doodle_undo">실행 취소</string>
+    <string name="doodle_redo">다시 실행</string>
+    <string name="doodle_clear">전체 지우기</string>
 </resources>

@@ -28,6 +28,18 @@ class DoodleEditorViewModel @Inject constructor() : ViewModel() {
         doodle = doodle.add(stroke)
     }
 
+    fun undo() {
+        doodle = doodle.undo()
+    }
+
+    fun redo() {
+        doodle = doodle.redo()
+    }
+
+    fun clear() {
+        doodle = doodle.clear()
+    }
+
     fun selectColor(value: DeskPenColor) {
         color = value
         eraser = false
