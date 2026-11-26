@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.desklauncher.core.database.DeskDatabase
 import com.desklauncher.core.database.dao.AppPrefDao
 import com.desklauncher.core.database.dao.CalendarEventDao
+import com.desklauncher.core.database.dao.DiaryDao
 import com.desklauncher.core.database.dao.MemoDao
 import com.desklauncher.core.database.dao.ProjectDao
 import com.desklauncher.core.database.dao.TodoDao
@@ -45,4 +46,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCalendarEventDao(database: DeskDatabase): CalendarEventDao = database.calendarEventDao()
+
+    @Provides
+    fun provideDiaryDao(database: DeskDatabase): DiaryDao = database.diaryDao()
 }

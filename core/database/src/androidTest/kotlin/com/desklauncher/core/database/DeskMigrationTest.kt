@@ -95,6 +95,20 @@ class DeskMigrationTest {
         }
     }
 
+    // v5 → v6: diary_entry 생성, 같은 날짜 두 번은 거부(UNIQUE)
+    @Test
+    fun migrate5To6_addsDiaryWithUniqueDate() {
+        helper.createDatabase(TestDb, 5).close()
+
+        val db = helper.runMigrationsAndValidate(TestDb, 6, true)
+
+        db.execSQL("INSERT INTO diary_entry (id, date, createdAt, updatedAt) VALUES ('d1', 20000, 0, 0)")
+        val duplicated = runCatching {
+            db.execSQL("INSERT INTO diary_entry (id, date, createdAt, updatedAt) VALUES ('d2', 20000, 0, 0)")
+        }
+        assertTrue(duplicated.isFailure)
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }

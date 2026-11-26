@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="diary_tool_title">개인일기</string>
+    <string name="diary_tool_description">하루 한 장, 기분과 생각을 기록해요</string>
+    <string name="diary_back">뒤로</string>
+    <string name="diary_body_hint">오늘은 어떤 하루였나요?</string>
+    <string name="diary_saved">저장됨</string>
+    <string name="diary_mood_title">오늘의 기분</string>
+    <string name="diary_mood_very_bad">아주 나쁨</string>
+    <string name="diary_mood_bad">나쁨</string>
+    <string name="diary_mood_okay">보통</string>
+    <string name="diary_mood_good">좋음</string>
+    <string name="diary_mood_very_good">아주 좋음</string>
+    <string name="diary_delete">이 날 일기 지우기</string>
+</resources>
