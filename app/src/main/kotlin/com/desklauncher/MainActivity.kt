@@ -45,7 +45,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            val settings by settingsRepository.settings.collectAsStateWithLifecycle(initialValue = DeskSettings())
+            // null = 아직 읽는 중. 이때 온보딩 여부를 판단하지 않는다(매 실행 깜빡임 방지).
+            val loaded by settingsRepository.settings.collectAsStateWithLifecycle(initialValue = null)
+            val settings = loaded ?: DeskSettings()
             val darkTheme = when (settings.theme) {
                 ThemePreference.System -> isSystemInDarkTheme()
                 ThemePreference.Light -> false
@@ -63,7 +65,11 @@ class MainActivity : ComponentActivity() {
             }
             CompositionLocalProvider(LocalDeskHapticLevel provides settings.haptic.toHapticLevel()) {
                 DeskTheme(darkTheme = darkTheme) {
-                    DeskNavHost(toolRegistry = toolRegistry, homePresses = homePresses)
+                    DeskNavHost(
+                        toolRegistry = toolRegistry,
+                        homePresses = homePresses,
+                        onboardingCompleted = loaded?.onboardingCompleted,
+                    )
                 }
             }
         }

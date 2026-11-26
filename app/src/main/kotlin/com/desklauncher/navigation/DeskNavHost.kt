@@ -15,7 +15,9 @@ import com.desklauncher.feature.apps.navigation.appsScreen
 import com.desklauncher.feature.apps.navigation.navigateToApps
 import com.desklauncher.feature.desk.navigation.DeskDestination
 import com.desklauncher.feature.desk.navigation.deskScreen
+import com.desklauncher.feature.settings.navigation.OnboardingDestination
 import com.desklauncher.feature.settings.navigation.navigateToSettings
+import com.desklauncher.feature.settings.navigation.onboardingScreen
 import com.desklauncher.feature.settings.navigation.settingsScreen
 import com.desklauncher.feature.store.navigation.navigateToStore
 import com.desklauncher.feature.store.navigation.storeScreen
@@ -29,9 +31,19 @@ import kotlinx.coroutines.flow.Flow
 fun DeskNavHost(
     toolRegistry: ToolRegistry,
     homePresses: Flow<Unit>,
+    onboardingCompleted: Boolean?,
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
+
+    // 첫 실행이면 책상 위에 온보딩을 띄운다 (SHELL-10). 설정을 읽기 전(null)에는 판단하지 않는다.
+    LaunchedEffect(navController, onboardingCompleted) {
+        if (onboardingCompleted == false &&
+            navController.currentDestination?.hierarchy?.none { it.hasRoute(OnboardingDestination::class) } != false
+        ) {
+            navController.navigate(OnboardingDestination) { launchSingleTop = true }
+        }
+    }
 
     // 홈 버튼: 어떤 도구에 있든 책상으로 (SHELL-06, PRD §4.1). 책상 자체의 초기화는 deskScreen이 맡는다.
     LaunchedEffect(navController, homePresses) {
@@ -83,6 +95,7 @@ fun DeskNavHost(
         )
         storeScreen(onBack = navController::popBackStack)
         settingsScreen(onBack = navController::popBackStack)
+        onboardingScreen(onFinished = navController::popBackStack)
         toolRegistry.registeredTools.forEach { tool ->
             with(tool) { toolGraph(navController) }
         }
