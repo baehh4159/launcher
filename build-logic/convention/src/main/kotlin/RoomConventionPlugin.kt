@@ -17,6 +17,10 @@ class RoomConventionPlugin : Plugin<Project> {
             add("implementation", libs.lib("androidx-room-ktx"))
             add("ksp", libs.lib("androidx-room-compiler"))
             add("testImplementation", libs.lib("androidx-room-testing"))
+            // 마이그레이션 테스트(MigrationTestHelper)는 기기에서 실행 — 스키마 JSON은 Room 플러그인이 테스트 자산으로 넣는다.
+            add("androidTestImplementation", libs.lib("androidx-room-testing"))
+            add("androidTestImplementation", libs.lib("androidx-test-ext-junit"))
+            add("androidTestImplementation", libs.lib("androidx-test-runner"))
         }
     }
 }

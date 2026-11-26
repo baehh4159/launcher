@@ -3,6 +3,7 @@ package com.desklauncher.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.desklauncher.core.database.DeskDatabase
+import com.desklauncher.core.database.dao.AppPrefDao
 import com.desklauncher.core.database.dao.ToolConfigDao
 import com.desklauncher.core.database.migration.DeskMigrations
 import dagger.Module
@@ -25,4 +26,7 @@ object DatabaseModule {
 
     @Provides
     fun provideToolConfigDao(database: DeskDatabase): ToolConfigDao = database.toolConfigDao()
+
+    @Provides
+    fun provideAppPrefDao(database: DeskDatabase): AppPrefDao = database.appPrefDao()
 }

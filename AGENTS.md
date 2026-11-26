@@ -122,7 +122,8 @@ XxxTool.kt  DeskTool 구현
 
 ### 4.4 Room
 - Entity·DAO·Migration은 모두 `core:database`에 둔다 (단일 `DeskDatabase`).
-- 스키마 변경 시: DB 버전 +1, `Migration(n, n+1)` 작성, `core/database/schemas/` 스키마 JSON 커밋, **마이그레이션 테스트 추가**.
+- 스키마 변경 시: DB 버전 +1, 마이그레이션 작성, `core/database/schemas/` 스키마 JSON 커밋, **마이그레이션 테스트 추가** (`core/database/src/androidTest/.../DeskMigrationTest.kt`, 기기에서 `./gradlew :core:database:connectedDebugAndroidTest`).
+  - 테이블·컬럼 **추가만** 있으면 `@Database(autoMigrations = [AutoMigration(n, n+1)])`, 이름 변경·데이터 변환은 `DeskMigrations`에 수동 `Migration`.
 - `fallbackToDestructiveMigration` 사용 금지 (디버그 포함 — 데이터 보존 습관화).
 - DAO 조회는 `Flow`, 쓰기는 `suspend`. 메인 스레드 쿼리 금지.
 - 시간·ID·열거형 저장 형식은 PRD §8.1을 따른다.

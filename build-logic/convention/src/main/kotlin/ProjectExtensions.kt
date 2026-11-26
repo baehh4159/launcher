@@ -38,6 +38,7 @@ internal fun Project.configureAndroidLibrary(extension: LibraryExtension) = with
     compileSdkMinor = libs.intVersion("compileSdkMinor")
     defaultConfig {
         minSdk = libs.intVersion("minSdk")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = DeskJavaVersion

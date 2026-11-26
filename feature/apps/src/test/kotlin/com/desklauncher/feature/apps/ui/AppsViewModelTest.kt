@@ -64,10 +64,37 @@ class AppsViewModelTest {
         assertEquals("", viewModel.uiState.value.query)
     }
 
+    // 즐겨찾기는 맨 위 ★ 섹션, 숨긴 앱은 평소엔 빠지고 검색하면 나온다
+    @Test
+    fun favoritesAndHidden_areReflectedInSections() = runTest {
+        val viewModel = AppsViewModel(repository, FakeSettingsRepository(), SavedStateHandle())
+        collectInBackground(viewModel.uiState)
+        val chrome = repository.current.first { it.label == "Chrome" }
+        val gallery = repository.current.first { it.label == "갤러리" }
+
+        viewModel.onAction(AppsAction.SetFavorite(chrome, true))
+        viewModel.onAction(AppsAction.SetHidden(gallery, true))
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf("★", "ㅋ", "C"), state.indexKeys)
+        assertEquals(listOf("Chrome"), state.sections.first().apps.map { it.label })
+
+        viewModel.onAction(AppsAction.QueryChanged("갤"))
+        assertEquals(listOf("갤러리"), viewModel.uiState.value.sections.flatMap { it.apps }.map { it.label })
+    }
+
     private class FakeAppsRepository(labels: List<String>) : AppsRepository {
         val current = labels.map { InstalledApp("pkg.$it/.Main", "pkg.$it", it) }
+        private val state = MutableStateFlow(current)
         var launchResult = true
-        override val apps: Flow<List<InstalledApp>> = MutableStateFlow(current)
+        override val apps: Flow<List<InstalledApp>> = state
         override fun launch(app: InstalledApp): Boolean = launchResult
+        override suspend fun setFavorite(app: InstalledApp, favorite: Boolean) = update(app) { it.copy(isFavorite = favorite) }
+        override suspend fun setHidden(app: InstalledApp, hidden: Boolean) = update(app) { it.copy(isHidden = hidden) }
+        override fun openAppInfo(app: InstalledApp) = Unit
+        override fun requestUninstall(app: InstalledApp) = Unit
+        private fun update(app: InstalledApp, transform: (InstalledApp) -> InstalledApp) {
+            state.value = state.value.map { if (it.componentKey == app.componentKey) transform(it) else it }
+        }
     }
 }

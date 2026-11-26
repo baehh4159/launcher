@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,11 +32,10 @@ class AppsViewModel @Inject constructor(
     private val autoFocus = settingsRepository.settings.map { it.appDrawerAutoFocusSearch }
 
     val uiState: StateFlow<AppsUiState> = combine(sortedApps, query, launchFailed, autoFocus) { apps, q, failed, focus ->
-        val visible = apps.filter { AppIndex.matches(it, q) }
         AppsUiState(
             isLoading = false,
             query = q,
-            sections = visible.groupBy { AppIndex.keyOf(it.label) }.map { (key, list) -> AppSection(key, list) },
+            sections = buildSections(apps, q),
             launchFailed = failed,
             autoFocusSearch = focus,
         )
@@ -45,6 +45,10 @@ class AppsViewModel @Inject constructor(
         when (action) {
             is AppsAction.QueryChanged -> savedStateHandle[QueryKey] = action.query
             AppsAction.DismissLaunchError -> launchFailed.value = false
+            is AppsAction.SetFavorite -> viewModelScope.launch { repository.setFavorite(action.app, action.favorite) }
+            is AppsAction.SetHidden -> viewModelScope.launch { repository.setHidden(action.app, action.hidden) }
+            is AppsAction.OpenAppInfo -> repository.openAppInfo(action.app)
+            is AppsAction.Uninstall -> repository.requestUninstall(action.app)
             is AppsAction.Launch, AppsAction.OpenStore, AppsAction.OpenSettings, AppsAction.Back -> Unit // Route가 처리
         }
     }
@@ -62,5 +66,17 @@ class AppsViewModel @Inject constructor(
 
     private companion object {
         const val QueryKey = "query"
+
+        /**
+         * 검색 중: 숨긴 앱도 포함해 일치하는 앱만 (숨긴 앱을 다시 찾을 수 있게).
+         * 평소: 즐겨찾기 섹션 → 숨기지 않은 앱을 인덱스 키별로.
+         */
+        fun buildSections(apps: List<InstalledApp>, query: String): List<AppSection> {
+            val searching = query.isNotBlank()
+            val visible = apps.filter { if (searching) AppIndex.matches(it, query) else !it.isHidden }
+            val grouped = visible.groupBy { AppIndex.keyOf(it.label) }.map { (key, list) -> AppSection(key, list) }
+            val favorites = visible.filter { it.isFavorite }
+            return if (searching || favorites.isEmpty()) grouped else listOf(AppSection(AppSection.FavoritesKey, favorites)) + grouped
+        }
     }
 }

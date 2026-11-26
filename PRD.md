@@ -582,6 +582,7 @@ doodles/{id}.png
 | `USE_FULL_SCREEN_INTENT` | 잠금화면 알람 울림 | Android 14+ 제한 → `canUseFullScreenIntent()` 확인, 불가 시 헤드업 알림으로 대체 + 설정 안내 |
 | `RECEIVE_BOOT_COMPLETED` | 재부팅 후 알람 재예약 | `TIME_SET`, `TIMEZONE_CHANGED`, `MY_PACKAGE_REPLACED`도 수신 |
 | `VIBRATE` | 알람 진동, Vibrator 기반 햅틱 | |
+| `REQUEST_DELETE_PACKAGES` | 앱 서랍 길게 누르기 → 제거 (SHELL-08) | 시스템 제거 확인 대화상자만 띄움 (일반 권한) |
 | CAMERA / 저장소 권한 | **불필요** | 스캐너는 ML Kit(Play 서비스) UI, 파일은 SAF |
 | `INTERNET` | **앱 기능에서 사용 안 함** | 의존 라이브러리가 병합하는 권한은 merged manifest로 확인 후 이 표에 기록. M0 기준 병합 권한: `{applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`(androidx.core 내부용)뿐 |
 | `android:allowBackup="false"` + `dataExtractionRules` | 자동 백업·기기 간 이전 비활성화 | 개인일기 등 개인 데이터 보호 (§13). targetSdk 31+에서는 allowBackup만으로 기기 간 이전이 막히지 않아 `res/xml/data_extraction_rules.xml`에서 모든 도메인을 제외. 백업은 BACKUP-01(P2)로 별도 제공 |
@@ -601,7 +602,7 @@ doodles/{id}.png
 |---|---|---|
 | M0 ✅ | 프로젝트 골격: 버전 카탈로그, 모듈 생성, 디자인시스템 테마, HOME 인텐트, 빈 책상 | 빌드·단위 테스트 통과 (2026-11-26) |
 | M1 🔶 | SHELL-02~06 (구현 완료, 실기기 검증 대기): 책상·시계, 서류철 스트립(스크럽·플링·스냅), 햅틱, 열기/닫기 전환, 홈 복귀, One UI 제스처 충돌 회피 | debug 샘플 도구로 스크럽→열기→닫기 전체 흐름 S24+ 실기기 검증 |
-| M2 | SHELL-01·07~11: 기본 런처 지정, 앱 서랍(초성 인덱스), 도구함(켜기/끄기·순서·색상), 온보딩, 설정(DataStore) | 도구함 변경이 책상 탭에 즉시 반영 |
+| M2 🔶 | SHELL-01·07~11 (구현 완료, 실기기 검증 대기): 기본 런처 지정, 앱 서랍(초성 인덱스), 도구함(켜기/끄기·순서·색상), 온보딩, 설정(DataStore) | 도구함 변경이 책상 탭에 즉시 반영 |
 | M3 | 기록 도구: 할일정리, 프로젝트 메모, 캘린더, 개인일기 | 각 P0 완료, Room 마이그레이션 테스트 |
 | M4 | 서류정리함 + ML Kit 문서 스캐너 | DOC P0 완료, 스캔→저장→보기→공유 실기기 검증 |
 | M5 | 유틸리티 도구: 계산기, 낙서장, 알람, 내파일 | 각 P0 완료, 알람 재부팅 재예약 검증 |

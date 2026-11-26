@@ -52,6 +52,8 @@ import com.desklauncher.core.designsystem.scrub.rememberIndexScrubState
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.apps.R
 import com.desklauncher.feature.apps.di.AppIconEntryPoint
+import com.desklauncher.feature.apps.domain.model.InstalledApp
+import com.desklauncher.feature.apps.ui.component.AppMenuAction
 import com.desklauncher.feature.apps.ui.component.AppIconProvider
 import com.desklauncher.feature.apps.ui.component.AppRow
 import com.desklauncher.feature.apps.ui.preview.AppsPreviewData
@@ -202,7 +204,7 @@ private fun AppList(
             state.sections.forEach { section ->
                 item(key = "header_${section.key}", contentType = "header") {
                     Text(
-                        text = section.key,
+                        text = if (section.isFavorites) stringResource(R.string.apps_favorites_section) else section.key,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
@@ -210,8 +212,18 @@ private fun AppList(
                             .semantics { heading() },
                     )
                 }
-                items(section.apps, key = { it.componentKey }, contentType = { "app" }) { app ->
-                    AppRow(app = app, iconProvider = iconProvider, onClick = { onAction(AppsAction.Launch(app)) })
+                // 즐겨찾기 앱은 자기 글자 섹션에도 있으므로 키를 구분한다.
+                items(
+                    section.apps,
+                    key = { if (section.isFavorites) "fav_${it.componentKey}" else it.componentKey },
+                    contentType = { "app" },
+                ) { app ->
+                    AppRow(
+                        app = app,
+                        iconProvider = iconProvider,
+                        onClick = { onAction(AppsAction.Launch(app)) },
+                        onMenuAction = { menu -> onAction(menu.toAction(app)) },
+                    )
                 }
             }
         }
@@ -227,6 +239,13 @@ private fun AppList(
             )
         }
     }
+}
+
+private fun AppMenuAction.toAction(app: InstalledApp): AppsAction = when (this) {
+    AppMenuAction.ToggleFavorite -> AppsAction.SetFavorite(app, !app.isFavorite)
+    AppMenuAction.ToggleHidden -> AppsAction.SetHidden(app, !app.isHidden)
+    AppMenuAction.AppInfo -> AppsAction.OpenAppInfo(app)
+    AppMenuAction.Uninstall -> AppsAction.Uninstall(app)
 }
 
 /** 스크럽 중 포커스된 글자의 섹션으로 즉시 이동 (Niagara 방식). */
