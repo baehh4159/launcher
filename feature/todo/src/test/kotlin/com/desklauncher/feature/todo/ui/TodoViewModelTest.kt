@@ -1,24 +1,51 @@
 package com.desklauncher.feature.todo.ui
 
+import androidx.lifecycle.SavedStateHandle
 import com.desklauncher.core.testing.MainDispatcherRule
 import com.desklauncher.core.testing.collectInBackground
+import com.desklauncher.feature.todo.domain.TodoFilter
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 class TodoViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private val clock = Clock.fixed(Instant.parse("2026-11-26T03:00:00Z"), ZoneId.of("Asia/Seoul"))
+    private val today = LocalDate.of(2026, 11, 26)
+
+    // '오늘' 보기에서 빠른 입력은 오늘 마감, 다른 보기에서는 마감 없음
+    @Test
+    fun quickAdd_setsDueTodayOnlyInTodayFilter() = runTest {
+        val repository = FakeTodoRepository()
+        val viewModel = TodoViewModel(repository, clock, SavedStateHandle())
+        collectInBackground(viewModel.uiState)
+
+        viewModel.onAction(TodoAction.QuickAdd("오늘 것"))
+        viewModel.onAction(TodoAction.SelectFilter(TodoFilter.All))
+        viewModel.onAction(TodoAction.QuickAdd("언젠가"))
+
+        assertEquals(today, repository.current.first { it.title == "오늘 것" }.dueDate)
+        assertNull(repository.current.first { it.title == "언젠가" }.dueDate)
+        assertEquals(2, viewModel.uiState.value.counts[TodoFilter.All])
+        assertEquals(1, viewModel.uiState.value.counts[TodoFilter.Today])
+    }
+
     // 빠른 입력: 공백은 무시하고 앞뒤 공백을 지운 제목으로 추가
     @Test
     fun quickAdd_addsTrimmedTitleAndIgnoresBlank() = runTest {
         val repository = FakeTodoRepository()
-        val viewModel = TodoViewModel(repository)
+        val viewModel = TodoViewModel(repository, clock, SavedStateHandle())
         collectInBackground(viewModel.uiState)
+        viewModel.onAction(TodoAction.SelectFilter(TodoFilter.All))
 
         viewModel.onAction(TodoAction.QuickAdd("   "))
         viewModel.onAction(TodoAction.QuickAdd("  우유 사기 "))
@@ -30,8 +57,9 @@ class TodoViewModelTest {
     @Test
     fun save_updatesTodoAndClosesEditor() = runTest {
         val repository = FakeTodoRepository(listOf(todo("1", "초안")))
-        val viewModel = TodoViewModel(repository)
+        val viewModel = TodoViewModel(repository, clock, SavedStateHandle())
         collectInBackground(viewModel.uiState)
+        viewModel.onAction(TodoAction.SelectFilter(TodoFilter.All))
 
         viewModel.onAction(TodoAction.OpenEditor("1"))
         assertEquals("1", viewModel.uiState.value.editing?.id)
@@ -46,8 +74,9 @@ class TodoViewModelTest {
     @Test
     fun setDone_movesBetweenActiveAndDone() = runTest {
         val repository = FakeTodoRepository(listOf(todo("1"), todo("2")))
-        val viewModel = TodoViewModel(repository)
+        val viewModel = TodoViewModel(repository, clock, SavedStateHandle())
         collectInBackground(viewModel.uiState)
+        viewModel.onAction(TodoAction.SelectFilter(TodoFilter.All))
 
         viewModel.onAction(TodoAction.SetDone("1", true))
         assertEquals(listOf("2"), viewModel.uiState.value.items.map { it.id })
@@ -62,8 +91,9 @@ class TodoViewModelTest {
     @Test
     fun delete_thenUndo_restoresTodo() = runTest {
         val repository = FakeTodoRepository(listOf(todo("1"), todo("2")))
-        val viewModel = TodoViewModel(repository)
+        val viewModel = TodoViewModel(repository, clock, SavedStateHandle())
         collectInBackground(viewModel.uiState)
+        viewModel.onAction(TodoAction.SelectFilter(TodoFilter.All))
 
         viewModel.onAction(TodoAction.Delete("1"))
         assertEquals(listOf("2"), viewModel.uiState.value.items.map { it.id })

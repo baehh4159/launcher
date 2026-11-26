@@ -1,6 +1,9 @@
 package com.desklauncher.feature.todo.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +20,7 @@ import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +46,7 @@ import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.todo.R
+import com.desklauncher.feature.todo.domain.TodoFilter
 import com.desklauncher.feature.todo.domain.model.Todo
 import com.desklauncher.feature.todo.ui.component.QuickAddBar
 import com.desklauncher.feature.todo.ui.component.TodoEditorSheet
@@ -91,31 +96,37 @@ fun TodoScreen(
         bottomBar = { QuickAddBar(onAdd = { onAction(TodoAction.QuickAdd(it)) }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            when {
-                state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                state.items.isEmpty() && state.done.isEmpty() -> DeskEmptyState(
-                    title = stringResource(R.string.todo_empty_title),
-                    body = stringResource(R.string.todo_empty_body),
-                    icon = Icons.Outlined.Checklist,
-                    modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                )
-                else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 8.dp)) {
-                    items(state.items, key = { it.id }) { todo ->
-                        TodoListRow(todo, onAction, Modifier.animateItem())
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            TodoFilterRow(selected = state.filter, counts = state.counts, onSelect = { onAction(TodoAction.SelectFilter(it)) })
+            Box(Modifier.fillMaxSize()) {
+                when {
+                    state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    state.items.isEmpty() && state.done.isEmpty() -> {
+                        val (title, body) = emptyText(state.filter)
+                        DeskEmptyState(
+                            title = stringResource(title),
+                            body = stringResource(body),
+                            icon = Icons.Outlined.Checklist,
+                            modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                        )
                     }
-                    if (state.done.isNotEmpty()) {
-                        item(key = "done_header") {
-                            DoneSectionHeader(
-                                count = state.done.size,
-                                expanded = state.showDone,
-                                onToggle = { onAction(TodoAction.ToggleDoneSection) },
-                                modifier = Modifier.animateItem(),
-                            )
+                    else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 8.dp)) {
+                        items(state.items, key = { it.id }) { todo ->
+                            TodoListRow(todo, onAction, Modifier.animateItem())
                         }
-                        if (state.showDone) {
-                            items(state.done, key = { it.id }) { todo ->
-                                TodoListRow(todo, onAction, Modifier.animateItem())
+                        if (state.done.isNotEmpty()) {
+                            item(key = "done_header") {
+                                DoneSectionHeader(
+                                    count = state.done.size,
+                                    expanded = state.showDone,
+                                    onToggle = { onAction(TodoAction.ToggleDoneSection) },
+                                    modifier = Modifier.animateItem(),
+                                )
+                            }
+                            if (state.showDone) {
+                                items(state.done, key = { it.id }) { todo ->
+                                    TodoListRow(todo, onAction, Modifier.animateItem())
+                                }
                             }
                         }
                     }
@@ -162,6 +173,41 @@ private fun DoneSectionHeader(count: Int, expanded: Boolean, onToggle: () -> Uni
     }
 }
 
+@Composable
+private fun TodoFilterRow(selected: TodoFilter, counts: Map<TodoFilter, Int>, onSelect: (TodoFilter) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        TodoFilter.entries.forEach { filter ->
+            val label = stringResource(filter.labelRes())
+            FilterChip(
+                selected = filter == selected,
+                onClick = { onSelect(filter) },
+                label = { Text(stringResource(R.string.todo_filter_with_count, label, counts[filter] ?: 0)) },
+            )
+        }
+    }
+}
+
+@StringRes
+private fun TodoFilter.labelRes(): Int = when (this) {
+    TodoFilter.Today -> R.string.todo_filter_today
+    TodoFilter.Upcoming -> R.string.todo_filter_upcoming
+    TodoFilter.All -> R.string.todo_filter_all
+    TodoFilter.Done -> R.string.todo_filter_done
+}
+
+private fun emptyText(filter: TodoFilter): Pair<Int, Int> = when (filter) {
+    TodoFilter.Today -> R.string.todo_empty_today_title to R.string.todo_empty_today_body
+    TodoFilter.Upcoming -> R.string.todo_empty_upcoming_title to R.string.todo_empty_upcoming_body
+    TodoFilter.All -> R.string.todo_empty_title to R.string.todo_empty_body
+    TodoFilter.Done -> R.string.todo_empty_done_title to R.string.todo_empty_done_body
+}
+
 private val ToolColor = DeskTabColor.Orange
 
 @DeskPreviews
@@ -173,7 +219,13 @@ private fun TodoScreenPreview() {
 @DeskPreviews
 @Composable
 private fun TodoScreenDoneExpandedPreview() {
-    DeskTheme { TodoScreen(state = TodoPreviewData.loaded.copy(showDone = true), onAction = {}) }
+    DeskTheme { TodoScreen(state = TodoPreviewData.loaded.copy(filter = TodoFilter.All, showDone = true), onAction = {}) }
+}
+
+@DeskPreviews
+@Composable
+private fun TodoScreenTodayPreview() {
+    DeskTheme { TodoScreen(state = TodoPreviewData.todayView, onAction = {}) }
 }
 
 @DeskPreviews

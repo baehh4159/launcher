@@ -46,6 +46,23 @@ class TodoListingTest {
         )
     }
 
+    // 오늘 = 오늘까지(지난 것 포함), 예정 = 내일부터, 전체 = 미완료, 완료 = 완료
+    @Test
+    fun filter_splitsByDueDate() {
+        val todos = listOf(
+            todo("overdue", due = day.minusDays(2)),
+            todo("today", due = day),
+            todo("later", due = day.plusDays(5)),
+            todo("noDue"),
+            todo("doneToday", due = day, done = true, completedAt = 1),
+        )
+        assertEquals(listOf("overdue", "today"), TodoListing.filter(todos, TodoFilter.Today, day).map { it.id })
+        assertEquals(listOf("later"), TodoListing.filter(todos, TodoFilter.Upcoming, day).map { it.id })
+        assertEquals(listOf("overdue", "today", "later", "noDue"), TodoListing.filter(todos, TodoFilter.All, day).map { it.id })
+        assertEquals(listOf("doneToday"), TodoListing.filter(todos, TodoFilter.Done, day).map { it.id })
+        assertEquals(mapOf(TodoFilter.Today to 2, TodoFilter.Upcoming to 1, TodoFilter.All to 4, TodoFilter.Done to 1), TodoListing.counts(todos, day))
+    }
+
     // 완료 목록은 최근 완료 순
     @Test
     fun done_sortsByCompletedAtDescending() {

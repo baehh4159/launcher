@@ -1,5 +1,7 @@
 package com.desklauncher.feature.todo.ui.preview
 
+import com.desklauncher.feature.todo.domain.TodoFilter
+import com.desklauncher.feature.todo.domain.TodoListing
 import com.desklauncher.feature.todo.domain.model.ProjectRef
 import com.desklauncher.feature.todo.domain.model.Todo
 import com.desklauncher.feature.todo.domain.model.TodoPriority
@@ -22,7 +24,15 @@ internal object TodoPreviewData {
         Todo("5", "우유 사기", isDone = true, completedAt = now, createdAt = now, updatedAt = now),
     )
 
-    val loaded = TodoUiState(isLoading = false, items = todos.filterNot { it.isDone }, done = todos.filter { it.isDone }, projects = projects)
-    val empty = TodoUiState(isLoading = false)
+    val loaded = TodoUiState(
+        isLoading = false,
+        filter = TodoFilter.All,
+        counts = TodoListing.counts(todos, today),
+        items = TodoListing.filter(todos, TodoFilter.All, today),
+        done = TodoListing.done(todos),
+        projects = projects,
+    )
+    val todayView = TodoUiState(isLoading = false, filter = TodoFilter.Today, counts = TodoListing.counts(todos, today), items = TodoListing.filter(todos, TodoFilter.Today, today))
+    val empty = TodoUiState(isLoading = false, filter = TodoFilter.Today)
     val loading = TodoUiState(isLoading = true)
 }

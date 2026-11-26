@@ -18,4 +18,15 @@
     <string name="todo_mark_undone">%1$s 다시 할 일로</string>
     <string name="todo_done_section">완료 %1$d개</string>
     <string name="todo_done_section_toggle">완료 목록 펼치기/접기</string>
+    <string name="todo_filter_today">오늘</string>
+    <string name="todo_filter_upcoming">예정</string>
+    <string name="todo_filter_all">전체</string>
+    <string name="todo_filter_done">완료</string>
+    <string name="todo_filter_with_count">%1$s %2$d</string>
+    <string name="todo_empty_today_title">오늘 할 일을 다 끝냈어요</string>
+    <string name="todo_empty_today_body">여기서 적은 할 일은 오늘 마감으로 들어가요.</string>
+    <string name="todo_empty_upcoming_title">예정된 할 일이 없어요</string>
+    <string name="todo_empty_upcoming_body">할 일을 눌러 마감일을 정하면 여기에 모여요.</string>
+    <string name="todo_empty_done_title">아직 완료한 일이 없어요</string>
+    <string name="todo_empty_done_body">체크하거나 오른쪽으로 밀면 완료돼요.</string>
 </resources>
