@@ -15,8 +15,9 @@ fun NavController.navigateToApps() = navigate(AppsDestination) { launchSingleTop
 fun NavGraphBuilder.appsScreen(
     onBack: () -> Unit,
     onOpenStore: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     composable<AppsDestination> {
-        AppsRoute(onBack = onBack, onOpenStore = onOpenStore)
+        AppsRoute(onBack = onBack, onOpenStore = onOpenStore, onOpenSettings = onOpenSettings)
     }
 }

@@ -3,6 +3,7 @@ package com.desklauncher.feature.apps.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.desklauncher.core.datastore.SettingsRepository
 import com.desklauncher.feature.apps.domain.AppIndex
 import com.desklauncher.feature.apps.domain.model.InstalledApp
 import com.desklauncher.feature.apps.domain.repository.AppsRepository
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AppsViewModel @Inject constructor(
     private val repository: AppsRepository,
+    settingsRepository: SettingsRepository,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -26,13 +28,16 @@ class AppsViewModel @Inject constructor(
 
     private val sortedApps = repository.apps.map { AppIndex.sorted(it) }
 
-    val uiState: StateFlow<AppsUiState> = combine(sortedApps, query, launchFailed) { apps, q, failed ->
+    private val autoFocus = settingsRepository.settings.map { it.appDrawerAutoFocusSearch }
+
+    val uiState: StateFlow<AppsUiState> = combine(sortedApps, query, launchFailed, autoFocus) { apps, q, failed, focus ->
         val visible = apps.filter { AppIndex.matches(it, q) }
         AppsUiState(
             isLoading = false,
             query = q,
             sections = visible.groupBy { AppIndex.keyOf(it.label) }.map { (key, list) -> AppSection(key, list) },
             launchFailed = failed,
+            autoFocusSearch = focus,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppsUiState())
 
@@ -40,7 +45,7 @@ class AppsViewModel @Inject constructor(
         when (action) {
             is AppsAction.QueryChanged -> savedStateHandle[QueryKey] = action.query
             AppsAction.DismissLaunchError -> launchFailed.value = false
-            is AppsAction.Launch, AppsAction.OpenStore, AppsAction.Back -> Unit // Route가 처리
+            is AppsAction.Launch, AppsAction.OpenStore, AppsAction.OpenSettings, AppsAction.Back -> Unit // Route가 처리
         }
     }
 

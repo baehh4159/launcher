@@ -31,10 +31,12 @@ dependencies {
     implementation(projects.core.toolApi)
     implementation(projects.core.toolRegistry)
     implementation(projects.core.database)
+    implementation(projects.core.datastore)
 
     implementation(projects.feature.desk)
     implementation(projects.feature.apps)
     implementation(projects.feature.store)
+    implementation(projects.feature.settings)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

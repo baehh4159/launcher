@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +34,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -59,6 +62,7 @@ import kotlinx.coroutines.launch
 fun AppsRoute(
     onBack: () -> Unit,
     onOpenStore: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AppsViewModel = hiltViewModel(),
 ) {
@@ -73,6 +77,7 @@ fun AppsRoute(
             when (action) {
                 is AppsAction.Launch -> if (viewModel.launch(action.app)) onBack()
                 AppsAction.OpenStore -> onOpenStore()
+                AppsAction.OpenSettings -> onOpenSettings()
                 AppsAction.Back -> onBack()
                 else -> viewModel.onAction(action)
             }
@@ -101,7 +106,13 @@ fun AppsScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = { AppsSearchBar(query = state.query, onAction = onAction) },
+        topBar = {
+            AppsSearchBar(
+                query = state.query,
+                autoFocus = state.autoFocusSearch && !state.isLoading,
+                onAction = onAction,
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Box(
@@ -129,7 +140,11 @@ fun AppsScreen(
 }
 
 @Composable
-private fun AppsSearchBar(query: String, onAction: (AppsAction) -> Unit) {
+private fun AppsSearchBar(query: String, autoFocus: Boolean, onAction: (AppsAction) -> Unit) {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(autoFocus) {
+        if (autoFocus) focusRequester.requestFocus()
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -150,10 +165,15 @@ private fun AppsSearchBar(query: String, onAction: (AppsAction) -> Unit) {
             },
             singleLine = true,
             shape = MaterialTheme.shapes.extraLarge,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .focusRequester(focusRequester),
         )
         IconButton(onClick = { onAction(AppsAction.OpenStore) }) {
             Icon(Icons.Outlined.Inventory2, contentDescription = stringResource(R.string.apps_open_store))
+        }
+        IconButton(onClick = { onAction(AppsAction.OpenSettings) }) {
+            Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.apps_open_settings))
         }
     }
 }

@@ -9,6 +9,7 @@ android {
 
 dependencies {
     api(projects.core.toolApi)
+    api(projects.core.datastore)
     api(libs.junit4)
     api(libs.kotlinx.coroutines.test)
 }

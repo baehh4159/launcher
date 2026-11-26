@@ -1,10 +1,23 @@
 package com.desklauncher
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.desklauncher.core.datastore.DeskSettings
+import com.desklauncher.core.datastore.HapticPreference
+import com.desklauncher.core.datastore.SettingsRepository
+import com.desklauncher.core.datastore.ThemePreference
+import com.desklauncher.core.designsystem.haptics.HapticLevel
+import com.desklauncher.core.designsystem.haptics.LocalDeskHapticLevel
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.navigation.DeskNavHost
@@ -21,6 +34,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var toolRegistry: ToolRegistry
 
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
+
     // singleTask라 홈 버튼은 onNewIntent로 들어온다 (SHELL-06).
     private val homePressEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val homePresses = homePressEvents.asSharedFlow()
@@ -29,8 +45,26 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            DeskTheme {
-                DeskNavHost(toolRegistry = toolRegistry, homePresses = homePresses)
+            val settings by settingsRepository.settings.collectAsStateWithLifecycle(initialValue = DeskSettings())
+            val darkTheme = when (settings.theme) {
+                ThemePreference.System -> isSystemInDarkTheme()
+                ThemePreference.Light -> false
+                ThemePreference.Dark -> true
+            }
+            // 앱 테마를 시스템과 다르게 고르면 상태바 아이콘 색도 맞춘다.
+            DisposableEffect(darkTheme) {
+                val style = if (darkTheme) {
+                    SystemBarStyle.dark(Color.TRANSPARENT)
+                } else {
+                    SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                }
+                enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+                onDispose { }
+            }
+            CompositionLocalProvider(LocalDeskHapticLevel provides settings.haptic.toHapticLevel()) {
+                DeskTheme(darkTheme = darkTheme) {
+                    DeskNavHost(toolRegistry = toolRegistry, homePresses = homePresses)
+                }
             }
         }
     }
@@ -42,4 +76,10 @@ class MainActivity : ComponentActivity() {
 
     private fun Intent.isHomeIntent(): Boolean =
         action == Intent.ACTION_MAIN && hasCategory(Intent.CATEGORY_HOME)
+}
+
+private fun HapticPreference.toHapticLevel(): HapticLevel = when (this) {
+    HapticPreference.Off -> HapticLevel.Off
+    HapticPreference.Light -> HapticLevel.Light
+    HapticPreference.Default -> HapticLevel.Default
 }

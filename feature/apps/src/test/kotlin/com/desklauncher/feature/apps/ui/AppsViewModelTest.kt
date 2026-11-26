@@ -1,6 +1,7 @@
 package com.desklauncher.feature.apps.ui
 
 import androidx.lifecycle.SavedStateHandle
+import com.desklauncher.core.testing.FakeSettingsRepository
 import com.desklauncher.core.testing.MainDispatcherRule
 import com.desklauncher.core.testing.collectInBackground
 import com.desklauncher.feature.apps.domain.model.InstalledApp
@@ -24,7 +25,7 @@ class AppsViewModelTest {
     // 초성 섹션 → 영문 섹션 순으로 묶인다
     @Test
     fun uiState_groupsAppsBySection() = runTest {
-        val viewModel = AppsViewModel(repository, SavedStateHandle())
+        val viewModel = AppsViewModel(repository, FakeSettingsRepository(), SavedStateHandle())
         collectInBackground(viewModel.uiState)
 
         val state = viewModel.uiState.value
@@ -35,7 +36,7 @@ class AppsViewModelTest {
     // 초성 검색으로 걸러진다
     @Test
     fun query_filtersByChoseong() = runTest {
-        val viewModel = AppsViewModel(repository, SavedStateHandle())
+        val viewModel = AppsViewModel(repository, FakeSettingsRepository(), SavedStateHandle())
         collectInBackground(viewModel.uiState)
 
         viewModel.onAction(AppsAction.QueryChanged("ㅋㅋ"))
@@ -47,7 +48,7 @@ class AppsViewModelTest {
     // 실행 실패 시 오류 상태, 성공 시 검색어 초기화
     @Test
     fun launch_reportsFailureAndClearsQueryOnSuccess() = runTest {
-        val viewModel = AppsViewModel(repository, SavedStateHandle())
+        val viewModel = AppsViewModel(repository, FakeSettingsRepository(), SavedStateHandle())
         collectInBackground(viewModel.uiState)
         val app = repository.current.first()
 

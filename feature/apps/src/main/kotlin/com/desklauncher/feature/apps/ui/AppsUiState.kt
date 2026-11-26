@@ -9,6 +9,7 @@ data class AppsUiState(
     val query: String = "",
     val sections: List<AppSection> = emptyList(),
     val launchFailed: Boolean = false,
+    val autoFocusSearch: Boolean = false,
 ) {
     val indexKeys: List<String> get() = sections.map { it.key }
     val isSearching: Boolean get() = query.isNotBlank()
@@ -25,5 +26,6 @@ sealed interface AppsAction {
     data class Launch(val app: InstalledApp) : AppsAction
     data object DismissLaunchError : AppsAction
     data object OpenStore : AppsAction
+    data object OpenSettings : AppsAction
     data object Back : AppsAction
 }

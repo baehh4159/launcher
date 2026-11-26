@@ -8,6 +8,7 @@ import com.desklauncher.core.designsystem.text.UiText
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.toolapi.ActiveTool
 import com.desklauncher.core.toolapi.DeskTool
+import com.desklauncher.core.testing.FakeSettingsRepository
 import com.desklauncher.core.toolapi.ToolRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -45,7 +46,7 @@ class DeskViewModelTest {
     // 레지스트리가 값을 내기 전에는 로딩 상태다
     @Test
     fun isLoading_untilRegistryEmits() = runTest {
-        val viewModel = DeskViewModel(registry)
+        val viewModel = DeskViewModel(registry, FakeSettingsRepository())
 
         assertTrue(viewModel.uiState.value.isLoading)
     }
@@ -53,7 +54,7 @@ class DeskViewModelTest {
     // 켜진 도구만 탭으로 순서대로 보여 준다
     @Test
     fun tabs_containOnlyEnabledToolsInOrder() = runTest {
-        val viewModel = DeskViewModel(registry)
+        val viewModel = DeskViewModel(registry, FakeSettingsRepository())
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
 
         registry.emit(
@@ -72,7 +73,7 @@ class DeskViewModelTest {
     // 켜진 도구가 없으면 빈 상태다
     @Test
     fun tabs_areEmpty_whenNoToolEnabled() = runTest {
-        val viewModel = DeskViewModel(registry)
+        val viewModel = DeskViewModel(registry, FakeSettingsRepository())
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
 
         registry.emit()

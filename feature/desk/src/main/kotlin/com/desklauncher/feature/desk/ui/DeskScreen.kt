@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.desklauncher.core.datastore.GripPosition
 import com.desklauncher.core.designsystem.component.DeskEmptyState
 import com.desklauncher.core.designsystem.component.DeskSurface
 import com.desklauncher.core.designsystem.component.ToolPreviewCard
@@ -195,11 +196,11 @@ fun DeskScreen(
                         state = stripState,
                         onOpen = { index -> state.tabs.getOrNull(index)?.let { onAction(DeskAction.OpenTool(it.toolId)) } },
                         openActionLabel = stringResource(R.string.desk_tab_open_action),
-                        // 엄지가 닿는 하단 2/3 (PRD §3.1). 그립 위치 설정은 SHELL-11.
+                        // 기본은 엄지가 닿는 하단 2/3 (PRD §3.1). 설정에서 위/가운데로 옮길 수 있다.
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .fillMaxHeight(0.66f)
-                            .padding(bottom = 24.dp),
+                            .align(state.gripPosition.alignment())
+                            .fillMaxHeight(StripHeightFraction)
+                            .padding(vertical = 24.dp),
                     )
                 }
             }
@@ -221,6 +222,13 @@ private fun AppDrawerHint(onClick: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 private val AppDrawerSwipeThreshold = 72.dp
+private const val StripHeightFraction = 0.66f
+
+private fun GripPosition.alignment(): Alignment = when (this) {
+    GripPosition.Top -> Alignment.TopEnd
+    GripPosition.Middle -> Alignment.CenterEnd
+    GripPosition.Bottom -> Alignment.BottomEnd
+}
 
 @Composable
 private fun DefaultToolPreview(tab: DeskTabUi, modifier: Modifier = Modifier) {

@@ -15,6 +15,8 @@ import com.desklauncher.feature.apps.navigation.appsScreen
 import com.desklauncher.feature.apps.navigation.navigateToApps
 import com.desklauncher.feature.desk.navigation.DeskDestination
 import com.desklauncher.feature.desk.navigation.deskScreen
+import com.desklauncher.feature.settings.navigation.navigateToSettings
+import com.desklauncher.feature.settings.navigation.settingsScreen
 import com.desklauncher.feature.store.navigation.navigateToStore
 import com.desklauncher.feature.store.navigation.storeScreen
 import kotlinx.coroutines.flow.Flow
@@ -74,8 +76,13 @@ fun DeskNavHost(
             onOpenToolStore = navController::navigateToStore,
             onOpenAppDrawer = navController::navigateToApps,
         )
-        appsScreen(onBack = navController::popBackStack, onOpenStore = navController::navigateToStore)
+        appsScreen(
+            onBack = navController::popBackStack,
+            onOpenStore = navController::navigateToStore,
+            onOpenSettings = navController::navigateToSettings,
+        )
         storeScreen(onBack = navController::popBackStack)
+        settingsScreen(onBack = navController::popBackStack)
         toolRegistry.registeredTools.forEach { tool ->
             with(tool) { toolGraph(navController) }
         }

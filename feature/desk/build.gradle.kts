@@ -5,3 +5,7 @@ plugins {
 android {
     namespace = "com.desklauncher.feature.desk"
 }
+
+dependencies {
+    implementation(projects.core.datastore)
+}

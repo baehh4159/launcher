@@ -2,6 +2,7 @@ package com.desklauncher.feature.desk.ui
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.desklauncher.core.datastore.GripPosition
 import com.desklauncher.core.designsystem.text.UiText
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.toolapi.ActiveTool
@@ -10,6 +11,7 @@ import com.desklauncher.core.toolapi.ActiveTool
 data class DeskUiState(
     val isLoading: Boolean = true,
     val tabs: List<DeskTabUi> = emptyList(),
+    val gripPosition: GripPosition = GripPosition.Bottom,
 )
 
 /** 인덱스 탭 하나의 화면 모델. */
