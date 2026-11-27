@@ -72,9 +72,35 @@ object DeskMotion {
     /** 처음/끝을 이만큼(탭 단위) 넘기면 '벽' 진동. */
     const val HapticEdgeThreshold = 0.25f
 
-    /** 진동이 뭉개지지 않도록 하는 최소 간격. */
-    const val HapticMinIntervalMillis = 12L
+    /**
+     * 탭 넘김 진동 최소 간격. THUD는 꼬리가 30~40ms라 그보다 촘촘하면 진동이 뭉개져 '웅—' 하는 잔향이 남는다.
+     * 빠른 플링에서는 몇 칸을 건너뛰더라도 또렷한 '툭'만 남긴다.
+     */
+    const val HapticMinIntervalMillis = 42L
 
-    /** 이보다 짧은 간격으로 연속되면 가벼운(FREQUENT) 틱 사용. */
-    const val HapticFastIntervalMillis = 55L
+    /** 이보다 짧은 간격으로 연속되면 빠른 넘김 — 한 단계 약한 THUD */
+    const val HapticFastIntervalMillis = 90L
+
+    /** 서류철을 열어 확정한 뒤 이 시간 동안은 넘김 진동을 내지 않는다 (확정 '툭'의 여운을 지키기 위함) */
+    const val HapticQuietAfterConfirmMillis = 160L
+
+    // ── 진동 세기 (VibrationEffect.Composition 스케일 0..1) ──
+    /** 탭 넘김: 낮은 THUD로 짧고 둔탁하게 */
+    const val ThudTickScale = 0.55f
+    const val ThudTickFastScale = 0.45f
+    /** 첫/마지막을 넘어 당김(벽) */
+    const val ThudEdgeScale = 0.7f
+    /** 서류철 확정: 책을 툭 내려놓는 묵직한 THUD */
+    const val ThudConfirmScale = 0.92f
+    /** 설정 '약하게'일 때 곱하는 값 */
+    const val LightLevelFactor = 0.6f
+
+    // THUD 미지원 기기 폴백
+    const val LowTickTickScale = 0.8f
+    const val LowTickConfirmScale = 1f
+    /** 프리미티브가 모두 없을 때: 짧은 단발 진동(ms, 진폭 1..255) */
+    const val OneShotTickMillis = 10L
+    const val OneShotTickAmplitude = 90
+    const val OneShotConfirmMillis = 24L
+    const val OneShotConfirmAmplitude = 200
 }

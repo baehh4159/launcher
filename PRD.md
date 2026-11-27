@@ -99,11 +99,12 @@ Idle ──(탭 영역 터치 다운)──▶ Scrubbing ──(손 뗌, 속도 
 ### 3.4 햅틱 (촉각 피드백)
 | 이벤트 | 1순위 | 대체(fallback) |
 |---|---|---|
-| 탭 경계 통과 (느린 스크럽) | `HapticFeedbackConstants.SEGMENT_TICK` (API 34) | `CLOCK_TICK` |
-| 탭 경계 통과 (빠른 플링) | `SEGMENT_FREQUENT_TICK` (API 34) | `CLOCK_TICK` |
-| 첫/마지막 탭 도달(벽) | `VibrationEffect.Composition` `PRIMITIVE_THUD`/`PRIMITIVE_CLICK` | `HapticFeedbackConstants.CONFIRM` |
-| 서류철 열기 확정 | `CONFIRM` | `VIRTUAL_KEY` |
+| 탭 경계 통과 | `PRIMITIVE_THUD` 0.55 (빠른 연속 0.45) — 짧고 둔탁하게 | `PRIMITIVE_LOW_TICK` 0.8 → 단발 10ms |
+| 첫/마지막 탭 도달(벽) | `PRIMITIVE_THUD` 0.7 | `PRIMITIVE_LOW_TICK` 1.0 → 단발 10ms |
+| 서류철 열기 확정 | `PRIMITIVE_THUD` 0.92 — 책을 툭 내려놓는 묵직함 | `PRIMITIVE_LOW_TICK` 1.0 → 단발 24ms |
 
+- 2026-11-27 리디자인: 가볍고 날카로운 틱 대신 S24+ 리니어 모터의 THUD로 '책' 질감. 모든 진동은 `USAGE_TOUCH`(시스템 터치 진동 세기 반영), 설정 '약하게'는 ×0.6.
+- 잔향 방지: 넘김 최소 간격 42ms(THUD 꼬리보다 길게), 90ms 안에 연속이면 약한 넘김, 확정 뒤 160ms는 넘김 진동 없음. 값은 `DeskMotion`, 선택 로직은 `DeskHapticSpec`(순수·테스트).
 - 정수 인덱스 경계를 **넘는 순간에만** 1회 발생 (같은 경계를 떨림으로 왕복할 때 중복 방지를 위해 히스테리시스 적용).
 - 고속 플링 시 최소 발생 간격(예: 15~20ms) 제한 — 진동이 뭉개지지 않게.
 - Composition primitive는 기기마다 지원이 다르므로 `Vibrator.areAllPrimitivesSupported()` 확인 후 사용.

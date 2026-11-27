@@ -14,7 +14,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalView
-import com.desklauncher.core.designsystem.motion.DeskMotion
 
 /** 설정의 햅틱 강도 (SHELL-11에서 DataStore와 연결). */
 enum class HapticLevel { Off, Light, Default }
@@ -23,8 +22,10 @@ enum class HapticLevel { Off, Light, Default }
 val LocalDeskHapticLevel = staticCompositionLocalOf { HapticLevel.Default }
 
 /**
- * 책상 햅틱 (SHELL-04, PRD §3.4). feature 모듈은 Vibrator를 직접 쓰지 않고 이 클래스만 쓴다.
- * View 햅틱은 시스템 '터치 피드백' 설정을, Vibrator 진동은 USAGE_TOUCH 강도 설정을 따른다.
+ * 책상 햅틱 (SHELL-04, PRD §3.4) — '책을 툭 놓는' 둔탁한 질감.
+ * S24+의 리니어 모터에서 PRIMITIVE_THUD를 우선 쓰고(넘김 약하게·확정 세게), 미지원이면 LOW_TICK → 단발 진동.
+ * 모든 진동은 USAGE_TOUCH라 시스템 '터치 진동 세기' 설정을 따른다.
+ * feature 모듈은 Vibrator를 직접 쓰지 않고 이 클래스만 쓴다.
  */
 @Stable
 class DeskHaptics internal constructor(
@@ -33,53 +34,53 @@ class DeskHaptics internal constructor(
     private val level: HapticLevel,
     private val uptimeMillis: () -> Long = SystemClock::uptimeMillis,
 ) {
-    private var lastTickAt = Long.MIN_VALUE / 2
+    private val debouncer = HapticDebouncer()
+    private val thudSupported = vibrator?.areAllPrimitivesSupported(VibrationEffect.Composition.PRIMITIVE_THUD) == true
+    private val lowTickSupported = vibrator?.areAllPrimitivesSupported(VibrationEffect.Composition.PRIMITIVE_LOW_TICK) == true
+    private val touch = VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH)
 
-    private val thudSupported: Boolean =
-        vibrator?.areAllPrimitivesSupported(VibrationEffect.Composition.PRIMITIVE_THUD) == true
-
-    /** 탭 경계 통과. 연속으로 빠르게 오면 가벼운 틱으로 바꾸고, 너무 촘촘하면 건너뛴다. */
+    /** 탭 경계 통과: 짧고 둔탁한 THUD. 너무 촘촘하면 건너뛴다(잔향 방지). */
     fun segmentTick() {
-        if (level == HapticLevel.Off || view == null) return
-        val now = uptimeMillis()
-        val since = now - lastTickAt
-        if (since < DeskMotion.HapticMinIntervalMillis) return
-        lastTickAt = now
-        val light = level == HapticLevel.Light || since < DeskMotion.HapticFastIntervalMillis
-        view.performHapticFeedback(
-            if (light) HapticFeedbackConstants.SEGMENT_FREQUENT_TICK else HapticFeedbackConstants.SEGMENT_TICK,
-        )
+        val event = debouncer.tick(uptimeMillis()) ?: return
+        play(event)
     }
 
-    /** 첫/마지막 서류철을 넘어 당김(벽). 지원 기기에서는 묵직한 THUD primitive. */
-    fun edge() {
-        if (level == HapticLevel.Off) return
-        if (level == HapticLevel.Default && thudSupported && vibrator != null) {
-            vibrator.vibrate(
-                VibrationEffect.startComposition()
-                    .addPrimitive(VibrationEffect.Composition.PRIMITIVE_THUD, EdgeScale)
-                    .compose(),
-                VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH),
-            )
-        } else {
-            view?.performHapticFeedback(HapticFeedbackConstants.GESTURE_THRESHOLD_ACTIVATE)
-        }
+    /** 첫/마지막 서류철을 넘어 당김(벽) */
+    fun edge() = play(HapticEvent.Edge)
+
+    /** 서류철 열기 확정: 묵직한 THUD 한 번 */
+    fun confirm() {
+        debouncer.confirm(uptimeMillis())
+        play(HapticEvent.Confirm)
     }
 
-    /** 키패드 누름 (계산기 등) */
+    /** 키패드 누름 (계산기 등) — 짧은 시스템 탭 */
     fun keyTap() {
         if (level == HapticLevel.Off) return
         view?.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
-    /** 서류철 열기 확정. */
-    fun confirm() {
-        if (level == HapticLevel.Off) return
-        view?.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+    private fun play(event: HapticEvent) {
+        val target = vibrator ?: return
+        if (!target.hasVibrator()) return
+        when (val plan = DeskHapticSpec.plan(event, level, thudSupported, lowTickSupported)) {
+            HapticPlan.None -> Unit
+            is HapticPlan.Primitive -> target.vibrate(
+                VibrationEffect.startComposition()
+                    .addPrimitive(plan.kind.toPrimitiveId(), plan.scale.coerceIn(0f, 1f))
+                    .compose(),
+                touch,
+            )
+            is HapticPlan.OneShot -> target.vibrate(
+                VibrationEffect.createOneShot(plan.millis, if (target.hasAmplitudeControl()) plan.amplitude else VibrationEffect.DEFAULT_AMPLITUDE),
+                touch,
+            )
+        }
     }
 
-    private companion object {
-        const val EdgeScale = 0.6f
+    private fun PrimitiveKind.toPrimitiveId(): Int = when (this) {
+        PrimitiveKind.Thud -> VibrationEffect.Composition.PRIMITIVE_THUD
+        PrimitiveKind.LowTick -> VibrationEffect.Composition.PRIMITIVE_LOW_TICK
     }
 }
 
