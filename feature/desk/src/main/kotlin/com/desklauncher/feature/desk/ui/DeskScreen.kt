@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -49,7 +50,9 @@ import com.desklauncher.core.designsystem.scrub.IndexTabStrip
 import com.desklauncher.core.designsystem.scrub.ScrubPhase
 import com.desklauncher.core.designsystem.scrub.StripSide
 import com.desklauncher.core.designsystem.scrub.rememberIndexScrubState
+import com.desklauncher.core.designsystem.text.UiText
 import com.desklauncher.core.designsystem.text.asString
+import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.desk.R
 import com.desklauncher.feature.desk.clock.DeskClockFormatter
@@ -163,59 +166,72 @@ fun DeskScreen(
                     .align(Alignment.TopStart)
                     .padding(horizontal = 24.dp, vertical = 16.dp),
             )
-            when {
-                // 로딩 중에는 빈 책상만 보여 준다 (홈 복귀 시 깜빡임 방지).
-                state.isLoading -> Unit
-                state.tabs.isEmpty() -> DeskEmptyState(
-                    title = stringResource(R.string.desk_empty_title),
-                    body = stringResource(R.string.desk_empty_body),
-                    action = {
-                        FilledTonalButton(onClick = { onAction(DeskAction.OpenToolStore) }) {
-                            Text(stringResource(R.string.desk_empty_action))
-                        }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(horizontal = 32.dp),
-                )
-                else -> {
-                    val focusedTab = state.tabs.getOrNull(stripState.focusedIndex)
-                        ?.takeIf { stripState.phase != ScrubPhase.Idle }
-                    AnimatedContent(
-                        targetState = focusedTab,
-                        transitionSpec = { fadeIn(tween(120)) togetherWith fadeOut(tween(90)) },
-                        contentKey = { it?.toolId },
-                        label = "deskPreview",
+            // 로딩 중에는 빈 책상만 보여 준다 (홈 복귀 시 깜빡임 방지).
+            if (!state.isLoading) {
+                if (state.tabs.isEmpty()) {
+                    DeskEmptyState(
+                        title = stringResource(R.string.desk_empty_title),
+                        body = stringResource(R.string.desk_empty_body),
+                        action = {
+                            FilledTonalButton(onClick = { onAction(DeskAction.OpenToolStore) }) {
+                                Text(stringResource(R.string.desk_empty_action))
+                            }
+                        },
                         modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(start = 24.dp, end = 24.dp, top = 136.dp),
-                    ) { tab ->
-                        if (tab != null) toolPreview(tab, Modifier)
-                    }
-
-                    val items = state.tabs.map { tab ->
-                        IndexTabItem(key = tab.toolId, label = tab.title.asString(), icon = tab.icon, color = tab.color)
-                    }
-                    IndexTabStrip(
-                        items = items,
-                        state = stripState,
-                        onOpen = { index -> state.tabs.getOrNull(index)?.let { onAction(DeskAction.OpenTool(it.toolId)) } },
-                        openActionLabel = stringResource(R.string.desk_tab_open_action),
-                        // 서류철은 왼쪽에 꽂혀 오른쪽으로 튀어나오고, 엄지는 오른쪽에서 훑는다 (사용자 결정, PRD §3).
-                        side = StripSide.Left,
-                        scrubSide = StripSide.Right,
-                        // 기본은 엄지가 닿는 하단 2/3 (PRD §3.1). 설정에서 위/가운데로 옮길 수 있다.
-                        modifier = Modifier
-                            .align(state.gripPosition.alignment())
-                            .fillMaxWidth()
-                            .fillMaxHeight(StripHeightFraction)
-                            .padding(vertical = 24.dp),
+                            .align(Alignment.Center)
+                            .padding(horizontal = 32.dp),
                     )
                 }
+                // 앱 서랍은 도구가 아니지만 서류철 하나로 늘 맨 끝에 꽂아 둔다 (SHELL-07). 도구가 없어도 열 수 있다.
+                val stripTabs = state.tabs + AppDrawerTab
+                val focusedTab = stripTabs.getOrNull(stripState.focusedIndex)
+                    ?.takeIf { stripState.phase != ScrubPhase.Idle }
+                AnimatedContent(
+                    targetState = focusedTab,
+                    transitionSpec = { fadeIn(tween(120)) togetherWith fadeOut(tween(90)) },
+                    contentKey = { it?.toolId },
+                    label = "deskPreview",
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(start = 24.dp, end = 24.dp, top = 136.dp),
+                ) { tab ->
+                    if (tab != null) toolPreview(tab, Modifier)
+                }
+
+                val items = stripTabs.map { tab ->
+                    IndexTabItem(key = tab.toolId, label = tab.title.asString(), icon = tab.icon, color = tab.color)
+                }
+                IndexTabStrip(
+                    items = items,
+                    state = stripState,
+                    onOpen = { index ->
+                        stripTabs.getOrNull(index)?.let { tab ->
+                            onAction(if (tab === AppDrawerTab) DeskAction.OpenAppDrawer else DeskAction.OpenTool(tab.toolId))
+                        }
+                    },
+                    openActionLabel = stringResource(R.string.desk_tab_open_action),
+                    // 서류철은 왼쪽에 꽂혀 오른쪽으로 튀어나오고, 엄지는 오른쪽에서 훑는다 (사용자 결정, PRD §3).
+                    side = StripSide.Left,
+                    scrubSide = StripSide.Right,
+                    // 기본은 엄지가 닿는 하단 2/3 (PRD §3.1). 설정에서 위/가운데로 옮길 수 있다.
+                    modifier = Modifier
+                        .align(state.gripPosition.alignment())
+                        .fillMaxWidth()
+                        .fillMaxHeight(StripHeightFraction)
+                        .padding(vertical = 24.dp),
+                )
             }
         }
     }
 }
+
+/** 앱 서랍 서류철. 키는 도구 id 규칙([a-z]…)과 겹치지 않는 값이다. */
+private val AppDrawerTab = DeskTabUi(
+    toolId = "@apps",
+    title = UiText.Res(R.string.desk_app_drawer_tab),
+    icon = Icons.Outlined.Apps,
+    color = DeskTabColor.Green,
+)
 
 /** 하단 손잡이: 위로 밀기 안내 + 접근성용 버튼. */
 @Composable

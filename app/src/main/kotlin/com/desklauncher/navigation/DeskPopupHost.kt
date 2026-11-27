@@ -1,5 +1,6 @@
 package com.desklauncher.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -26,6 +27,7 @@ import com.desklauncher.core.toolapi.DeskTool
 import com.desklauncher.core.toolapi.PluginStorageProvider
 import com.desklauncher.core.toolapi.SimpleDeskTool
 import com.desklauncher.core.toolapi.ToolRegistry
+import com.desklauncher.feature.apps.ui.AppsRoute
 import kotlinx.serialization.Serializable
 
 /**
@@ -120,4 +122,15 @@ internal fun ToolPopupContent(
             entered -> onClose()
         }
     }
+}
+
+/** 앱 서랍을 팝업 창 안에 띄운다 (SHELL-07). 뒤로가기는 서랍 안(검색 지우기 등)이 먼저 처리하고, 남으면 창을 닫는다. */
+@Composable
+internal fun AppDrawerPopupContent(
+    onClose: () -> Unit,
+    onOpenStore: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    BackHandler(onBack = onClose)
+    AppsRoute(onBack = onClose, onOpenStore = onOpenStore, onOpenSettings = onOpenSettings)
 }

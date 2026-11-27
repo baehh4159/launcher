@@ -16,9 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import com.desklauncher.core.designsystem.motion.DeskTransitions
 import com.desklauncher.core.toolapi.PluginStorageProvider
 import com.desklauncher.core.toolapi.ToolRegistry
-import com.desklauncher.feature.apps.navigation.AppsDestination
-import com.desklauncher.feature.apps.navigation.appsScreen
-import com.desklauncher.feature.apps.navigation.navigateToApps
 import com.desklauncher.feature.desk.navigation.DeskDestination
 import com.desklauncher.feature.desk.navigation.deskScreen
 import com.desklauncher.feature.settings.navigation.OnboardingDestination
@@ -68,11 +65,7 @@ fun DeskNavHost(
             navController = navController,
             startDestination = DeskDestination,
             enterTransition = {
-                when {
-                    targetState.destination.isApps() -> DeskTransitions.drawerOpen
-                    initialState.destination.isDesk() -> DeskTransitions.folderOpen
-                    else -> DeskTransitions.innerEnter
-                }
+                if (initialState.destination.isDesk()) DeskTransitions.folderOpen else DeskTransitions.innerEnter
             },
             exitTransition = {
                 if (initialState.destination.isDesk()) DeskTransitions.deskRecede else DeskTransitions.innerExit
@@ -81,11 +74,7 @@ fun DeskNavHost(
                 if (targetState.destination.isDesk()) DeskTransitions.deskReturn else DeskTransitions.innerPopEnter
             },
             popExitTransition = {
-                when {
-                    initialState.destination.isApps() -> DeskTransitions.drawerClose
-                    targetState.destination.isDesk() -> DeskTransitions.folderClose
-                    else -> DeskTransitions.innerPopExit
-                }
+                if (targetState.destination.isDesk()) DeskTransitions.folderClose else DeskTransitions.innerPopExit
             },
         ) {
             deskScreen(
@@ -94,12 +83,7 @@ fun DeskNavHost(
                     if (toolRegistry.findTool(toolId) != null) popupKey = toolId
                 },
                 onOpenToolStore = navController::navigateToStore,
-                onOpenAppDrawer = navController::navigateToApps,
-            )
-            appsScreen(
-                onBack = navController::popBackStack,
-                onOpenStore = navController::navigateToStore,
-                onOpenSettings = navController::navigateToSettings,
+                onOpenAppDrawer = { popupKey = AppDrawerPopupKey },
             )
             storeScreen(onBack = navController::popBackStack)
             settingsScreen(onBack = navController::popBackStack)
@@ -108,7 +92,19 @@ fun DeskNavHost(
 
         DeskPopupHost(popupKey = popupKey, onDismiss = { popupKey = null }) { key ->
             val tool = toolRegistry.findTool(key)
-            if (tool == null) {
+            if (key == AppDrawerPopupKey) {
+                AppDrawerPopupContent(
+                    onClose = { popupKey = null },
+                    onOpenStore = {
+                        popupKey = null
+                        navController.navigateToStore()
+                    },
+                    onOpenSettings = {
+                        popupKey = null
+                        navController.navigateToSettings()
+                    },
+                )
+            } else if (tool == null) {
                 // 플러그인을 뺀 뒤 복원된 키 등 — 크래시 대신 안내
                 MissingToolScreen(onClose = { popupKey = null })
             } else {
@@ -125,4 +121,5 @@ fun DeskNavHost(
 
 private fun NavDestination.isDesk(): Boolean = hierarchy.any { it.hasRoute(DeskDestination::class) }
 
-private fun NavDestination.isApps(): Boolean = hierarchy.any { it.hasRoute(AppsDestination::class) }
+/** 앱 서랍 팝업 키. 도구 id 규칙([a-z]…)과 겹치지 않는다. */
+private const val AppDrawerPopupKey = "@apps"
