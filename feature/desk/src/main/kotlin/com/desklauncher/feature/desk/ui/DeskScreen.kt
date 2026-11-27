@@ -10,6 +10,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -200,11 +201,13 @@ fun DeskScreen(
                         state = stripState,
                         onOpen = { index -> state.tabs.getOrNull(index)?.let { onAction(DeskAction.OpenTool(it.toolId)) } },
                         openActionLabel = stringResource(R.string.desk_tab_open_action),
-                        // 서류철은 왼쪽 가장자리에 꽂고 오른쪽(화면 안쪽)으로 튀어나온다 (사용자 결정, PRD §13).
-                        side = DeskStripSide,
+                        // 서류철은 왼쪽에 꽂혀 오른쪽으로 튀어나오고, 엄지는 오른쪽에서 훑는다 (사용자 결정, PRD §3).
+                        side = StripSide.Left,
+                        scrubSide = StripSide.Right,
                         // 기본은 엄지가 닿는 하단 2/3 (PRD §3.1). 설정에서 위/가운데로 옮길 수 있다.
                         modifier = Modifier
                             .align(state.gripPosition.alignment())
+                            .fillMaxWidth()
                             .fillMaxHeight(StripHeightFraction)
                             .padding(vertical = 24.dp),
                     )
@@ -229,8 +232,6 @@ private fun AppDrawerHint(onClick: () -> Unit, modifier: Modifier = Modifier) {
 
 private val AppDrawerSwipeThreshold = 72.dp
 private const val StripHeightFraction = 0.66f
-
-private val DeskStripSide = StripSide.Left
 
 private fun GripPosition.alignment(): Alignment = when (this) {
     GripPosition.Top -> AbsoluteAlignment.TopLeft

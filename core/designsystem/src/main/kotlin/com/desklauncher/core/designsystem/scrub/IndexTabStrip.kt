@@ -4,6 +4,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,7 +84,10 @@ data class IndexTabItem(
  * 선택 서류철 옆(화면 안쪽)에는 도구 이름 알약이 칸 단위로 따라간다.
  * 애니메이션 값은 offset/graphicsLayer 람다에서만 읽어 재구성을 피한다(칸이 바뀔 때만 재구성).
  *
- * @param side 스트립이 붙는 화면 가장자리
+ * @param side 서류철이 꽂히는 화면 가장자리
+ * @param scrubSide 엄지로 훑는 영역이 있는 가장자리. [side]와 다르면 스트립이 화면 폭 전체를 쓰고,
+ *   훑는 영역은 반대편 가장자리에서 [DeskMotion.ScrubZoneEdgeInset] 안쪽에 놓인다 (뒤로가기 제스처와 분리).
+ *   이때 서류철 자체도 탭으로 열 수 있다.
  * @param openActionLabel TalkBack "두 번 탭하여 ○○" 문구
  */
 @Composable
@@ -90,6 +98,7 @@ fun IndexTabStrip(
     openActionLabel: String,
     modifier: Modifier = Modifier,
     side: StripSide = StripSide.Right,
+    scrubSide: StripSide = side,
 ) {
     val count = items.size
     SideEffect { state.itemCount = count }
@@ -108,6 +117,7 @@ fun IndexTabStrip(
     val edge = side.edgeAlignment()
     // 화면 안쪽 방향: 오른쪽 스트립은 -x(왼쪽), 왼쪽 스트립은 +x(오른쪽)
     val inward = if (side == StripSide.Right) -1f else 1f
+    val split = scrubSide != side
 
     BoxWithConstraints(modifier = modifier.fillMaxHeight(), contentAlignment = side.centerAlignment()) {
         val extent = (maxHeight / count).coerceIn(DeskMotion.TabMinExtent, DeskMotion.TabMaxExtent)
@@ -124,8 +134,9 @@ fun IndexTabStrip(
         // 알약은 손가락을 연속으로 따르지 않고 칸 단위로 '툭' 옮겨 간다
         val indicatorIndex = animateFloatAsState(focused.toFloat(), popSpring, label = "indicatorIndex")
 
-        // 탭·터치 영역 모두 이 상자 안에 있어야 보이는 탭 어디를 잡아도 스크럽된다
-        Box(modifier = Modifier.width(maxOf(tabWidth, DeskMotion.StripTouchWidth)).height(extent * count)) {
+        // 탭·터치 영역이 같은 상자(같은 세로 범위) 안에 있어야 훑는 높이와 튀어나오는 서류철이 맞는다
+        val boxWidth = if (split) Modifier.fillMaxWidth() else Modifier.width(maxOf(tabWidth, DeskMotion.StripTouchWidth))
+        Box(modifier = boxWidth.height(extent * count)) {
             items.forEachIndexed { index, item ->
                 val pop = animateFloatAsState(
                     targetValue = if (scrubbing) IndexScrubMath.popLevel(index, focused) else 0f,
@@ -140,6 +151,8 @@ fun IndexTabStrip(
                     y = { index * extentPx },
                     openActionLabel = openActionLabel,
                     onOpen = { openWithHaptic(index) },
+                    // 훑는 영역이 반대편이면 서류철은 가려지지 않으므로 직접 눌러 열 수 있다
+                    tappable = split,
                     modifier = Modifier
                         .align(edge)
                         .width(tabWidth)
@@ -160,29 +173,89 @@ fun IndexTabStrip(
                 modifier = Modifier.align(edge),
             )
 
-            // 터치 영역: 탭 위에 겹친 투명 박스. 의미 정보는 각 탭이 가진다.
-            Box(
-                modifier = Modifier
-                    .align(edge)
-                    .width(DeskMotion.StripTouchWidth)
-                    .fillMaxHeight()
-                    // 뒤로가기 제스처와 겹치는 가장자리 중 정책 한도(200dp)만큼만 가운데를 제외한다.
-                    .systemGestureExclusion { coordinates ->
-                        val height = coordinates.size.height.toFloat()
-                        val excluded = min(height, exclusionPx)
-                        val top = (height - excluded) / 2f
-                        Rect(0f, top, coordinates.size.width.toFloat(), top + excluded)
-                    }
-                    .indexScrubGesture(
-                        state = state,
-                        itemExtentPx = extentPx,
-                        cancelDistancePx = cancelPx,
-                        onOpen = openWithHaptic,
-                        side = side,
-                    ),
-            )
+            if (split) {
+                ScrubZone(
+                    state = state,
+                    items = items,
+                    active = active,
+                    extentPx = extentPx,
+                    modifier = Modifier
+                        .align(scrubSide.edgeAlignment())
+                        .then(
+                            if (scrubSide == StripSide.Right) {
+                                Modifier.absolutePadding(right = DeskMotion.ScrubZoneEdgeInset)
+                            } else {
+                                Modifier.absolutePadding(left = DeskMotion.ScrubZoneEdgeInset)
+                            },
+                        )
+                        .width(DeskMotion.ScrubZoneWidth)
+                        .fillMaxHeight()
+                        .indexScrubGesture(
+                            state = state,
+                            itemExtentPx = extentPx,
+                            cancelDistancePx = cancelPx,
+                            onOpen = openWithHaptic,
+                            side = scrubSide,
+                        ),
+                )
+            } else {
+                // 터치 영역: 탭 위에 겹친 투명 박스. 의미 정보는 각 탭이 가진다.
+                Box(
+                    modifier = Modifier
+                        .align(edge)
+                        .width(DeskMotion.StripTouchWidth)
+                        .fillMaxHeight()
+                        // 뒤로가기 제스처와 겹치는 가장자리 중 정책 한도(200dp)만큼만 가운데를 제외한다.
+                        .systemGestureExclusion { coordinates ->
+                            val height = coordinates.size.height.toFloat()
+                            val excluded = min(height, exclusionPx)
+                            val top = (height - excluded) / 2f
+                            Rect(0f, top, coordinates.size.width.toFloat(), top + excluded)
+                        }
+                        .indexScrubGesture(
+                            state = state,
+                            itemExtentPx = extentPx,
+                            cancelDistancePx = cancelPx,
+                            onOpen = openWithHaptic,
+                            side = side,
+                        ),
+                )
+            }
         }
     }
+}
+
+/**
+ * 훑는 영역의 눈금: 가는 세로선 + 서류철마다 점. 스크럽 중에는 현재 칸의 점이 그 서류철 색으로 커진다.
+ * 값은 그리기 단계에서만 읽어 재구성을 피한다.
+ */
+@Composable
+private fun ScrubZone(
+    state: IndexScrubState,
+    items: List<IndexTabItem>,
+    active: State<Float>,
+    extentPx: Float,
+    modifier: Modifier = Modifier,
+) {
+    val line = DeskTheme.colors.lineStrong
+    Box(
+        modifier = modifier
+            .clearAndSetSemantics { }
+            .drawBehind {
+                val x = size.width / 2f
+                drawLine(line, Offset(x, extentPx / 2f), Offset(x, size.height - extentPx / 2f), strokeWidth = DeskLine.Hairline.toPx())
+                val focused = state.focusedIndex.coerceIn(0, items.lastIndex)
+                val dot = ScrubDotRadius.toPx()
+                items.forEachIndexed { index, item ->
+                    val center = Offset(x, index * extentPx + extentPx / 2f)
+                    if (index == focused && active.value > 0f) {
+                        drawCircle(item.color.container, radius = dot * (1f + 1.5f * active.value), center = center)
+                    } else {
+                        drawCircle(line, radius = dot, center = center)
+                    }
+                }
+            },
+    )
 }
 
 /** Idle 0 → 스크럽 1 (취소 대기 중에는 0.35로 움츠러듦) */
@@ -214,6 +287,7 @@ private fun IndexTab(
     y: () -> Float,
     openActionLabel: String,
     onOpen: () -> Unit,
+    tappable: Boolean,
     modifier: Modifier = Modifier,
 ) {
     // 둥근 모서리·아이콘은 화면 안쪽(보이는 쪽)에 둔다
@@ -224,14 +298,23 @@ private fun IndexTab(
             .background(item.color.container, shape)
             // 그림자 대신 얇은 선으로 탭끼리 구분
             .border(DeskLine.Hairline, DeskTheme.colors.lineStrong, shape)
-            .semantics {
-                role = Role.Button
-                contentDescription = item.label
-                onClick(label = openActionLabel) {
-                    onOpen()
-                    true
-                }
-            },
+            .then(
+                if (tappable) {
+                    Modifier
+                        .clip(shape)
+                        .clickable(onClickLabel = openActionLabel, role = Role.Button, onClick = onOpen)
+                        .semantics { contentDescription = item.label }
+                } else {
+                    Modifier.semantics {
+                        role = Role.Button
+                        contentDescription = item.label
+                        onClick(label = openActionLabel) {
+                            onOpen()
+                            true
+                        }
+                    }
+                },
+            ),
         contentAlignment = if (side == StripSide.Right) AbsoluteAlignment.CenterLeft else AbsoluteAlignment.CenterRight,
     ) {
         Icon(
@@ -286,6 +369,7 @@ private fun TabIndicator(
 }
 
 private val TabIconInset = 11.dp
+private val ScrubDotRadius = 2.dp
 private val RightTabShape = AbsoluteRoundedCornerShape(topLeft = 10.dp, bottomLeft = 10.dp)
 private val LeftTabShape = AbsoluteRoundedCornerShape(topRight = 10.dp, bottomRight = 10.dp)
 private val PillShape = RoundedCornerShape(percent = 50)
@@ -330,6 +414,25 @@ private fun IndexTabStripLeftScrubbingPreview() {
                 openActionLabel = "열기",
                 modifier = Modifier.align(AbsoluteAlignment.CenterLeft),
                 side = StripSide.Left,
+            )
+        }
+    }
+}
+
+/** 책상 배치 스냅샷: 서류철은 왼쪽, 엄지는 오른쪽 눈금을 훑는 중 (네 번째 칸) */
+@DeskPreviews
+@Composable
+private fun IndexTabStripSplitScrubbingPreview() {
+    DeskTheme {
+        DeskSurface {
+            IndexTabStrip(
+                items = PreviewItems,
+                state = rememberIndexScrubState(initialFocus = 3.3f, initialPhase = ScrubPhase.Scrubbing),
+                onOpen = {},
+                openActionLabel = "열기",
+                modifier = Modifier.align(Alignment.Center),
+                side = StripSide.Left,
+                scrubSide = StripSide.Right,
             )
         }
     }

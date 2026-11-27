@@ -52,6 +52,13 @@ object DeskMotion {
     /** 앱 목록이 글자 스트립에 가리지 않도록 오른쪽에 비워 둘 폭 */
     val LetterStripReservedWidth = 76.dp
 
+    /**
+     * 서류철과 훑는 영역이 다른 쪽일 때(서류철 왼쪽·엄지 오른쪽) 훑는 영역의 위치·폭.
+     * 가장자리 32dp는 삼성 스와이프 제스처 뒤로가기 몫으로 비우고, 그 안쪽 64dp(엄지 폭 약 1.5배)에서 받는다.
+     */
+    val ScrubZoneEdgeInset = 32.dp
+    val ScrubZoneWidth = 64.dp
+
     /** 시스템이 한쪽 가장자리당 허용하는 제스처 제외 최대 높이 (Android 정책). */
     val GestureExclusionMaxHeight = 200.dp
 
