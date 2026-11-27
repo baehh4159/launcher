@@ -1,0 +1,141 @@
+package com.desklauncher.feature.files.ui
+
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.desklauncher.core.designsystem.component.DeskEmptyState
+import com.desklauncher.core.designsystem.component.ToolTopBar
+import com.desklauncher.core.designsystem.preview.DeskPreviews
+import com.desklauncher.core.designsystem.theme.DeskTabColor
+import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.feature.files.R
+import com.desklauncher.feature.files.domain.model.FileCategory
+import com.desklauncher.feature.files.domain.model.FileItem
+import com.desklauncher.feature.files.ui.component.FileRow
+import java.time.Instant
+
+@Composable
+fun FilesRoute(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: FilesViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    FilesScreen(
+        state = uiState,
+        onAction = { if (it == FilesAction.Back) onBack() else viewModel.onAction(it) },
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun FilesScreen(
+    state: FilesUiState,
+    onAction: (FilesAction) -> Unit,
+    modifier: Modifier = Modifier,
+    onOpen: (FileItem) -> Unit = {},
+    rowTrailing: @Composable (FileItem) -> Unit = {},
+) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            ToolTopBar(
+                title = stringResource(R.string.files_tool_title),
+                tabColor = DeskTabColor.Gray,
+                backContentDescription = stringResource(R.string.files_back),
+                onBack = { onAction(FilesAction.Back) },
+            )
+        },
+    ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FileCategory.entries.forEach { category ->
+                    FilterChip(
+                        selected = state.category == category,
+                        onClick = { onAction(FilesAction.SelectCategory(category)) },
+                        label = { Text(stringResource(category.labelRes())) },
+                    )
+                }
+            }
+            Box(Modifier.fillMaxSize()) {
+                when {
+                    state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    state.files.isEmpty() -> DeskEmptyState(
+                        title = stringResource(R.string.files_empty_title),
+                        body = stringResource(state.category.emptyRes()),
+                        icon = Icons.AutoMirrored.Outlined.InsertDriveFile,
+                        modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                    )
+                    else -> LazyColumn(Modifier.fillMaxSize()) {
+                        items(state.files, key = { "${it.category}_${it.id}" }) { file ->
+                            Column(Modifier.animateItem()) {
+                                FileRow(file = file, onClick = { onOpen(file) }, trailing = { rowTrailing(file) })
+                                HorizontalDivider()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+internal fun FileCategory.labelRes(): Int = when (this) {
+    FileCategory.Scans -> R.string.files_category_scans
+    FileCategory.Doodles -> R.string.files_category_doodles
+}
+
+internal fun FileCategory.emptyRes(): Int = when (this) {
+    FileCategory.Scans -> R.string.files_empty_scans
+    FileCategory.Doodles -> R.string.files_empty_doodles
+}
+
+@DeskPreviews
+@Composable
+private fun FilesScreenPreview() {
+    val now = Instant.parse("2026-11-26T06:00:00Z")
+    DeskTheme {
+        FilesScreen(
+            state = FilesUiState(
+                isLoading = false,
+                files = listOf(
+                    FileItem("1", "전세 계약서.pdf", FileCategory.Scans, "documents/1.pdf", "application/pdf", 1_240_000, now),
+                    FileItem("2", "관리비 고지서.pdf", FileCategory.Scans, "documents/2.pdf", "application/pdf", 320_000, now),
+                ),
+            ),
+            onAction = {},
+        )
+    }
+}
+
+@DeskPreviews
+@Composable
+private fun FilesScreenEmptyPreview() {
+    DeskTheme { FilesScreen(state = FilesUiState(isLoading = false, category = FileCategory.Doodles), onAction = {}) }
+}

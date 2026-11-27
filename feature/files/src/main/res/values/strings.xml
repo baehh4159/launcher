@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_tool_title">내파일</string>
+    <string name="files_tool_description">책상 위에 꺼내 둔 파일을 모아 봐요</string>
+    <string name="files_back">책상으로</string>
+    <string name="files_category_scans">스캔 문서</string>
+    <string name="files_category_doodles">낙서 이미지</string>
+    <string name="files_empty_scans">서류정리함에서 스캔한 PDF가 여기에 모여요.</string>
+    <string name="files_empty_doodles">낙서장에 저장한 그림이 여기에 모여요.</string>
+    <string name="files_empty_title">파일이 없어요</string>
+</resources>
