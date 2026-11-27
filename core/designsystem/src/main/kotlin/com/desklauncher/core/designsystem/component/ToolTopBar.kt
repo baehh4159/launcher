@@ -1,10 +1,12 @@
 package com.desklauncher.core.designsystem.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -16,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 
 /**
@@ -32,24 +35,27 @@ fun ToolTopBar(
     onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    TopAppBar(
-        modifier = modifier,
-        title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        navigationIcon = {
-            if (onBack != null) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = backContentDescription)
+    // 그림자 대신 아래 얇은 선으로 본문과 나눈다
+    Column(modifier) {
+        TopAppBar(
+            title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            navigationIcon = {
+                if (onBack != null) {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = backContentDescription)
+                    }
                 }
-            }
-        },
-        actions = actions,
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = tabColor.container,
-            titleContentColor = tabColor.onContainer,
-            navigationIconContentColor = tabColor.onContainer,
-            actionIconContentColor = tabColor.onContainer,
-        ),
-    )
+            },
+            actions = actions,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = tabColor.container,
+                titleContentColor = tabColor.onContainer,
+                navigationIconContentColor = tabColor.onContainer,
+                actionIconContentColor = tabColor.onContainer,
+            ),
+        )
+        HorizontalDivider(thickness = DeskLine.Hairline, color = DeskTheme.colors.line)
+    }
 }
 
 @DeskPreviews

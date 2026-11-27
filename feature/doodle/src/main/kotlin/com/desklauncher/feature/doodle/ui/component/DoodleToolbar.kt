@@ -3,6 +3,7 @@ package com.desklauncher.feature.doodle.ui.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskPenColor
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.doodle.R
 import com.desklauncher.feature.doodle.domain.PenWidth
@@ -47,7 +49,8 @@ internal fun DoodleToolbar(
     modifier: Modifier = Modifier,
     trailing: @Composable () -> Unit = {},
 ) {
-    Surface(modifier = modifier, tonalElevation = 3.dp) {
+    // 그림자·색 번짐 대신 위쪽 얇은 선으로 본문과 나눈다
+    Surface(modifier = modifier, border = BorderStroke(DeskLine.Hairline, DeskTheme.colors.line)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

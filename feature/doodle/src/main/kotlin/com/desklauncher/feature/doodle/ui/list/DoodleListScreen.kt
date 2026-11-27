@@ -2,6 +2,7 @@ package com.desklauncher.feature.doodle.ui.list
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Brush
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -59,6 +61,7 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskDoodlePaper
 import com.desklauncher.core.designsystem.theme.DeskTabColor
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.core.storage.DeskStorage
 import com.desklauncher.feature.doodle.R
@@ -183,6 +186,8 @@ fun DoodleListScreen(
                         val label = stringResource(R.string.doodle_item, doodle.updatedAt.atZone(ZoneId.systemDefault()).format(formatter))
                         val deleteLabel = stringResource(R.string.doodle_delete)
                         Card(
+                            colors = CardDefaults.cardColors(containerColor = DeskTheme.colors.paper),
+                            border = BorderStroke(DeskLine.Hairline, DeskTheme.colors.line),
                             modifier = Modifier
                                 .animateItem()
                                 .combinedClickable(onClick = { onOpen(doodle.id) }, onLongClick = { confirmDelete = doodle.id })

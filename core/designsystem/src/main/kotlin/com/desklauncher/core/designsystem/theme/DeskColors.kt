@@ -3,36 +3,50 @@ package com.desklauncher.core.designsystem.theme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
-/** Material 3 색 체계에 없는 책상 전용 색. [DeskTheme]으로만 제공된다. */
+/** Material 3 색 체계 밖의 책상 전용 색. [DeskTheme]으로만 제공된다. */
 @Immutable
 data class DeskColors(
-    val deskTop: Color,
-    val deskBottom: Color,
-    /** 책상 상판 위 글자(시계 등) */
+    /** 책상(홈) 바탕 = 미색 종이 */
+    val desk: Color,
+    /** 책상 위 글자(시계 등) = 먹색 */
     val onDesk: Color,
-    /** 나뭇결 무늬 선 색 (알파 포함) */
-    val deskGrain: Color,
+    /** 책상 위 보조 글자 */
+    val onDeskSecondary: Color,
+    /** 종이 카드 표면 */
     val paper: Color,
     val onPaper: Color,
+    /** 영역 구분 얇은 선 — 그림자 대신 쓴다 */
+    val line: Color,
+    val lineStrong: Color,
 )
 
+/** 그림자 대신 쓰는 선 두께 */
+object DeskLine {
+    val Hairline: Dp = 0.5.dp
+    val Thin: Dp = 1.dp
+}
+
 internal val LightDeskColors = DeskColors(
-    deskTop = DeskTopLight,
-    deskBottom = DeskBottomLight,
-    onDesk = Walnut10,
-    deskGrain = DeskGrainLight,
-    paper = Paper98,
-    onPaper = Ink10,
+    desk = PaperBackground,
+    onDesk = Ink,
+    onDeskSecondary = InkSecondary,
+    paper = PaperSurface,
+    onPaper = Ink,
+    line = PaperLine,
+    lineStrong = PaperLineStrong,
 )
 
 internal val DarkDeskColors = DeskColors(
-    deskTop = DeskTopDark,
-    deskBottom = DeskBottomDark,
-    onDesk = Ink90,
-    deskGrain = DeskGrainDark,
-    paper = Night20,
-    onPaper = Ink90,
+    desk = NightBackground,
+    onDesk = NightInk,
+    onDeskSecondary = NightInkSecondary,
+    paper = NightSurface,
+    onPaper = NightInk,
+    line = NightLine,
+    lineStrong = NightLineStrong,
 )
 
 internal val LocalDeskColors = staticCompositionLocalOf { LightDeskColors }

@@ -2,6 +2,7 @@ package com.desklauncher.feature.settings.onboarding
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.desklauncher.core.designsystem.component.DeskSurface
 import com.desklauncher.core.designsystem.preview.DeskPreviews
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.settings.R
 import com.desklauncher.feature.settings.role.rememberHomeRoleState
@@ -132,7 +134,7 @@ private fun OnboardingPageCard(page: OnboardingPage, extra: @Composable () -> Un
             color = DeskTheme.colors.paper,
             contentColor = DeskTheme.colors.onPaper,
             shape = MaterialTheme.shapes.extraLarge,
-            shadowElevation = 3.dp,
+            border = BorderStroke(DeskLine.Hairline, DeskTheme.colors.line),
         ) {
             Column(
                 modifier = Modifier

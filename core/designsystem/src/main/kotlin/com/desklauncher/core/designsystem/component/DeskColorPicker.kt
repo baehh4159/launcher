@@ -2,6 +2,7 @@ package com.desklauncher.core.designsystem.component
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -22,6 +23,7 @@ import com.desklauncher.core.designsystem.R
 import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 
 /** 책상 색상 토큰 선택 (프로젝트·일정 색 등). */
@@ -43,6 +45,11 @@ fun DeskColorPicker(
                 modifier = Modifier
                     .size(40.dp)
                     .background(color.container, CircleShape)
+                    .border(
+                        width = if (color == selected) 2.dp else DeskLine.Hairline,
+                        color = if (color == selected) DeskTheme.colors.onPaper else DeskTheme.colors.line,
+                        shape = CircleShape,
+                    )
                     .selectable(selected = color == selected, role = Role.RadioButton, onClick = { onSelect(color) })
                     .semantics { contentDescription = label },
                 contentAlignment = Alignment.Center,

@@ -2,34 +2,46 @@ package com.desklauncher.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-// 책상(나무) + 종이 콘셉트 팔레트. 원시 색상값은 이 파일에만 둔다 (AGENTS.md §5).
+// 미색 종이 + 먹색 + 얇은 선 팔레트. 원시 색상값은 이 파일(과 탭·펜 토큰)에만 둔다 (AGENTS.md §5).
 
-internal val Walnut10 = Color(0xFF2B1A0E)
-internal val Walnut30 = Color(0xFF5A3A22)
-internal val Walnut40 = Color(0xFF6D4C2F)
-internal val Walnut80 = Color(0xFFD7B48A)
-internal val Walnut90 = Color(0xFFF0DCC0)
+// ── 라이트: 종이 ─────────────────────────────────────
+/** 화면 바탕 — 눈이 편한 미색 종이 */
+internal val PaperBackground = Color(0xFFF7F6F2)
+/** 카드·표면 — 바탕보다 살짝 밝은 종이 */
+internal val PaperSurface = Color(0xFFFCFBF8)
+internal val PaperContainerLow = Color(0xFFF9F8F4)
+internal val PaperContainer = Color(0xFFF3F1EC)
+internal val PaperContainerHigh = Color(0xFFEFEDE7)
+internal val PaperContainerHighest = Color(0xFFEBE8E1)
+/** 먹색 본문 */
+internal val Ink = Color(0xFF1C1C1E)
+/** 보조 글자 회색 */
+internal val InkSecondary = Color(0xFF6E6B64)
+/** 영역 구분 얇은 선 */
+internal val PaperLine = Color(0xFFE2DFD7)
+internal val PaperLineStrong = Color(0xFFCDC9BF)
 
-internal val Paper95 = Color(0xFFF7F1E6)
-internal val Paper98 = Color(0xFFFCF9F3)
-internal val Ink10 = Color(0xFF1F1B16)
-internal val Ink30 = Color(0xFF4D463D)
-internal val Ink80 = Color(0xFFD0C5B6)
-internal val Ink90 = Color(0xFFECE1D2)
+// 포인트: 짙은 더스티 블루(버튼·선택), 세이지(보조), 테라코타(오류)
+internal val DustyBlueInk = Color(0xFF3F5A72)
+internal val DustyBlueContainer = Color(0xFFE2E8EE)
+internal val DustyBlueOnContainer = Color(0xFF1E2F3E)
+internal val SageInk = Color(0xFF5F7560)
+internal val SageContainer = Color(0xFFE4EAE1)
+internal val TerracottaInk = Color(0xFFA9503B)
+internal val TerracottaContainer = Color(0xFFF3E1DA)
 
-internal val Night10 = Color(0xFF16130F)
-internal val Night15 = Color(0xFF1E1A16)
-internal val Night20 = Color(0xFF2A241E)
-
-internal val Sage40 = Color(0xFF55693F)
-internal val Sage80 = Color(0xFFBBD09F)
-internal val Error40 = Color(0xFFB3261E)
-internal val Error80 = Color(0xFFF2B8B5)
-
-// 책상 상판 그라데이션
-internal val DeskTopLight = Color(0xFFC9A57B)
-internal val DeskBottomLight = Color(0xFFB08A60)
-internal val DeskTopDark = Color(0xFF3A2D22)
-internal val DeskBottomDark = Color(0xFF2A2019)
-internal val DeskGrainLight = Color(0x1F5A3A22)
-internal val DeskGrainDark = Color(0x1A000000)
+// ── 다크: 먹지 ───────────────────────────────────────
+internal val NightBackground = Color(0xFF1C1C1E)
+internal val NightSurface = Color(0xFF242426)
+internal val NightContainerLow = Color(0xFF212123)
+internal val NightContainer = Color(0xFF2A2A2C)
+internal val NightContainerHigh = Color(0xFF303032)
+internal val NightContainerHighest = Color(0xFF363638)
+internal val NightInk = Color(0xFFEDEBE6)
+internal val NightInkSecondary = Color(0xFFA9A59C)
+internal val NightLine = Color(0xFF3A3934)
+internal val NightLineStrong = Color(0xFF4B4943)
+internal val DustyBlueLight = Color(0xFFA9BED2)
+internal val DustyBlueNightContainer = Color(0xFF2F4255)
+internal val SageLight = Color(0xFFB4C7B2)
+internal val TerracottaLight = Color(0xFFE5A894)

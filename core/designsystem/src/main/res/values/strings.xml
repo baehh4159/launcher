@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="desk_color_red">빨강</string>
-    <string name="desk_color_orange">주황</string>
-    <string name="desk_color_yellow">노랑</string>
-    <string name="desk_color_green">초록</string>
-    <string name="desk_color_teal">청록</string>
-    <string name="desk_color_blue">파랑</string>
-    <string name="desk_color_indigo">남색</string>
-    <string name="desk_color_purple">보라</string>
-    <string name="desk_color_pink">분홍</string>
-    <string name="desk_color_brown">갈색</string>
-    <string name="desk_color_gray">회색</string>
+    <!-- DeskTabColor 표시 이름 (항목 이름은 DB 호환을 위해 예전 원색 이름 그대로) -->
+    <string name="desk_color_red">테라코타</string>
+    <string name="desk_color_orange">살구</string>
+    <string name="desk_color_yellow">머스타드</string>
+    <string name="desk_color_green">세이지 그린</string>
+    <string name="desk_color_teal">유칼립투스</string>
+    <string name="desk_color_blue">더스티 블루</string>
+    <string name="desk_color_indigo">슬레이트 블루</string>
+    <string name="desk_color_purple">라벤더 그레이</string>
+    <string name="desk_color_pink">더스티 로즈</string>
+    <string name="desk_color_brown">월넛</string>
+    <string name="desk_color_gray">슬레이트 그레이</string>
 </resources>

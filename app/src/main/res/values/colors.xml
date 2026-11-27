@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 첫 프레임 전 창 배경 — core:designsystem DeskTopLight/Dark와 맞춘다 -->
-    <color name="desk_window_background">#FFC9A57B</color>
+    <!-- 첫 프레임 전 창 배경 — core:designsystem PaperBackground/NightBackground와 맞춘다 -->
+    <color name="desk_window_background">#FFF7F6F2</color>
     <color name="ic_launcher_background">#FF6D4C2F</color>
 </resources>

@@ -1,5 +1,6 @@
 package com.desklauncher.feature.scanner.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.scanner.R
 import com.desklauncher.feature.scanner.domain.model.Document
@@ -45,7 +48,11 @@ internal fun DocumentCard(
     val thumbnail by produceState<ImageBitmap?>(null, document.thumbnailPath) {
         value = document.thumbnailPath?.let { thumbnailLoader.load(it) }
     }
-    Card(modifier = modifier.clickable(onClick = onClick)) {
+    Card(
+        modifier = modifier.clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = DeskTheme.colors.paper),
+        border = BorderStroke(DeskLine.Hairline, DeskTheme.colors.line),
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

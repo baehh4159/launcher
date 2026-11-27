@@ -1,5 +1,6 @@
 package com.desklauncher.feature.todo.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.todo.R
 
@@ -42,7 +44,8 @@ internal fun QuickAddBar(
             text = ""
         }
     }
-    Surface(modifier = modifier, tonalElevation = 3.dp) {
+    // 그림자·색 번짐 대신 위쪽 얇은 선으로 본문과 나눈다
+    Surface(modifier = modifier, border = BorderStroke(DeskLine.Hairline, DeskTheme.colors.line)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

@@ -1,5 +1,6 @@
 package com.desklauncher.core.designsystem.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 
 /** 책상 위에 놓인 '종이 메모' 모양의 빈 상태 안내. */
@@ -35,7 +37,7 @@ fun DeskEmptyState(
         color = colors.paper,
         contentColor = colors.onPaper,
         shape = MaterialTheme.shapes.large,
-        shadowElevation = 2.dp,
+        border = BorderStroke(DeskLine.Hairline, colors.line),
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 28.dp),

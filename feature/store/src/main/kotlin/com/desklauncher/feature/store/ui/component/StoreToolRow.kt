@@ -1,5 +1,6 @@
 package com.desklauncher.feature.store.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.text.UiText
 import com.desklauncher.core.designsystem.text.asString
 import com.desklauncher.core.designsystem.theme.DeskTabColor
+import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.store.R
 import com.desklauncher.feature.store.ui.StoreToolUi
@@ -49,8 +51,8 @@ internal fun StoreToolRow(
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = if (isDragging) 6.dp else 0.dp,
-        shadowElevation = if (isDragging) 8.dp else 0.dp,
+        // 끄는 중에는 그림자 대신 진한 선으로 들어 올린 느낌
+        border = BorderStroke(if (isDragging) DeskLine.Thin else DeskLine.Hairline, if (isDragging) DeskTheme.colors.lineStrong else DeskTheme.colors.line),
     ) {
         Row(
             modifier = Modifier.padding(start = 4.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),

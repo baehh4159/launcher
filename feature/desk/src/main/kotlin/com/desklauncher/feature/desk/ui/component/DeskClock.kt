@@ -34,7 +34,7 @@ internal fun DeskClock(
         Text(
             text = clock.date,
             style = MaterialTheme.typography.titleMedium,
-            color = color,
+            color = DeskTheme.colors.onDeskSecondary,
             maxLines = 1,
         )
     }
