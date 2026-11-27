@@ -11,7 +11,8 @@ import com.desklauncher.core.designsystem.component.ToolPreviewCard
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 
 /**
- * 책상 도구(플러그인) 계약. 각 feature 모듈이 하나씩 구현하고 Hilt `@IntoSet`으로 등록한다 (PRD §6).
+ * 책상 도구(플러그인) 계약. 각 모듈이 하나씩 구현하고 Hilt `@IntoSet`으로 등록한다 (PRD §6, docs/PLUGIN_GUIDE.md).
+ * 화면이 하나뿐인 플러그인은 [SimpleDeskTool]을 상속하면 내비게이션을 신경 쓸 필요가 없다.
  *
  * ```
  * @Module @InstallIn(SingletonComponent::class)
@@ -22,8 +23,11 @@ import com.desklauncher.core.designsystem.theme.DeskTabColor
  */
 interface DeskTool {
 
-    /** 영구 불변 키 (예: "todo"). DB `tool_config.toolId`와 매칭되므로 **출시 후 변경 금지**. */
+    /** 영구 불변 키 (예: "todo"). [DeskToolApi.IdPattern] 형식. DB `tool_config.toolId`와 매칭되므로 **출시 후 변경 금지**. */
     val id: String
+
+    /** 이 도구가 맞춘 SDK 버전. 보통 기본값 그대로 둔다. */
+    val apiVersion: Int get() = DeskToolApi.VERSION
 
     @get:StringRes
     val titleRes: Int

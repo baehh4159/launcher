@@ -48,6 +48,11 @@ dependencies {
     implementation(projects.feature.alarm)
     implementation(projects.feature.files)
 
+    // 사용자 플러그인: settings.gradle.kts가 include한 plugins/* 전부 (SHELL-14)
+    rootProject.childProjects["plugins"]?.childProjects?.values?.sortedBy { it.name }?.forEach { plugin ->
+        implementation(project(plugin.path))
+    }
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

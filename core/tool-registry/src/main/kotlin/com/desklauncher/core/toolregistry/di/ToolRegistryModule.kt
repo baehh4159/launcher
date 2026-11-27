@@ -1,8 +1,10 @@
 package com.desklauncher.core.toolregistry.di
 
 import com.desklauncher.core.toolapi.DeskTool
+import com.desklauncher.core.toolapi.PluginStorageProvider
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.core.toolregistry.DefaultToolRegistry
+import com.desklauncher.core.toolregistry.RoomPluginStorageProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -19,4 +21,7 @@ internal abstract class ToolRegistryModule {
 
     @Binds
     abstract fun bindToolRegistry(registry: DefaultToolRegistry): ToolRegistry
+
+    @Binds
+    abstract fun bindPluginStorageProvider(provider: RoomPluginStorageProvider): PluginStorageProvider
 }

@@ -9,6 +9,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.desklauncher.core.designsystem.motion.DeskTransitions
+import com.desklauncher.core.toolapi.PluginStorageProvider
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.feature.apps.navigation.AppsDestination
 import com.desklauncher.feature.apps.navigation.appsScreen
@@ -25,11 +26,12 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * 앱 내비게이션 조립. 셸 화면 + 레지스트리에 등록된 모든 도구의 그래프를 붙인다.
- * 꺼진 도구도 그래프는 등록해 둔다 (책상 탭에서만 숨김).
+ * 꺼진 도구도 그래프는 등록해 둔다 (책상 탭에서만 숨김). 플러그인 추가 방법은 docs/PLUGIN_GUIDE.md.
  */
 @Composable
 fun DeskNavHost(
     toolRegistry: ToolRegistry,
+    pluginStorageProvider: PluginStorageProvider,
     homePresses: Flow<Unit>,
     onboardingCompleted: Boolean?,
     modifier: Modifier = Modifier,
@@ -99,6 +101,12 @@ fun DeskNavHost(
         toolRegistry.registeredTools.forEach { tool ->
             with(tool) { toolGraph(navController) }
         }
+        // 화면 하나짜리 플러그인(SimpleDeskTool)은 공용 라우트 하나로 모두 띄운다 (SHELL-14)
+        simpleToolScreen(
+            toolRegistry = toolRegistry,
+            pluginStorageProvider = pluginStorageProvider,
+            onClose = navController::popBackStack,
+        )
     }
 }
 

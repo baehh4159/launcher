@@ -106,5 +106,6 @@ desk-android-application = { id = "desk.android.application" }
 desk-android-library = { id = "desk.android.library" }
 desk-android-compose = { id = "desk.android.compose" }
 desk-android-feature = { id = "desk.android.feature" }
+desk-plugin = { id = "desk.plugin" }
 desk-hilt = { id = "desk.hilt" }
 desk-room = { id = "desk.room" }

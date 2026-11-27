@@ -20,6 +20,7 @@ import com.desklauncher.core.designsystem.haptics.HapticLevel
 import com.desklauncher.core.designsystem.haptics.LocalDeskHapticLevel
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.core.designsystem.theme.LocalToolTabColors
+import com.desklauncher.core.toolapi.PluginStorageProvider
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.navigation.DeskNavHost
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,6 +39,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
+
+    @Inject
+    lateinit var pluginStorageProvider: PluginStorageProvider
 
     // singleTask라 홈 버튼은 onNewIntent로 들어온다 (SHELL-06).
     private val homePressEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -78,6 +82,7 @@ class MainActivity : ComponentActivity() {
                 DeskTheme(darkTheme = darkTheme) {
                     DeskNavHost(
                         toolRegistry = toolRegistry,
+                        pluginStorageProvider = pluginStorageProvider,
                         homePresses = homePresses,
                         onboardingCompleted = loaded?.onboardingCompleted,
                     )

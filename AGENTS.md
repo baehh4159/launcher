@@ -154,9 +154,19 @@ XxxTool.kt  DeskTool 구현
 ---
 
 ## 6. 새 도구(플러그인) 추가 체크리스트
+
+### 6.1 사용자 플러그인 (`plugins/<id>`, 권장) — 상세: [`docs/PLUGIN_GUIDE.md`](./docs/PLUGIN_GUIDE.md)
+1. [ ] `scripts/new-plugin.sh <id> "이름"` — 모듈·`SimpleDeskTool`·Hilt 등록·Screen/Preview·strings 생성
+2. [ ] `settings.gradle.kts`·`app` 수정 **불필요** (`plugins/*` 자동 포함·자동 의존)
+3. [ ] 저장은 `DeskToolHost.storage`(`plugin_data` 키-값)만 사용 — 자기 Entity·마이그레이션 없음
+4. [ ] `core:tool-api` 계약만 사용. `core:database` 등 앱 내부 모듈 의존 금지 (`desk.plugin` 컨벤션이 주지 않음)
+5. [ ] 모든 화면 Preview, ViewModel 단위 테스트 (`InMemoryPluginStorage`)
+6. [ ] 도구함에 노출·켜기/끄기·순서 변경 동작 확인
+
+### 6.2 내장 도구 (`feature/<name>`) — 여러 화면·전용 테이블이 필요할 때
 1. [ ] PRD §5에 도구 섹션과 기능 ID 추가 (사용자 승인)
 2. [ ] `feature/<name>` 모듈 생성 — 기존 도구 모듈의 패키지 구조(§4.2) 그대로. `build.gradle.kts`는 `alias(libs.plugins.desk.android.feature)` + `namespace = "com.desklauncher.feature.<name>"`
-3. [ ] `<Name>Tool : DeskTool` 구현, 불변 `id` 결정
+3. [ ] `<Name>Tool : DeskTool` 구현, 불변 `id` 결정 (`DeskToolApi.IdPattern` 형식)
 4. [ ] `di/<Name>ToolModule` — `@Binds @IntoSet`
 5. [ ] (필요 시) `core:database`에 Entity/DAO + Migration + 마이그레이션 테스트
 6. [ ] `settings.gradle.kts` include, `app` 의존성 추가
@@ -180,6 +190,7 @@ XxxTool.kt  DeskTool 구현
 | `desk.android.library` | 모든 Android 라이브러리 모듈 (+ JUnit, coroutines-test) |
 | `desk.android.compose` | Compose 사용 모듈 (+ BOM, ui-tooling-preview, debug ui-tooling) |
 | `desk.android.feature` | feature 모듈 = library + compose + hilt + serialization + 공통 core/AndroidX 의존 |
+| `desk.plugin` | `plugins/*` 사용자 플러그인 = feature와 같음 (앱 내부 core 모듈은 주지 않음) |
 | `desk.hilt` | Hilt + KSP |
 | `desk.room` | Room + KSP + 스키마 내보내기(`schemas/`) |
 

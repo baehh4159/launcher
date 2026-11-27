@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="water_tool_title">물 한 잔</string>
+    <string name="water_tool_description">오늘 마신 물을 잔 단위로 기록하는 예시 플러그인</string>
+    <string name="water_count">%1$d / %2$d잔</string>
+    <string name="water_goal_left">목표까지 %1$d잔 남았어요</string>
+    <string name="water_goal_reached">오늘 목표를 채웠어요</string>
+    <string name="water_drink">한 잔 마셨어요</string>
+    <string name="water_undo">되돌리기</string>
+</resources>

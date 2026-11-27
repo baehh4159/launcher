@@ -43,6 +43,10 @@ gradlePlugin {
             id = libs.plugins.desk.android.feature.get().pluginId
             implementationClass = "AndroidFeatureConventionPlugin"
         }
+        register("deskPlugin") {
+            id = libs.plugins.desk.plugin.get().pluginId
+            implementationClass = "DeskPluginConventionPlugin"
+        }
         register("hilt") {
             id = libs.plugins.desk.hilt.get().pluginId
             implementationClass = "HiltConventionPlugin"

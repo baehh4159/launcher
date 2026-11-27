@@ -11,6 +11,7 @@ import com.desklauncher.core.database.dao.DocumentDao
 import com.desklauncher.core.database.dao.DoodleDao
 import com.desklauncher.core.database.dao.FileBookmarkDao
 import com.desklauncher.core.database.dao.MemoDao
+import com.desklauncher.core.database.dao.PluginDataDao
 import com.desklauncher.core.database.dao.ProjectDao
 import com.desklauncher.core.database.dao.TodoDao
 import com.desklauncher.core.database.dao.ToolConfigDao
@@ -23,6 +24,7 @@ import com.desklauncher.core.database.entity.DocumentFolderEntity
 import com.desklauncher.core.database.entity.DoodleEntity
 import com.desklauncher.core.database.entity.FileBookmarkEntity
 import com.desklauncher.core.database.entity.MemoEntity
+import com.desklauncher.core.database.entity.PluginDataEntity
 import com.desklauncher.core.database.entity.ProjectEntity
 import com.desklauncher.core.database.entity.TodoEntity
 import com.desklauncher.core.database.entity.ToolConfigEntity
@@ -47,8 +49,9 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         DoodleEntity::class,
         AlarmEntity::class,
         FileBookmarkEntity::class,
+        PluginDataEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true,
     autoMigrations = [
         // v2: app_pref 추가 (SHELL-08)
@@ -69,6 +72,8 @@ import com.desklauncher.core.database.entity.ToolConfigEntity
         AutoMigration(from = 8, to = 9),
         // v10: file_bookmark 추가 (FILES-02)
         AutoMigration(from = 9, to = 10),
+        // v11: plugin_data 추가 (SHELL-14 플러그인 저장소)
+        AutoMigration(from = 10, to = 11),
     ],
 )
 abstract class DeskDatabase : RoomDatabase() {
@@ -83,6 +88,7 @@ abstract class DeskDatabase : RoomDatabase() {
     abstract fun doodleDao(): DoodleDao
     abstract fun alarmDao(): AlarmDao
     abstract fun fileBookmarkDao(): FileBookmarkDao
+    abstract fun pluginDataDao(): PluginDataDao
 
     companion object {
         const val NAME = "desk.db"

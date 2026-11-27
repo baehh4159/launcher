@@ -218,6 +218,7 @@ AlarmRingActivity (별도, 잠금화면 위 표시 · 화면 켜기)  ← featur
 | SHELL-11 | 설정 화면 | P0 |
 | SHELL-12 | 책상 위 '오늘 요약' (DeskSummary: 오늘 할일, 다음 일정, 다음 알람) | P1 |
 | SHELL-13 | 왼손 모드(스트립 좌측 배치), 넘김 효과음 | P2 |
+| SHELL-14 | 플러그인 SDK: `plugins/` 폴더에 모듈을 넣으면 자동 등록(Gradle 자동 include·app 의존), `SimpleDeskTool`(화면 1개 플러그인), `DeskToolHost`(탭 색·닫기·전용 저장소), `plugin_data` 키-값 저장소, 잘못된 플러그인(id 형식·SDK 버전·중복)은 앱을 죽이지 않고 제외 (§6.5) | P0 |
 
 ### 5.2 할일정리 — `feature:todo` (toolId: `todo`)
 | ID | 기능 | 우선 |
@@ -317,11 +318,13 @@ AlarmRingActivity (별도, 잠금화면 위 표시 · 화면 켜기)  ← featur
 - 각 모듈은 Hilt 멀티바인딩(`@IntoSet`)으로 자신을 등록한다. `app`은 `Set<DeskTool>`을 주입받아 조립만 한다.
 - 셸(`feature:desk`)은 개별 도구를 **전혀 모르고** `DeskTool` 인터페이스만 안다.
 - 컴파일 타임 레지스트리다. (원격 다운로드형 동적 플러그인은 P2 이후 검토)
+- 사용자 플러그인은 `plugins/<id>/` 모듈로 만들며 Gradle이 자동 포함한다 (§6.5, `docs/PLUGIN_GUIDE.md`).
 
 ### 6.2 `DeskTool` 계약 (`core/tool-api/.../DeskTool.kt`가 기준)
 | 멤버 | 설명 |
 |---|---|
-| `id: String` | 영구 불변 키 (`todo`, `calendar` …). DB의 `tool_config.toolId`와 매칭. **한번 출시하면 변경 금지** |
+| `id: String` | 영구 불변 키 (`todo`, `calendar` …), 형식 `[a-z][a-z0-9_]{1,31}`. DB의 `tool_config.toolId`와 매칭. **한번 출시하면 변경 금지** |
+| `apiVersion` (기본 = `DeskToolApi.VERSION`) | 플러그인이 맞춘 SDK 버전. 앱보다 새 버전이면 싣지 않음 |
 | `title`, `description` | 문자열 리소스 ID |
 | `icon` | 탭/도구함 아이콘 |
 | `defaultTabColor` | 기본 탭 색상 (디자인시스템 팔레트 토큰) |
@@ -337,6 +340,7 @@ AlarmRingActivity (별도, 잠금화면 위 표시 · 화면 켜기)  ← featur
 - 코드에 있는데 DB에 없는 도구 → 기본값으로 행 추가.
 - DB에 있는데 코드에 없는 도구(삭제된 모듈) → 무시(행은 보존).
 - 도구를 꺼도 그 도구의 데이터는 삭제하지 않는다.
+- 검증: id 형식 위반·지원하지 않는 `apiVersion`·id 중복인 도구는 **크래시 없이 제외**하고 로그만 남긴다 (중복이면 클래스 이름순으로 먼저 온 것만). 런처가 죽으면 홈 화면이 사라지기 때문.
 
 ### 6.4 새 도구 추가 절차 (요약 — 상세 체크리스트는 `AGENTS.md` §6)
 1. `feature/<name>` 모듈 생성 (기존 도구 모듈 구조 복제)
@@ -344,6 +348,19 @@ AlarmRingActivity (별도, 잠금화면 위 표시 · 화면 켜기)  ← featur
 3. 필요 시 `core:database`에 Entity/DAO 추가 + **Room 마이그레이션 작성**
 4. `settings.gradle.kts` 및 `app` 의존성에 모듈 추가
 5. 도구함에서 자동 노출 확인
+
+### 6.5 플러그인 SDK (SHELL-14)
+| 구성 | 위치 | 설명 |
+|---|---|---|
+| `SimpleDeskTool` | `core:tool-api` | 화면 1개 플러그인 기반 클래스. `@Composable Content(host, modifier)`만 구현. 라우트는 앱의 공용 `SimpleToolDestination(toolId)` 하나가 모두 띄움 |
+| `DeskToolHost` | `core:tool-api` | 앱이 플러그인에 빌려주는 것: `toolId`, `tabColor`, `storage`, `close()`. 멤버 추가는 기본 구현과 함께(하위 호환) |
+| `PluginStorage` / `PluginStorageProvider` | 계약 `core:tool-api`, 구현 `core:tool-registry` | 플러그인별로 격리된 문자열 키-값. `plugin_data` 표(§8.3) |
+| `DeskToolScaffold` | `core:tool-api` | 탭 색 헤더 + 책상으로 + 본문 |
+| `PreviewDeskToolHost`, `InMemoryPluginStorage` | `core:tool-api` | Preview·단위 테스트용 |
+| `desk.plugin` 컨벤션 | `build-logic` | feature와 같은 의존. 앱 내부 core 모듈(`database` 등)은 주지 않음 |
+| 자동 포함 | `settings.gradle.kts`, `app/build.gradle.kts` | `plugins/<id>/build.gradle.kts`가 있으면 include + app 의존 |
+| `scripts/new-plugin.sh` | | 뼈대 생성, id 형식·중복 검사 |
+| 예시 | `plugins/water` | 물 마시기 기록 (기본 꺼짐) |
 
 ---
 
@@ -369,6 +386,7 @@ feature/
   settings/                   설정, 온보딩
   todo/  calendar/  memo/  diary/  scanner/(서류정리함)
   calculator/  doodle/  alarm/  files/
+plugins/                      사용자 플러그인 (자동 포함, §6.5) — 예: water/
 ```
 
 ### 7.2 의존 규칙
@@ -557,6 +575,16 @@ tool_config / app_pref / alarm / calendar_event / diary_entry / doodle / calc_hi
 
 > "내파일"의 앱 생성 파일(스캔·낙서)은 별도 테이블 없이 `document`, `doodle` 테이블을 조회해 보여준다.
 
+**plugin_data** — 플러그인 공용 키-값 저장소 (SHELL-14, v11)
+| 컬럼 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| pluginId | String | PK(pluginId, key) | `DeskTool.id` |
+| key | String | PK | 플러그인이 정하는 키 |
+| value | String | | 문자열 (구조가 있으면 JSON) |
+| updatedAt | Long | | epoch millis |
+
+> 단순 플러그인은 자기 Entity·마이그레이션 없이 이 표만 쓴다. 검색·정렬이 필요한 큰 데이터가 생기면 그때 `core:database`에 전용 Entity를 추가한다. 도구를 꺼도 행은 지우지 않는다.
+
 ### 8.4 DataStore (Preferences) — 앱 설정
 `hapticLevel`(OFF/LIGHT/DEFAULT), `gripPosition`(TOP/MIDDLE/BOTTOM), `themeMode`(SYSTEM/LIGHT/DARK), `onboardingCompleted`, `appDrawerAutoFocusSearch`
 
@@ -628,3 +656,5 @@ doodles/{id}.png
 | 2026-11-26 | 서류정리함 모듈 | 서류정리함 UI와 ML Kit 스캐너를 `feature/scanner` 단일 모듈로 통합 (toolId `cabinet`) |
 | 2026-11-26 | 자동 백업 비활성화 | 개인일기 포함 **전체 비활성화**: `android:allowBackup="false"` + `dataExtractionRules` 전 도메인 제외 (Auto Backup·기기 간 이전 모두 제외). 백업은 추후 로컬 백업/내보내기 기능(JSON/ZIP)으로 별도 처리 → BACKUP-01 |
 | 2026-11-26 | 데이터 내보내기 | **P2**(MVP 이후)로 분류 → BACKUP-01 |
+| 2026-11-27 | 플러그인 확장 구조 | 사용자 요청: "각 서류철 = 플러그인, 내가 만든 플러그인을 쉽게 붙이게" → SHELL-14 플러그인 SDK(`plugins/` 자동 포함, `SimpleDeskTool`, `DeskToolHost`, `plugin_data` v11). 동적(원격) 로딩은 여전히 P2 |
+| 2026-11-27 | 서류철 스크럽 모션 | 사용자 요청: 글자 파도 대신 **왼쪽 서류철이 칸마다 툭툭 튀어나오는** 이산 스프링 모션 (SHELL-03) |

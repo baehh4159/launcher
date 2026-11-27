@@ -52,3 +52,10 @@ include(":feature:calculator")
 include(":feature:doodle")
 include(":feature:alarm")
 include(":feature:files")
+
+// 사용자 플러그인 — plugins/<이름>/build.gradle.kts가 있으면 자동으로 포함된다 (SHELL-14, docs/PLUGIN_GUIDE.md).
+// app이 같은 목록을 자동 의존하므로 폴더를 넣고 빼는 것만으로 붙이고 뗄 수 있다.
+file("plugins").listFiles()
+    ?.filter { it.isDirectory && it.resolve("build.gradle.kts").isFile }
+    ?.sortedBy { it.name }
+    ?.forEach { include(":plugins:${it.name}") }

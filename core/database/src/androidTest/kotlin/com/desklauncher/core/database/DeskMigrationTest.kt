@@ -169,6 +169,22 @@ class DeskMigrationTest {
         assertTrue(runCatching { db.execSQL("INSERT INTO file_bookmark (id, uri, displayName, addedAt) VALUES ('b2', 'content://x/1', 'a.pdf', 0)") }.isFailure)
     }
 
+    // v10 → v11: plugin_data 생성, (pluginId, key) 기본키라 같은 키는 덮어쓰기 대상
+    @Test
+    fun migrate10To11_addsPluginData() {
+        helper.createDatabase(TestDb, 10).close()
+
+        val db = helper.runMigrationsAndValidate(TestDb, 11, true)
+
+        db.execSQL("INSERT INTO plugin_data (pluginId, `key`, value, updatedAt) VALUES ('water', 'count', '3', 0)")
+        db.execSQL("INSERT INTO plugin_data (pluginId, `key`, value, updatedAt) VALUES ('other', 'count', '9', 0)")
+        assertTrue(runCatching { db.execSQL("INSERT INTO plugin_data (pluginId, `key`, value, updatedAt) VALUES ('water', 'count', '4', 0)") }.isFailure)
+        db.query("SELECT value FROM plugin_data WHERE pluginId = 'water'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("3", cursor.getString(0))
+        }
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }

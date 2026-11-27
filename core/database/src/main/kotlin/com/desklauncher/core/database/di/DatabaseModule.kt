@@ -11,6 +11,7 @@ import com.desklauncher.core.database.dao.DocumentDao
 import com.desklauncher.core.database.dao.DoodleDao
 import com.desklauncher.core.database.dao.FileBookmarkDao
 import com.desklauncher.core.database.dao.MemoDao
+import com.desklauncher.core.database.dao.PluginDataDao
 import com.desklauncher.core.database.dao.ProjectDao
 import com.desklauncher.core.database.dao.TodoDao
 import com.desklauncher.core.database.dao.ToolConfigDao
@@ -65,4 +66,7 @@ object DatabaseModule {
 
     @Provides
     fun provideFileBookmarkDao(database: DeskDatabase): FileBookmarkDao = database.fileBookmarkDao()
+
+    @Provides
+    fun providePluginDataDao(database: DeskDatabase): PluginDataDao = database.pluginDataDao()
 }
