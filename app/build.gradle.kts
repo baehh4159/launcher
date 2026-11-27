@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.desk.android.application)
     alias(libs.plugins.desk.android.compose)
     alias(libs.plugins.desk.hilt)
+    // 팝업 내부 시작점 라우트(@Serializable)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {

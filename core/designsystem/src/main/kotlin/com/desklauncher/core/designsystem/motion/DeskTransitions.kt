@@ -54,6 +54,24 @@ object DeskTransitions {
     val deskReturn: EnterTransition =
         scaleIn(tween(CloseMillis), initialScale = 0.96f) + fadeIn(tween(CloseMillis), initialAlpha = 0.5f)
 
+    /** 팝업 창이 펼쳐지는 기준점: 서류철이 꽂힌 왼쪽 가장자리, 하단 2/3쯤. */
+    private val PopupOrigin = TransformOrigin(pivotFractionX = 0f, pivotFractionY = 0.62f)
+
+    /** 도구 팝업 창(SHELL-05): 왼쪽 서류철에서 책상 위로 꺼내져 펼쳐지고, 닫으면 다시 왼쪽으로 꽂힌다. */
+    val popupOpen: EnterTransition =
+        slideInHorizontally(slideSpring) { fullWidth -> -fullWidth / 4 } +
+            scaleIn(tween(OpenMillis, easing = FastOutSlowInEasing), initialScale = 0.9f, transformOrigin = PopupOrigin) +
+            fadeIn(tween(OpenMillis / 2))
+
+    val popupClose: ExitTransition =
+        slideOutHorizontally(tween(CloseMillis, easing = FastOutSlowInEasing)) { fullWidth -> -fullWidth / 4 } +
+            scaleOut(tween(CloseMillis), targetScale = 0.9f, transformOrigin = PopupOrigin) +
+            fadeOut(tween(CloseMillis))
+
+    /** 팝업 뒤 책상을 어둡게 하는 막 */
+    val scrimIn: EnterTransition = fadeIn(tween(OpenMillis))
+    val scrimOut: ExitTransition = fadeOut(tween(CloseMillis))
+
     /** 앱 서랍: 아래에서 올라오고 아래로 내려간다. */
     val drawerOpen: EnterTransition = slideInVertically(slideSpring) { it / 3 } + fadeIn(tween(OpenMillis / 2))
     val drawerClose: ExitTransition = slideOutVertically(tween(CloseMillis)) { it / 3 } + fadeOut(tween(CloseMillis))
