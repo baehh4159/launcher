@@ -12,6 +12,15 @@ object IndexScrubMath {
     /** 스트립 상단 기준 y → 연속 포커스 (탭 중앙이 정수). */
     fun rawFocus(y: Float, extent: Float): Float = if (extent <= 0f) 0f else y / extent - 0.5f
 
+    /**
+     * 손가락이 스트립에서 화면 안쪽으로 [cancelDistance] 이상 벗어났는지 (스트립 기준 로컬 x, px).
+     * 오른쪽 스트립은 왼쪽으로, 왼쪽 스트립은 오른쪽으로 벗어나야 취소 — 가장자리 쪽은 화면 밖이라 판단하지 않는다.
+     */
+    fun isCancelArmed(x: Float, stripWidth: Float, cancelDistance: Float, side: StripSide): Boolean = when (side) {
+        StripSide.Right -> x < -cancelDistance
+        StripSide.Left -> x > stripWidth + cancelDistance
+    }
+
     /** 범위를 벗어난 부분에 고무줄 저항을 적용. 최대 [maxOverscroll]까지만 넘어간다. */
     fun rubberBand(raw: Float, count: Int, maxOverscroll: Float = DeskMotion.OverscrollMax): Float {
         if (count <= 0) return 0f

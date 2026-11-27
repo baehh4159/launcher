@@ -1,6 +1,7 @@
 package com.desklauncher.core.designsystem.scrub
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -64,5 +65,15 @@ class IndexScrubMathTest {
         assertEquals(3, IndexScrubMath.flingTarget(focus = 1f, velocity = 10f, count = 9, projectionSeconds = 0.2f))
         assertEquals(8, IndexScrubMath.flingTarget(focus = 7f, velocity = 50f, count = 9, projectionSeconds = 0.2f))
         assertEquals(0, IndexScrubMath.flingTarget(focus = 1f, velocity = -50f, count = 9, projectionSeconds = 0.2f))
+    }
+
+    // 왼쪽 스트립은 오른쪽(화면 안쪽)으로 벗어나야 취소, 오른쪽 스트립은 왼쪽으로
+    @Test
+    fun isCancelArmed_followsInwardDirection_perSide() {
+        assertTrue(IndexScrubMath.isCancelArmed(x = 300f, stripWidth = 100f, cancelDistance = 150f, side = StripSide.Left))
+        assertFalse(IndexScrubMath.isCancelArmed(x = 200f, stripWidth = 100f, cancelDistance = 150f, side = StripSide.Left))
+        assertFalse(IndexScrubMath.isCancelArmed(x = -300f, stripWidth = 100f, cancelDistance = 150f, side = StripSide.Left))
+        assertTrue(IndexScrubMath.isCancelArmed(x = -200f, stripWidth = 100f, cancelDistance = 150f, side = StripSide.Right))
+        assertFalse(IndexScrubMath.isCancelArmed(x = 400f, stripWidth = 100f, cancelDistance = 150f, side = StripSide.Right))
     }
 }

@@ -16,13 +16,16 @@ object DeskMotion {
     val TabMaxExtent = 52.dp
     val TabGap = 3.dp
 
-    /** Idle 상태에서 화면 가장자리에 보이는 탭 폭. 아이콘(20dp) + 여백. */
-    val TabIdleVisibleWidth = 32.dp
+    /**
+     * Idle 상태에서 화면 가장자리에 보이는 탭 폭. 아이콘(18dp) + 여백.
+     * 32dp는 뒤로가기 제스처 영역(약 20~30dp)에 아이콘이 다 들어가 버려 40dp로 넓혔다 (S24+ 실기기 피드백).
+     */
+    val TabIdleVisibleWidth = 40.dp
 
-    /** 선택된 서류철이 왼쪽으로 '툭' 튀어나오는 거리. 이웃 탭은 [TabPopLevels] 비율만큼. */
+    /** 선택된 서류철이 화면 안쪽으로 '툭' 튀어나오는 거리. 이웃 탭은 [TabPopLevels] 비율만큼. */
     val TabPopShift = 48.dp
 
-    /** 선택 탭 왼쪽 알약 인디케이터 높이·탭과의 간격 */
+    /** 선택 탭 옆(화면 안쪽) 알약 인디케이터 높이·탭과의 간격 */
     val IndicatorHeight = 40.dp
     val IndicatorGap = 10.dp
 
@@ -30,13 +33,16 @@ object DeskMotion {
     val LetterWaveShift = 64.dp
     val LetterIndicatorSize = 48.dp
 
-    /** 터치를 받는 폭(가장자리부터). 뒤로가기 제스처 영역(약 20~30dp)보다 넓게 잡는다. */
-    val StripTouchWidth = 72.dp
+    /**
+     * 서류철 스트립이 터치를 받는 폭(가장자리부터). 튀어나온 탭 전체(40+48dp)를 덮고,
+     * 엄지가 뒤로가기 제스처 영역(약 20~30dp) 바깥에서 훑을 수 있게 넉넉히 잡는다.
+     */
+    val StripTouchWidth = 96.dp
 
     /** 시스템이 한쪽 가장자리당 허용하는 제스처 제외 최대 높이 (Android 정책). */
     val GestureExclusionMaxHeight = 200.dp
 
-    /** 스크럽 중 손가락을 스트립 왼쪽으로 이만큼 벗어나면 '취소'. */
+    /** 스크럽 중 손가락을 스트립에서 화면 안쪽으로 이만큼 벗어나면 '취소'. */
     val CancelDistance = 96.dp
 
     // ── 스크럽 물리 ──────────────────────────────────────────

@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -69,12 +73,13 @@ data class IndexTabItem(
 )
 
 /**
- * 우측 서류철 인덱스 탭 스트립 (SHELL-03, PRD §3) — '툭툭' 튀어나오는 서류철.
- * 손가락이 칸을 넘을 때마다 그 서류철이 스프링으로 왼쪽으로 툭 튀어나오고(이웃은 조금),
- * 지나간 서류철은 다시 들어간다. 넘김 THUD 진동과 같은 박자.
- * 선택 서류철 왼쪽에는 도구 이름 알약이 칸 단위로 따라간다.
+ * 서류철 인덱스 탭 스트립 (SHELL-03, PRD §3) — '툭툭' 튀어나오는 서류철.
+ * [side] 가장자리에 붙어 있고, 손가락이 칸을 넘을 때마다 그 서류철이 스프링으로 화면 안쪽으로 툭 튀어나오며
+ * (이웃은 조금) 지나간 서류철은 다시 들어간다. 넘김 THUD 진동과 같은 박자.
+ * 선택 서류철 옆(화면 안쪽)에는 도구 이름 알약이 칸 단위로 따라간다.
  * 애니메이션 값은 offset/graphicsLayer 람다에서만 읽어 재구성을 피한다(칸이 바뀔 때만 재구성).
  *
+ * @param side 스트립이 붙는 화면 가장자리
  * @param openActionLabel TalkBack "두 번 탭하여 ○○" 문구
  */
 @Composable
@@ -84,6 +89,7 @@ fun IndexTabStrip(
     onOpen: (index: Int) -> Unit,
     openActionLabel: String,
     modifier: Modifier = Modifier,
+    side: StripSide = StripSide.Right,
 ) {
     val count = items.size
     SideEffect { state.itemCount = count }
@@ -99,8 +105,11 @@ fun IndexTabStrip(
         }
     }
     val active = rememberStripActive(state)
+    val edge = side.edgeAlignment()
+    // 화면 안쪽 방향: 오른쪽 스트립은 -x(왼쪽), 왼쪽 스트립은 +x(오른쪽)
+    val inward = if (side == StripSide.Right) -1f else 1f
 
-    BoxWithConstraints(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.CenterEnd) {
+    BoxWithConstraints(modifier = modifier.fillMaxHeight(), contentAlignment = side.centerAlignment()) {
         val extent = (maxHeight / count).coerceIn(DeskMotion.TabMinExtent, DeskMotion.TabMaxExtent)
         val density = LocalDensity.current
         val extentPx = with(density) { extent.toPx() }
@@ -115,7 +124,8 @@ fun IndexTabStrip(
         // 알약은 손가락을 연속으로 따르지 않고 칸 단위로 '툭' 옮겨 간다
         val indicatorIndex = animateFloatAsState(focused.toFloat(), popSpring, label = "indicatorIndex")
 
-        Box(modifier = Modifier.width(tabWidth).height(extent * count)) {
+        // 탭·터치 영역 모두 이 상자 안에 있어야 보이는 탭 어디를 잡아도 스크럽된다
+        Box(modifier = Modifier.width(maxOf(tabWidth, DeskMotion.StripTouchWidth)).height(extent * count)) {
             items.forEachIndexed { index, item ->
                 val pop = animateFloatAsState(
                     targetValue = if (scrubbing) IndexScrubMath.popLevel(index, focused) else 0f,
@@ -124,13 +134,14 @@ fun IndexTabStrip(
                 )
                 IndexTab(
                     item = item,
-                    pop = { pop.value * active.value },
+                    side = side,
+                    // Idle에서는 튀어나올 거리만큼 화면 밖으로 밀려 있다
+                    x = { -inward * popShiftPx * (1f - pop.value * active.value) },
                     y = { index * extentPx },
-                    popShiftPx = popShiftPx,
                     openActionLabel = openActionLabel,
                     onOpen = { openWithHaptic(index) },
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(edge)
                         .width(tabWidth)
                         .height(extent - DeskMotion.TabGap),
                 )
@@ -138,20 +149,21 @@ fun IndexTabStrip(
 
             TabIndicator(
                 item = items[focused],
+                side = side,
                 active = active,
                 offset = {
                     IntOffset(
-                        x = -(idleVisiblePx + popShiftPx * active.value + indicatorGapPx(density)).roundToInt(),
+                        x = (inward * (idleVisiblePx + popShiftPx * active.value + indicatorGapPx(density))).roundToInt(),
                         y = (indicatorIndex.value * extentPx + (extentPx - indicatorHeightPx(density)) / 2f).roundToInt(),
                     )
                 },
-                modifier = Modifier.align(Alignment.TopEnd),
+                modifier = Modifier.align(edge),
             )
 
             // 터치 영역: 탭 위에 겹친 투명 박스. 의미 정보는 각 탭이 가진다.
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
+                    .align(edge)
                     .width(DeskMotion.StripTouchWidth)
                     .fillMaxHeight()
                     // 뒤로가기 제스처와 겹치는 가장자리 중 정책 한도(200dp)만큼만 가운데를 제외한다.
@@ -166,6 +178,7 @@ fun IndexTabStrip(
                         itemExtentPx = extentPx,
                         cancelDistancePx = cancelPx,
                         onOpen = openWithHaptic,
+                        side = side,
                     ),
             )
         }
@@ -184,25 +197,33 @@ internal fun rememberStripActive(state: IndexScrubState): State<Float> = animate
     label = "stripActive",
 )
 
+private fun StripSide.edgeAlignment(): Alignment =
+    if (this == StripSide.Right) AbsoluteAlignment.TopRight else AbsoluteAlignment.TopLeft
+
+private fun StripSide.centerAlignment(): Alignment =
+    if (this == StripSide.Right) AbsoluteAlignment.CenterRight else AbsoluteAlignment.CenterLeft
+
 private fun indicatorGapPx(density: Density) = with(density) { DeskMotion.IndicatorGap.toPx() }
 private fun indicatorHeightPx(density: Density) = with(density) { DeskMotion.IndicatorHeight.toPx() }
 
 @Composable
 private fun IndexTab(
     item: IndexTabItem,
-    pop: () -> Float,
+    side: StripSide,
+    x: () -> Float,
     y: () -> Float,
-    popShiftPx: Float,
     openActionLabel: String,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 둥근 모서리·아이콘은 화면 안쪽(보이는 쪽)에 둔다
+    val shape = if (side == StripSide.Right) RightTabShape else LeftTabShape
     Box(
         modifier = modifier
-            .offset { IntOffset(x = (popShiftPx * (1f - pop())).roundToInt(), y = y().roundToInt()) }
-            .background(item.color.container, TabShape)
+            .absoluteOffset { IntOffset(x = x().roundToInt(), y = y().roundToInt()) }
+            .background(item.color.container, shape)
             // 그림자 대신 얇은 선으로 탭끼리 구분
-            .border(DeskLine.Hairline, DeskTheme.colors.lineStrong, TabShape)
+            .border(DeskLine.Hairline, DeskTheme.colors.lineStrong, shape)
             .semantics {
                 role = Role.Button
                 contentDescription = item.label
@@ -211,34 +232,39 @@ private fun IndexTab(
                     true
                 }
             },
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = if (side == StripSide.Right) AbsoluteAlignment.CenterLeft else AbsoluteAlignment.CenterRight,
     ) {
         Icon(
             imageVector = item.icon,
             contentDescription = null,
             tint = item.color.onContainer,
-            modifier = Modifier.padding(start = 7.dp).size(18.dp),
+            modifier = Modifier.absolutePadding(left = TabIconInset, right = TabIconInset).size(18.dp),
         )
     }
 }
 
-/** 선택 탭 왼쪽 알약: 탭 색 + 아이콘 + 도구 이름. 손가락 높이를 연속으로 따라간다. */
+/** 선택 탭 옆(화면 안쪽) 알약: 탭 색 + 아이콘 + 도구 이름. 칸 단위로 따라간다. */
 @Composable
 private fun TabIndicator(
     item: IndexTabItem,
+    side: StripSide,
     active: State<Float>,
     offset: Density.() -> IntOffset,
     modifier: Modifier = Modifier,
 ) {
+    val anchoredRight = side == StripSide.Right
     Row(
         modifier = modifier
-            .offset(offset)
+            .absoluteOffset(offset)
             .graphicsLayer {
                 alpha = active.value
                 scaleX = 0.9f + 0.1f * active.value
                 scaleY = 0.9f + 0.1f * active.value
-                transformOrigin = TransformOrigin(1f, 0.5f)
+                // 탭 쪽 끝을 기준으로 커진다
+                transformOrigin = TransformOrigin(if (anchoredRight) 1f else 0f, 0.5f)
             }
+            // 스트립 상자 폭(약 96dp)에 갇혀 이름이 잘리지 않도록, 탭 쪽 끝에 붙인 채 화면 안쪽으로 넘쳐 그린다
+            .wrapContentWidth(if (anchoredRight) AbsoluteAlignment.Right else AbsoluteAlignment.Left, unbounded = true)
             .height(DeskMotion.IndicatorHeight)
             .background(item.color.container, PillShape)
             .border(DeskLine.Hairline, DeskTheme.colors.lineStrong, PillShape)
@@ -259,7 +285,9 @@ private fun TabIndicator(
     }
 }
 
-private val TabShape = RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)
+private val TabIconInset = 11.dp
+private val RightTabShape = AbsoluteRoundedCornerShape(topLeft = 10.dp, bottomLeft = 10.dp)
+private val LeftTabShape = AbsoluteRoundedCornerShape(topRight = 10.dp, bottomRight = 10.dp)
 private val PillShape = RoundedCornerShape(percent = 50)
 
 private val PreviewItems = listOf(
@@ -274,7 +302,7 @@ private val PreviewItems = listOf(
 
 @DeskPreviews
 @Composable
-private fun IndexTabStripIdlePreview() {
+private fun IndexTabStripLeftIdlePreview() {
     DeskTheme {
         DeskSurface {
             IndexTabStrip(
@@ -282,16 +310,17 @@ private fun IndexTabStripIdlePreview() {
                 state = rememberIndexScrubState(),
                 onOpen = {},
                 openActionLabel = "열기",
-                modifier = Modifier.align(Alignment.CenterEnd),
+                modifier = Modifier.align(AbsoluteAlignment.CenterLeft),
+                side = StripSide.Left,
             )
         }
     }
 }
 
-/** 스크럽 중 정지 스냅샷: 네 번째 서류철이 튀어나온 상태와 알약 인디케이터. */
+/** 스크럽 중 정지 스냅샷(왼쪽 가장자리): 네 번째 서류철이 오른쪽으로 튀어나온 상태와 알약 인디케이터. */
 @DeskPreviews
 @Composable
-private fun IndexTabStripScrubbingPreview() {
+private fun IndexTabStripLeftScrubbingPreview() {
     DeskTheme {
         DeskSurface {
             IndexTabStrip(
@@ -299,7 +328,26 @@ private fun IndexTabStripScrubbingPreview() {
                 state = rememberIndexScrubState(initialFocus = 3.3f, initialPhase = ScrubPhase.Scrubbing),
                 onOpen = {},
                 openActionLabel = "열기",
-                modifier = Modifier.align(Alignment.CenterEnd),
+                modifier = Modifier.align(AbsoluteAlignment.CenterLeft),
+                side = StripSide.Left,
+            )
+        }
+    }
+}
+
+/** 스크럽 중 정지 스냅샷(오른쪽 가장자리) */
+@DeskPreviews
+@Composable
+private fun IndexTabStripRightScrubbingPreview() {
+    DeskTheme {
+        DeskSurface {
+            IndexTabStrip(
+                items = PreviewItems,
+                state = rememberIndexScrubState(initialFocus = 3.3f, initialPhase = ScrubPhase.Scrubbing),
+                onOpen = {},
+                openActionLabel = "열기",
+                modifier = Modifier.align(AbsoluteAlignment.CenterRight),
+                side = StripSide.Right,
             )
         }
     }

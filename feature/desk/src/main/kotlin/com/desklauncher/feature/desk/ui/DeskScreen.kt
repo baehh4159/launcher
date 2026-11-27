@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -45,6 +46,7 @@ import com.desklauncher.core.designsystem.scrub.IndexScrubState
 import com.desklauncher.core.designsystem.scrub.IndexTabItem
 import com.desklauncher.core.designsystem.scrub.IndexTabStrip
 import com.desklauncher.core.designsystem.scrub.ScrubPhase
+import com.desklauncher.core.designsystem.scrub.StripSide
 import com.desklauncher.core.designsystem.scrub.rememberIndexScrubState
 import com.desklauncher.core.designsystem.text.asString
 import com.desklauncher.core.designsystem.theme.DeskTheme
@@ -198,6 +200,8 @@ fun DeskScreen(
                         state = stripState,
                         onOpen = { index -> state.tabs.getOrNull(index)?.let { onAction(DeskAction.OpenTool(it.toolId)) } },
                         openActionLabel = stringResource(R.string.desk_tab_open_action),
+                        // 서류철은 왼쪽 가장자리에 꽂고 오른쪽(화면 안쪽)으로 튀어나온다 (사용자 결정, PRD §13).
+                        side = DeskStripSide,
                         // 기본은 엄지가 닿는 하단 2/3 (PRD §3.1). 설정에서 위/가운데로 옮길 수 있다.
                         modifier = Modifier
                             .align(state.gripPosition.alignment())
@@ -226,10 +230,12 @@ private fun AppDrawerHint(onClick: () -> Unit, modifier: Modifier = Modifier) {
 private val AppDrawerSwipeThreshold = 72.dp
 private const val StripHeightFraction = 0.66f
 
+private val DeskStripSide = StripSide.Left
+
 private fun GripPosition.alignment(): Alignment = when (this) {
-    GripPosition.Top -> Alignment.TopEnd
-    GripPosition.Middle -> Alignment.CenterEnd
-    GripPosition.Bottom -> Alignment.BottomEnd
+    GripPosition.Top -> AbsoluteAlignment.TopLeft
+    GripPosition.Middle -> AbsoluteAlignment.CenterLeft
+    GripPosition.Bottom -> AbsoluteAlignment.BottomLeft
 }
 
 @Composable
