@@ -3,7 +3,6 @@ package com.desklauncher.debugtools
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
-import androidx.compose.material.icons.outlined.Alarm
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
@@ -36,7 +35,7 @@ internal class SampleTool(
         if (SampleTools.all.firstOrNull() !== this@SampleTool) return
         composable<SampleToolDestination> { entry ->
             val toolId = entry.toRoute<SampleToolDestination>().toolId
-            val title = SampleTools.all.firstOrNull { it.id == toolId }?.titleRes ?: R.string.sample_tool_alarm
+            val title = SampleTools.all.firstOrNull { it.id == toolId }?.titleRes ?: R.string.sample_tool_files
             SampleToolScreen(titleRes = title)
         }
     }
@@ -47,7 +46,6 @@ internal data class SampleToolDestination(val toolId: String)
 
 internal object SampleTools {
     val all: List<SampleTool> = listOf(
-        SampleTool("alarm", R.string.sample_tool_alarm, Icons.Outlined.Alarm, DeskTabColor.Indigo, 7),
         SampleTool("files", R.string.sample_tool_files, Icons.AutoMirrored.Outlined.InsertDriveFile, DeskTabColor.Gray, 8),
     )
 }

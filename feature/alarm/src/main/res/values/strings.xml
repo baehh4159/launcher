@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alarm_tool_title">알람</string>
+    <string name="alarm_tool_description">반복 알람과 다시 울림</string>
+    <string name="alarm_back">책상으로</string>
+    <string name="alarm_add">알람 추가</string>
+    <string name="alarm_empty_title">알람이 없어요</string>
+    <string name="alarm_empty_body">+ 버튼으로 깨워 줄 시각을 정해 보세요.</string>
+    <string name="alarm_once">한 번</string>
+    <string name="alarm_everyday">매일</string>
+    <string name="alarm_weekdays">평일</string>
+    <string name="alarm_weekends">주말</string>
+    <string name="alarm_in">%1$s 후 울림</string>
+    <string name="alarm_in_hours_minutes">%1$d시간 %2$d분</string>
+    <string name="alarm_in_minutes">%1$d분</string>
+    <string name="alarm_in_days">%1$d일 %2$d시간</string>
+    <string name="alarm_toggle">%1$s 알람 켜기</string>
+    <string name="alarm_delete">알람 삭제</string>
+    <string name="alarm_deleted">알람을 지웠어요</string>
+    <string name="alarm_undo">실행 취소</string>
+    <string name="alarm_ok">확인</string>
+    <string name="alarm_cancel">취소</string>
+</resources>

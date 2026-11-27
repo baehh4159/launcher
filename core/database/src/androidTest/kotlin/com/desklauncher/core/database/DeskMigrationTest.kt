@@ -141,6 +141,23 @@ class DeskMigrationTest {
         }
     }
 
+    // v8 → v9: alarm 생성 (기본값: 켜짐·진동·5분 다시 울림)
+    @Test
+    fun migrate8To9_addsAlarm() {
+        helper.createDatabase(TestDb, 8).close()
+
+        val db = helper.runMigrationsAndValidate(TestDb, 9, true)
+
+        db.execSQL("INSERT INTO alarm (id, hour, minute, createdAt, updatedAt) VALUES ('a1', 7, 30, 0, 0)")
+        db.query("SELECT enabled, vibrate, snoozeMinutes, repeatDays FROM alarm").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+            assertEquals(1, cursor.getInt(1))
+            assertEquals(5, cursor.getInt(2))
+            assertEquals(0, cursor.getInt(3))
+        }
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }

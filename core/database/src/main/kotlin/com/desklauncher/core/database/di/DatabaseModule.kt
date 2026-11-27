@@ -3,6 +3,7 @@ package com.desklauncher.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.desklauncher.core.database.DeskDatabase
+import com.desklauncher.core.database.dao.AlarmDao
 import com.desklauncher.core.database.dao.AppPrefDao
 import com.desklauncher.core.database.dao.CalendarEventDao
 import com.desklauncher.core.database.dao.DiaryDao
@@ -57,4 +58,7 @@ object DatabaseModule {
 
     @Provides
     fun provideDoodleDao(database: DeskDatabase): DoodleDao = database.doodleDao()
+
+    @Provides
+    fun provideAlarmDao(database: DeskDatabase): AlarmDao = database.alarmDao()
 }
