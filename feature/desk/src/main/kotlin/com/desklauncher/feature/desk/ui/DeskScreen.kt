@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -147,7 +148,8 @@ fun DeskScreen(
             )
         },
     ) {
-        Box(modifier = Modifier.safeDrawingPadding()) {
+        // fillMaxSize가 없으면 Box가 시계 폭만큼만 잡혀 스트립이 화면 가운데에 뜬다 (실기기 S24+에서 확인)
+        Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
             AppDrawerHint(
                 onClick = { onAction(DeskAction.OpenAppDrawer) },
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp),
