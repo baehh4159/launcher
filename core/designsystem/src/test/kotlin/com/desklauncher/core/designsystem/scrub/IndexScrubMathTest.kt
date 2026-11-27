@@ -38,20 +38,14 @@ class IndexScrubMathTest {
         assertEquals(0, IndexScrubMath.nearestIndex(3f, 0))
     }
 
-    // 포커스에서 1, 좌우 대칭으로 감소
+    // 파도: 포커스에서 1, 좌우 대칭, 반경 밖 0, 반경 절반에서 0.5
     @Test
-    fun popFraction_peaksAtFocusAndIsSymmetric() {
-        assertEquals(1f, IndexScrubMath.popFraction(2, 2f), 0.0001f)
-        assertEquals(IndexScrubMath.popFraction(1, 2f), IndexScrubMath.popFraction(3, 2f), 0.0001f)
-        assertTrue(IndexScrubMath.popFraction(4, 2f) < IndexScrubMath.popFraction(3, 2f))
-    }
-
-    // 포커스 위 탭은 위로, 아래 탭은 아래로 벌어진다
-    @Test
-    fun spreadOffset_pushesAwayFromFocus() {
-        assertEquals(0f, IndexScrubMath.spreadOffset(2, 2f), 0.0001f)
-        assertTrue(IndexScrubMath.spreadOffset(1, 2f) < 0f)
-        assertTrue(IndexScrubMath.spreadOffset(3, 2f) > 0f)
+    fun waveFraction_raisedCosine() {
+        assertEquals(1f, IndexScrubMath.waveFraction(2, 2f, radius = 3f), 0.0001f)
+        assertEquals(IndexScrubMath.waveFraction(1, 2.2f, 3f), IndexScrubMath.waveFraction(3, 1.8f, 3f), 0.0001f)
+        assertEquals(0.5f, IndexScrubMath.waveFraction(5, 3.5f, radius = 3f), 0.0001f)
+        assertEquals(0f, IndexScrubMath.waveFraction(6, 2f, radius = 3f), 0.0001f)
+        assertTrue(IndexScrubMath.waveFraction(3, 2f, 3f) > IndexScrubMath.waveFraction(4, 2f, 3f))
     }
 
     // 플링 목표는 투영 후 범위로 제한

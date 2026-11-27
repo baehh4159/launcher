@@ -2,9 +2,9 @@ package com.desklauncher.core.designsystem.scrub
 
 import com.desklauncher.core.designsystem.motion.DeskMotion
 import kotlin.math.abs
-import kotlin.math.exp
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
-import kotlin.math.sign
 
 /** 스크럽 계산 순수 함수. 단위: focus/인덱스 = 탭 단위, y·extent = px. */
 object IndexScrubMath {
@@ -26,16 +26,14 @@ object IndexScrubMath {
     fun nearestIndex(focus: Float, count: Int): Int =
         if (count <= 0) 0 else focus.roundToInt().coerceIn(0, count - 1)
 
-    /** 0..1. 포커스 위치에서 1, 멀어질수록 가우시안으로 감소. */
-    fun popFraction(index: Int, focus: Float, sigma: Float = DeskMotion.PopSigma): Float {
-        val d = index - focus
-        return exp(-(d * d) / (2f * sigma * sigma))
-    }
-
-    /** 포커스에서 멀어지는 방향으로 벌어지는 양(탭 단위). 포커스 탭이 커질 자리를 만든다. */
-    fun spreadOffset(index: Int, focus: Float, maxSpread: Float = DeskMotion.SpreadMax): Float {
-        val d = index - focus
-        return sign(d) * maxSpread * (1f - exp(-abs(d)))
+    /**
+     * 파도 곡선 0..1 (올린 코사인): 포커스에서 1, [radius]에서 0, 그 밖은 0.
+     * 양 끝 기울기가 0이라 휘어진 구간과 곧은 구간 사이가 각지지 않는다.
+     */
+    fun waveFraction(index: Int, focus: Float, radius: Float): Float {
+        val d = abs(index - focus)
+        if (radius <= 0f || d >= radius) return 0f
+        return 0.5f * (1f + cos(PI.toFloat() * d / radius))
     }
 
     /** 플링 목표 인덱스. */

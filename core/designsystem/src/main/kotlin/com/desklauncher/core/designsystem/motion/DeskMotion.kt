@@ -17,10 +17,18 @@ object DeskMotion {
     val TabGap = 3.dp
 
     /** Idle 상태에서 화면 가장자리에 보이는 탭 폭. 아이콘(20dp) + 여백. */
-    val TabIdleVisibleWidth = 34.dp
+    val TabIdleVisibleWidth = 32.dp
 
-    /** 포커스 탭이 왼쪽으로 튀어나오는 최대 거리. 라벨이 보일 만큼. */
-    val TabMaxPop = 112.dp
+    /** 파도 꼭대기(손가락 위치)에서 탭이 왼쪽으로 나오는 최대 거리. */
+    val TabWaveShift = 44.dp
+
+    /** 선택 탭 왼쪽 알약 인디케이터 높이·탭과의 간격 */
+    val IndicatorHeight = 40.dp
+    val IndicatorGap = 10.dp
+
+    /** 앱 서랍 글자 스트립: 파도 최대 이동 거리, 원형 인디케이터 지름 */
+    val LetterWaveShift = 64.dp
+    val LetterIndicatorSize = 48.dp
 
     /** 터치를 받는 폭(가장자리부터). 뒤로가기 제스처 영역(약 20~30dp)보다 넓게 잡는다. */
     val StripTouchWidth = 72.dp
@@ -32,11 +40,12 @@ object DeskMotion {
     val CancelDistance = 96.dp
 
     // ── 스크럽 물리 ──────────────────────────────────────────
-    /** 튀어나옴 가우시안 폭(탭 단위). 클수록 주변 탭도 함께 나온다. */
-    const val PopSigma = 1.15f
-
-    /** 포커스 주변 탭이 위아래로 벌어지는 최대량(탭 간격 비율). */
-    const val SpreadMax = 0.3f
+    /**
+     * 파도 반경(탭 단위): 손가락에서 이만큼 떨어진 탭까지 휘어진다(올린 코사인 곡선).
+     * 탭은 9개 안팎이라 3칸, 글자는 30개 안팎이라 6칸 — 스크린샷 레퍼런스처럼 넓고 완만한 곡선.
+     */
+    const val TabWaveRadius = 3.2f
+    const val LetterWaveRadius = 6f
 
     /** 처음/끝을 넘어 당길 수 있는 최대 거리(탭 단위, 고무줄 저항). */
     const val OverscrollMax = 0.6f

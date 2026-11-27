@@ -1,7 +1,5 @@
 package com.desklauncher.core.designsystem.scrub
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -22,12 +20,15 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.desklauncher.core.designsystem.component.DeskSurface
 import com.desklauncher.core.designsystem.motion.DeskMotion
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTheme
@@ -35,7 +36,8 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- * 앱 서랍 초성/알파벳 인덱스 스트립 (SHELL-07). [IndexTabStrip]과 같은 상태·제스처·햅틱을 쓴다.
+ * 앱 서랍 초성/알파벳 인덱스 스트립 (SHELL-07) — 서류철 스트립과 같은 파도 스크럽.
+ * 글자들이 손가락 주변에서 넓은 곡선을 그리며 왼쪽으로 휘고, 휜 글자 왼쪽에 원형 인디케이터가 따라온다.
  * 포커스가 바뀔 때 목록을 옮기는 일은 호출부가 [IndexScrubState.focusedIndex]를 보고 처리한다.
  */
 @Composable
@@ -49,35 +51,29 @@ fun IndexLetterStrip(
     SideEffect { state.itemCount = count }
     if (count == 0) return
     IndexScrubHaptics(state)
-
-    val active = animateFloatAsState(
-        targetValue = if (state.phase == ScrubPhase.Idle) 0f else 1f,
-        animationSpec = tween(DeskMotion.PhaseFadeMillis),
-        label = "letterStripActive",
-    )
+    val active = rememberStripActive(state)
 
     BoxWithConstraints(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.CenterEnd) {
         val extent = (maxHeight / count).coerceIn(LetterMinExtent, LetterMaxExtent)
         val density = LocalDensity.current
         val extentPx = with(density) { extent.toPx() }
-        val popPx = with(density) { LetterPop.toPx() }
+        val waveShiftPx = with(density) { DeskMotion.LetterWaveShift.toPx() }
         val cancelPx = with(density) { DeskMotion.CancelDistance.toPx() }
         val exclusionPx = with(density) { DeskMotion.GestureExclusionMaxHeight.toPx() }
-        val color = MaterialTheme.colorScheme.primary
-        val onColor = MaterialTheme.colorScheme.onPrimary
+        val letterWidthPx = with(density) { LetterTouchWidth.toPx() }
+        val indicatorPx = with(density) { DeskMotion.LetterIndicatorSize.toPx() }
+        val gapPx = with(density) { 4.dp.toPx() }
+        val ink = DeskTheme.colors.onDeskSecondary
+        val indicatorColor = MaterialTheme.colorScheme.primary
+        val onIndicator = MaterialTheme.colorScheme.onPrimary
 
         Box(modifier = Modifier.width(LetterTouchWidth).height(extent * count)) {
             letters.forEachIndexed { index, letter ->
-                val pop = { active.value * IndexScrubMath.popFraction(index, state.focus, sigma = 0.9f) }
+                val wave = { active.value * IndexScrubMath.waveFraction(index, state.focus, DeskMotion.LetterWaveRadius) }
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .offset {
-                            IntOffset(
-                                x = -(popPx * pop()).roundToInt(),
-                                y = (index * extentPx).roundToInt(),
-                            )
-                        }
+                        .offset { IntOffset(x = -(waveShiftPx * wave()).roundToInt(), y = (index * extentPx).roundToInt()) }
                         .size(width = LetterTouchWidth, height = extent)
                         .semantics {
                             role = Role.Button
@@ -89,36 +85,34 @@ fun IndexLetterStrip(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .graphicsLayer {
-                                val p = pop()
-                                alpha = p
-                                scaleX = 0.6f + 0.6f * p
-                                scaleY = 0.6f + 0.6f * p
-                            }
-                            .background(color, CircleShape),
-                    )
-                    Text(
-                        text = letter,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.graphicsLayer { alpha = 1f - pop() },
-                    )
-                    Text(
-                        text = letter,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = onColor,
-                        modifier = Modifier.graphicsLayer {
-                            val p = pop()
-                            alpha = p
-                            scaleX = 0.8f + 0.5f * p
-                            scaleY = 0.8f + 0.5f * p
-                        },
-                    )
+                    Text(text = letter, style = MaterialTheme.typography.labelLarge, color = ink)
                 }
             }
+
+            // 원형 인디케이터: 파도 꼭대기 글자의 바로 왼쪽
+            val focusedLetter = letters[state.focusedIndex.coerceIn(0, count - 1)]
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset {
+                        IntOffset(
+                            x = -(waveShiftPx * active.value + letterWidthPx + gapPx).roundToInt(),
+                            y = (state.focus * extentPx + (extentPx - indicatorPx) / 2f).roundToInt(),
+                        )
+                    }
+                    .graphicsLayer {
+                        alpha = active.value
+                        scaleX = 0.8f + 0.2f * active.value
+                        scaleY = 0.8f + 0.2f * active.value
+                    }
+                    .size(DeskMotion.LetterIndicatorSize)
+                    .background(indicatorColor, CircleShape)
+                    .clearAndSetSemantics { },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(focusedLetter, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Medium, color = onIndicator)
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -138,18 +132,19 @@ fun IndexLetterStrip(
 
 private val LetterMinExtent = 14.dp
 private val LetterMaxExtent = 26.dp
-private val LetterTouchWidth = 40.dp
-private val LetterPop = 36.dp
+private val LetterTouchWidth = 36.dp
 
+/** 스크린샷 레퍼런스 재현: 22글자 중 M(12번째) 근처를 훑는 순간 */
 @DeskPreviews
 @Composable
 private fun IndexLetterStripPreview() {
     DeskTheme {
-        Box(Modifier.fillMaxHeight()) {
+        DeskSurface {
             IndexLetterStrip(
-                letters = listOf("ㄱ", "ㄴ", "ㄷ", "ㅁ", "ㅅ", "ㅇ", "ㅈ", "ㅋ", "ㅎ", "A", "G", "N", "Y", "#"),
-                state = rememberIndexScrubState(initialFocus = 5.2f, initialPhase = ScrubPhase.Scrubbing),
+                letters = listOf("★", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "R", "S", "T", "V", "W", "Y", "#"),
+                state = rememberIndexScrubState(initialFocus = 13f, initialPhase = ScrubPhase.Scrubbing),
                 onOpen = {},
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(0.7f),
             )
         }
     }
