@@ -36,6 +36,10 @@ object IndexScrubMath {
         return 0.5f * (1f + cos(PI.toFloat() * d / radius))
     }
 
+    /** 서류철 튀어나옴 비율: 선택 탭과의 칸 거리 → [levels] 값 (범위 밖 0). */
+    fun popLevel(index: Int, focusedIndex: Int, levels: List<Float> = DeskMotion.TabPopLevels): Float =
+        levels.getOrElse(abs(index - focusedIndex)) { 0f }
+
     /** 플링 목표 인덱스. */
     fun flingTarget(
         focus: Float,

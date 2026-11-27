@@ -48,6 +48,16 @@ class IndexScrubMathTest {
         assertTrue(IndexScrubMath.waveFraction(3, 2f, 3f) > IndexScrubMath.waveFraction(4, 2f, 3f))
     }
 
+    // 툭툭: 선택 탭 1, 옆 칸은 단계별로 줄고, 범위 밖은 0
+    @Test
+    fun popLevel_stepsByDistance() {
+        val levels = listOf(1f, 0.3f, 0.08f)
+        assertEquals(1f, IndexScrubMath.popLevel(4, 4, levels), 0f)
+        assertEquals(0.3f, IndexScrubMath.popLevel(3, 4, levels), 0f)
+        assertEquals(0.08f, IndexScrubMath.popLevel(6, 4, levels), 0f)
+        assertEquals(0f, IndexScrubMath.popLevel(8, 4, levels), 0f)
+    }
+
     // 플링 목표는 투영 후 범위로 제한
     @Test
     fun flingTarget_projectsAndClamps() {

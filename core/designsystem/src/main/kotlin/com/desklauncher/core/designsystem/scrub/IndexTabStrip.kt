@@ -1,6 +1,7 @@
 package com.desklauncher.core.designsystem.scrub
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,10 +69,11 @@ data class IndexTabItem(
 )
 
 /**
- * 우측 서류철 인덱스 탭 스트립 (SHELL-03, PRD §3) — 파도(wave) 스크럽.
- * 손가락 Y를 꼭대기로 올린 코사인 곡선을 따라 탭이 왼쪽으로 휘어 나오고([IndexScrubMath.waveFraction]),
- * 선택 탭 왼쪽에 도구 이름이 적힌 알약 인디케이터가 손가락을 따라 다닌다.
- * 프레임마다 바뀌는 값(focus, wave)은 offset/graphicsLayer 람다에서만 읽어 재구성을 피한다.
+ * 우측 서류철 인덱스 탭 스트립 (SHELL-03, PRD §3) — '툭툭' 튀어나오는 서류철.
+ * 손가락이 칸을 넘을 때마다 그 서류철이 스프링으로 왼쪽으로 툭 튀어나오고(이웃은 조금),
+ * 지나간 서류철은 다시 들어간다. 넘김 THUD 진동과 같은 박자.
+ * 선택 서류철 왼쪽에는 도구 이름 알약이 칸 단위로 따라간다.
+ * 애니메이션 값은 offset/graphicsLayer 람다에서만 읽어 재구성을 피한다(칸이 바뀔 때만 재구성).
  *
  * @param openActionLabel TalkBack "두 번 탭하여 ○○" 문구
  */
@@ -102,19 +104,29 @@ fun IndexTabStrip(
         val extent = (maxHeight / count).coerceIn(DeskMotion.TabMinExtent, DeskMotion.TabMaxExtent)
         val density = LocalDensity.current
         val extentPx = with(density) { extent.toPx() }
-        val waveShiftPx = with(density) { DeskMotion.TabWaveShift.toPx() }
+        val popShiftPx = with(density) { DeskMotion.TabPopShift.toPx() }
         val idleVisiblePx = with(density) { DeskMotion.TabIdleVisibleWidth.toPx() }
         val cancelPx = with(density) { DeskMotion.CancelDistance.toPx() }
         val exclusionPx = with(density) { DeskMotion.GestureExclusionMaxHeight.toPx() }
-        val tabWidth = DeskMotion.TabIdleVisibleWidth + DeskMotion.TabWaveShift
+        val tabWidth = DeskMotion.TabIdleVisibleWidth + DeskMotion.TabPopShift
+        val focused = state.focusedIndex.coerceIn(0, count - 1)
+        val scrubbing = state.phase != ScrubPhase.Idle
+        val popSpring = spring<Float>(dampingRatio = DeskMotion.TabPopDamping, stiffness = DeskMotion.TabPopStiffness)
+        // 알약은 손가락을 연속으로 따르지 않고 칸 단위로 '툭' 옮겨 간다
+        val indicatorIndex = animateFloatAsState(focused.toFloat(), popSpring, label = "indicatorIndex")
 
         Box(modifier = Modifier.width(tabWidth).height(extent * count)) {
             items.forEachIndexed { index, item ->
+                val pop = animateFloatAsState(
+                    targetValue = if (scrubbing) IndexScrubMath.popLevel(index, focused) else 0f,
+                    animationSpec = popSpring,
+                    label = "tabPop",
+                )
                 IndexTab(
                     item = item,
-                    wave = { active.value * IndexScrubMath.waveFraction(index, state.focus, DeskMotion.TabWaveRadius) },
+                    pop = { pop.value * active.value },
                     y = { index * extentPx },
-                    waveShiftPx = waveShiftPx,
+                    popShiftPx = popShiftPx,
                     openActionLabel = openActionLabel,
                     onOpen = { openWithHaptic(index) },
                     modifier = Modifier
@@ -125,12 +137,12 @@ fun IndexTabStrip(
             }
 
             TabIndicator(
-                item = items[state.focusedIndex.coerceIn(0, count - 1)],
+                item = items[focused],
                 active = active,
                 offset = {
                     IntOffset(
-                        x = -(idleVisiblePx + waveShiftPx * active.value + indicatorGapPx(density)).roundToInt(),
-                        y = (state.focus * extentPx + (extentPx - indicatorHeightPx(density)) / 2f).roundToInt(),
+                        x = -(idleVisiblePx + popShiftPx * active.value + indicatorGapPx(density)).roundToInt(),
+                        y = (indicatorIndex.value * extentPx + (extentPx - indicatorHeightPx(density)) / 2f).roundToInt(),
                     )
                 },
                 modifier = Modifier.align(Alignment.TopEnd),
@@ -178,16 +190,16 @@ private fun indicatorHeightPx(density: Density) = with(density) { DeskMotion.Ind
 @Composable
 private fun IndexTab(
     item: IndexTabItem,
-    wave: () -> Float,
+    pop: () -> Float,
     y: () -> Float,
-    waveShiftPx: Float,
+    popShiftPx: Float,
     openActionLabel: String,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
-            .offset { IntOffset(x = (waveShiftPx * (1f - wave())).roundToInt(), y = y().roundToInt()) }
+            .offset { IntOffset(x = (popShiftPx * (1f - pop())).roundToInt(), y = y().roundToInt()) }
             .background(item.color.container, TabShape)
             // 그림자 대신 얇은 선으로 탭끼리 구분
             .border(DeskLine.Hairline, DeskTheme.colors.lineStrong, TabShape)
@@ -276,7 +288,7 @@ private fun IndexTabStripIdlePreview() {
     }
 }
 
-/** 스크럽 중 정지 스냅샷: 포커스 3.3 — 파도 꼭대기와 알약 인디케이터. */
+/** 스크럽 중 정지 스냅샷: 네 번째 서류철이 튀어나온 상태와 알약 인디케이터. */
 @DeskPreviews
 @Composable
 private fun IndexTabStripScrubbingPreview() {

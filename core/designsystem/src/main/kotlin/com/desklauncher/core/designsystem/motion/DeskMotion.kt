@@ -19,8 +19,8 @@ object DeskMotion {
     /** Idle 상태에서 화면 가장자리에 보이는 탭 폭. 아이콘(20dp) + 여백. */
     val TabIdleVisibleWidth = 32.dp
 
-    /** 파도 꼭대기(손가락 위치)에서 탭이 왼쪽으로 나오는 최대 거리. */
-    val TabWaveShift = 44.dp
+    /** 선택된 서류철이 왼쪽으로 '툭' 튀어나오는 거리. 이웃 탭은 [TabPopLevels] 비율만큼. */
+    val TabPopShift = 48.dp
 
     /** 선택 탭 왼쪽 알약 인디케이터 높이·탭과의 간격 */
     val IndicatorHeight = 40.dp
@@ -44,8 +44,17 @@ object DeskMotion {
      * 파도 반경(탭 단위): 손가락에서 이만큼 떨어진 탭까지 휘어진다(올린 코사인 곡선).
      * 탭은 9개 안팎이라 3칸, 글자는 30개 안팎이라 6칸 — 스크린샷 레퍼런스처럼 넓고 완만한 곡선.
      */
-    const val TabWaveRadius = 3.2f
     const val LetterWaveRadius = 6f
+
+    /**
+     * 서류철 '툭툭' 튀어나옴 단계: 선택 탭 1, 바로 옆 0.3, 두 칸 옆 0.08, 그 밖 0.
+     * 손가락을 따라 흐르지 않고 칸이 바뀔 때마다 THUD 진동과 함께 한 번씩 튀어나온다.
+     */
+    val TabPopLevels: List<Float> = listOf(1f, 0.3f, 0.08f)
+
+    /** 튀어나옴 스프링: 빠르고(강성 1100) 살짝 튕기며(감쇠 0.55) 멈춘다 — 종이철이 '툭' 걸리는 느낌 */
+    const val TabPopDamping = 0.55f
+    const val TabPopStiffness = 1100f
 
     /** 처음/끝을 넘어 당길 수 있는 최대 거리(탭 단위, 고무줄 저항). */
     const val OverscrollMax = 0.6f
