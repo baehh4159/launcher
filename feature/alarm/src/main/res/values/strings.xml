@@ -20,4 +20,10 @@
     <string name="alarm_undo">실행 취소</string>
     <string name="alarm_ok">확인</string>
     <string name="alarm_cancel">취소</string>
+    <string name="alarm_editor_title">알람 편집</string>
+    <string name="alarm_editor_repeat">반복</string>
+    <string name="alarm_editor_label">라벨</string>
+    <string name="alarm_editor_vibrate">진동</string>
+    <string name="alarm_editor_snooze">다시 울림 간격</string>
+    <string name="alarm_editor_save">저장</string>
 </resources>

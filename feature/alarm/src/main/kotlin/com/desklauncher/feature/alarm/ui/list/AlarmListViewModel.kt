@@ -28,6 +28,7 @@ data class AlarmListUiState(
     val isLoading: Boolean = true,
     val items: List<AlarmItem> = emptyList(),
     val recentlyDeleted: Alarm? = null,
+    val editing: Alarm? = null,
 )
 
 sealed interface AlarmListAction {
@@ -36,6 +37,9 @@ sealed interface AlarmListAction {
     data class Delete(val alarm: Alarm) : AlarmListAction
     data object UndoDelete : AlarmListAction
     data object DismissUndo : AlarmListAction
+    data class Edit(val alarm: Alarm) : AlarmListAction
+    data class Save(val alarm: Alarm) : AlarmListAction
+    data object DismissEditor : AlarmListAction
 }
 
 /** 알람 목록 (ALARM-01). 울림 예약은 ALARM-03에서 연결한다. */
@@ -46,13 +50,15 @@ class AlarmListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val recentlyDeleted = MutableStateFlow<Alarm?>(null)
+    private val editing = MutableStateFlow<Alarm?>(null)
 
-    val uiState: StateFlow<AlarmListUiState> = combine(repository.alarms, recentlyDeleted) { alarms, deleted ->
+    val uiState: StateFlow<AlarmListUiState> = combine(repository.alarms, recentlyDeleted, editing) { alarms, deleted, edit ->
         val now = ZonedDateTime.now(clock)
         AlarmListUiState(
             isLoading = false,
             items = alarms.map { AlarmItem(it, if (it.enabled) AlarmSchedule.untilNext(it, now) else null) },
             recentlyDeleted = deleted,
+            editing = edit,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AlarmListUiState())
 
@@ -64,6 +70,7 @@ class AlarmListViewModel @Inject constructor(
             }
             is AlarmListAction.SetEnabled -> viewModelScope.launch { repository.save(action.alarm.copy(enabled = action.enabled)) }
             is AlarmListAction.Delete -> viewModelScope.launch {
+                editing.value = null
                 repository.delete(action.alarm.id)
                 recentlyDeleted.value = action.alarm
             }
@@ -73,6 +80,12 @@ class AlarmListViewModel @Inject constructor(
                 viewModelScope.launch { repository.save(alarm) }
             }
             AlarmListAction.DismissUndo -> recentlyDeleted.value = null
+            is AlarmListAction.Edit -> editing.value = action.alarm
+            is AlarmListAction.Save -> {
+                editing.value = null
+                viewModelScope.launch { repository.save(action.alarm) }
+            }
+            AlarmListAction.DismissEditor -> editing.value = null
         }
     }
 }

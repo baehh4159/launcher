@@ -14,6 +14,7 @@ import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import java.time.Clock
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -45,6 +46,26 @@ class AlarmListViewModelTest {
         assertEquals(0, viewModel.uiState.value.items.size)
         viewModel.onAction(AlarmListAction.UndoDelete)
         assertEquals(1, viewModel.uiState.value.items.size)
+    }
+
+    // 편집 저장: 반복 요일·라벨이 반영되고 시트가 닫힌다
+    @Test
+    fun editAndSave() = runTest {
+        val repository = FakeAlarmRepository()
+        val viewModel = AlarmListViewModel(repository, clock)
+        collectInBackground(viewModel.uiState)
+        viewModel.onAction(AlarmListAction.Add(LocalTime.of(7, 0)))
+        val alarm = viewModel.uiState.value.items.single().alarm
+
+        viewModel.onAction(AlarmListAction.Edit(alarm))
+        assertEquals(alarm.id, viewModel.uiState.value.editing?.id)
+        viewModel.onAction(AlarmListAction.Save(alarm.copy(label = "출근", repeatDays = setOf(DayOfWeek.FRIDAY))))
+
+        assertNull(viewModel.uiState.value.editing)
+        val saved = viewModel.uiState.value.items.single()
+        assertEquals("출근", saved.alarm.label)
+        // 목(9시) → 금 7시 = 22시간 후
+        assertEquals(Duration.ofHours(22), saved.untilNext)
     }
 }
 

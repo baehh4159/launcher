@@ -46,6 +46,7 @@ import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.feature.alarm.R
 import com.desklauncher.feature.alarm.domain.model.Alarm
+import com.desklauncher.feature.alarm.ui.component.AlarmEditorSheet
 import com.desklauncher.feature.alarm.ui.component.AlarmRow
 import java.time.DayOfWeek
 import java.time.Duration
@@ -69,8 +70,15 @@ fun AlarmListScreen(
     onAction: (AlarmListAction) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    onOpen: (Alarm) -> Unit = {},
 ) {
+    state.editing?.let { alarm ->
+        AlarmEditorSheet(
+            alarm = alarm,
+            onSave = { onAction(AlarmListAction.Save(it)) },
+            onDelete = { onAction(AlarmListAction.Delete(alarm)) },
+            onDismiss = { onAction(AlarmListAction.DismissEditor) },
+        )
+    }
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val deletedMessage = stringResource(R.string.alarm_deleted)
@@ -114,7 +122,7 @@ fun AlarmListScreen(
                                 alarm = item.alarm,
                                 untilNext = item.untilNext,
                                 onToggle = { onAction(AlarmListAction.SetEnabled(item.alarm, it)) },
-                                onClick = { onOpen(item.alarm) },
+                                onClick = { onAction(AlarmListAction.Edit(item.alarm)) },
                                 onDelete = { onAction(AlarmListAction.Delete(item.alarm)) },
                             )
                             HorizontalDivider()
