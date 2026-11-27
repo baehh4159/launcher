@@ -12,4 +12,8 @@
     <string name="files_empty_bookmarks">+ 버튼으로 휴대폰 속 파일을 골라 책상 위에 꺼내 두세요. 고른 파일만 읽어요.</string>
     <string name="files_add_bookmark">파일 꺼내 두기</string>
     <string name="files_add_failed">이 파일은 꺼내 둘 수 없어요 (앱이 계속 읽을 수 있는 권한을 주지 않는 파일)</string>
+    <string name="files_menu">%1$s 메뉴</string>
+    <string name="files_share">공유</string>
+    <string name="files_remove">목록에서 빼기</string>
+    <string name="files_open_failed">이 파일을 열 수 있는 앱이 없거나 파일을 찾을 수 없어요</string>
 </resources>

@@ -105,6 +105,12 @@ internal class RoomFilesRepository @Inject constructor(
         }.isSuccess
     }
 
+    override suspend fun removeBookmark(id: String) = withContext(ioDispatcher) {
+        val bookmark = bookmarkDao.get(id) ?: return@withContext
+        runCatching { context.contentResolver.releasePersistableUriPermission(bookmark.uri.toUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        bookmarkDao.delete(id)
+    }
+
     private companion object {
         val NameFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm")
     }

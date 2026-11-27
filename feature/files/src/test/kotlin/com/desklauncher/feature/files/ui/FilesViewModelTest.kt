@@ -26,6 +26,7 @@ class FilesViewModelTest {
             override fun files(category: FileCategory): Flow<List<FileItem>> =
                 flowOf(listOf(FileItem(category.name, "${category.name}.x", category, "p", "image/png", null, Instant.EPOCH)))
             override suspend fun addBookmark(uri: String) = true
+            override suspend fun removeBookmark(id: String) = Unit
         }
         val viewModel = FilesViewModel(repository, SavedStateHandle())
         collectInBackground(viewModel.uiState)
@@ -43,6 +44,7 @@ class FilesViewModelTest {
         val repository = object : FilesRepository {
             override fun files(category: FileCategory): Flow<List<FileItem>> = flowOf(emptyList())
             override suspend fun addBookmark(uri: String) = succeed
+            override suspend fun removeBookmark(id: String) = Unit
         }
         val viewModel = FilesViewModel(repository, SavedStateHandle())
         collectInBackground(viewModel.uiState)
@@ -53,5 +55,25 @@ class FilesViewModelTest {
         succeed = false
         viewModel.onAction(FilesAction.AddBookmark("content://x/2"))
         assertEquals(true, viewModel.uiState.value.addFailed)
+    }
+
+    // 목록에서 빼기는 꺼내 둔 파일만 (앱이 만든 파일은 각 도구에서 지운다)
+    @Test
+    fun remove_onlyAffectsBookmarks() = runTest {
+        val removed = mutableListOf<String>()
+        val repository = object : FilesRepository {
+            override fun files(category: FileCategory): Flow<List<FileItem>> = flowOf(emptyList())
+            override suspend fun addBookmark(uri: String) = true
+            override suspend fun removeBookmark(id: String) {
+                removed += id
+            }
+        }
+        val viewModel = FilesViewModel(repository, SavedStateHandle())
+        collectInBackground(viewModel.uiState)
+
+        viewModel.onAction(FilesAction.Remove(FileItem("scan", "a.pdf", FileCategory.Scans, "documents/a.pdf", "application/pdf", 1, Instant.EPOCH)))
+        viewModel.onAction(FilesAction.Remove(FileItem("bm", "b.pdf", FileCategory.Bookmarks, "content://x", "application/pdf", 1, Instant.EPOCH)))
+
+        assertEquals(listOf("bm"), removed)
     }
 }

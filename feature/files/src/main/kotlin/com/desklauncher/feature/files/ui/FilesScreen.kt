@@ -1,5 +1,7 @@
 package com.desklauncher.feature.files.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
@@ -16,11 +18,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -28,9 +34,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -44,6 +53,7 @@ import com.desklauncher.feature.files.R
 import com.desklauncher.feature.files.domain.model.FileCategory
 import com.desklauncher.feature.files.domain.model.FileItem
 import com.desklauncher.feature.files.ui.component.FileRow
+import dagger.hilt.android.EntryPointAccessors
 import java.time.Instant
 
 @Composable
@@ -57,9 +67,22 @@ fun FilesRoute(
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { viewModel.onAction(FilesAction.AddBookmark(it.toString())) }
     }
+    val context = LocalContext.current
+    val intents = remember(context) { EntryPointAccessors.fromApplication(context.applicationContext, FileIntentsEntryPoint::class.java).fileIntents() }
+    val launch: (Intent?) -> Unit = { intent ->
+        try {
+            if (intent == null) viewModel.onAction(FilesAction.OpenFailed) else context.startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            viewModel.onAction(FilesAction.OpenFailed)
+        }
+    }
     FilesScreen(
         state = uiState,
         onAddBookmark = { picker.launch(arrayOf("*/*")) },
+        onOpen = { launch(intents.open(it)) },
+        rowTrailing = { file ->
+            FileMenu(file = file, onShare = { launch(intents.share(file)) }, onRemove = { viewModel.onAction(FilesAction.Remove(file)) })
+        },
         onAction = { if (it == FilesAction.Back) onBack() else viewModel.onAction(it) },
         modifier = modifier,
     )
@@ -76,9 +99,10 @@ fun FilesScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val failedMessage = stringResource(R.string.files_add_failed)
-    LaunchedEffect(state.addFailed) {
-        if (state.addFailed) {
-            snackbarHostState.showSnackbar(failedMessage)
+    val openFailedMessage = stringResource(R.string.files_open_failed)
+    LaunchedEffect(state.addFailed, state.openFailed) {
+        if (state.addFailed || state.openFailed) {
+            snackbarHostState.showSnackbar(if (state.addFailed) failedMessage else openFailedMessage)
             onAction(FilesAction.DismissError)
         }
     }
@@ -132,6 +156,23 @@ fun FilesScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/** 공유 · (꺼내 둔 파일만) 목록에서 빼기 */
+@Composable
+private fun FileMenu(file: FileItem, onShare: () -> Unit, onRemove: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }) {
+            Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.files_menu, file.name))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(text = { Text(stringResource(R.string.files_share)) }, onClick = { open = false; onShare() })
+            if (file.category == FileCategory.Bookmarks) {
+                DropdownMenuItem(text = { Text(stringResource(R.string.files_remove)) }, onClick = { open = false; onRemove() })
             }
         }
     }

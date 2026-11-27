@@ -24,6 +24,7 @@ data class FilesUiState(
     val category: FileCategory = FileCategory.Scans,
     val files: List<FileItem> = emptyList(),
     val addFailed: Boolean = false,
+    val openFailed: Boolean = false,
 )
 
 sealed interface FilesAction {
@@ -31,6 +32,8 @@ sealed interface FilesAction {
     data object Back : FilesAction
     data class AddBookmark(val uri: String) : FilesAction
     data object DismissError : FilesAction
+    data class Remove(val file: FileItem) : FilesAction
+    data object OpenFailed : FilesAction
 }
 
 /** 내파일 (FILES-01) */
@@ -43,9 +46,12 @@ class FilesViewModel @Inject constructor(
 
     private val category = savedStateHandle.getStateFlow(CategoryKey, FileCategory.Scans)
     private val addFailed = MutableStateFlow(false)
+    private val openFailed = MutableStateFlow(false)
 
     val uiState: StateFlow<FilesUiState> = category
-        .flatMapLatest { c -> combine(repository.files(c), addFailed) { files, failed -> FilesUiState(false, c, files, failed) } }
+        .flatMapLatest { c ->
+            combine(repository.files(c), addFailed, openFailed) { files, add, open -> FilesUiState(false, c, files, add, open) }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), FilesUiState())
 
     fun onAction(action: FilesAction) {
@@ -54,7 +60,14 @@ class FilesViewModel @Inject constructor(
             is FilesAction.AddBookmark -> viewModelScope.launch {
                 if (repository.addBookmark(action.uri)) savedStateHandle[CategoryKey] = FileCategory.Bookmarks else addFailed.value = true
             }
-            FilesAction.DismissError -> addFailed.value = false
+            FilesAction.DismissError -> {
+                addFailed.value = false
+                openFailed.value = false
+            }
+            is FilesAction.Remove -> if (action.file.category == FileCategory.Bookmarks) {
+                viewModelScope.launch { repository.removeBookmark(action.file.id) }
+            }
+            FilesAction.OpenFailed -> openFailed.value = true
             FilesAction.Back -> Unit // Route가 처리
         }
     }
