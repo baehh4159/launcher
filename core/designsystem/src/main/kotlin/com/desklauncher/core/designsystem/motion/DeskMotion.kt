@@ -39,6 +39,19 @@ object DeskMotion {
      */
     val StripTouchWidth = 96.dp
 
+    /**
+     * 앱 서랍 글자 스트립을 화면 가장자리에서 띄우는 거리. 삼성 '스와이프 제스처'의 뒤로가기는
+     * 양쪽 가장자리 약 20~30dp에서 시작하므로, 이 안쪽은 비워 두어 두 제스처가 겹치지 않게 한다.
+     */
+    val LetterEdgeInset = 32.dp
+
+    /** 글자 열 폭과, 그보다 화면 안쪽으로 더 받는 터치 여유 */
+    val LetterColumnWidth = 36.dp
+    val LetterTouchExtra = 24.dp
+
+    /** 앱 목록이 글자 스트립에 가리지 않도록 오른쪽에 비워 둘 폭 */
+    val LetterStripReservedWidth = 76.dp
+
     /** 시스템이 한쪽 가장자리당 허용하는 제스처 제외 최대 높이 (Android 정책). */
     val GestureExclusionMaxHeight = 200.dp
 

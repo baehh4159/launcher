@@ -45,6 +45,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.desklauncher.core.designsystem.component.DeskEmptyState
 import com.desklauncher.core.designsystem.preview.DeskPreviews
+import com.desklauncher.core.designsystem.motion.DeskMotion
 import com.desklauncher.core.designsystem.scrub.IndexLetterStrip
 import com.desklauncher.core.designsystem.scrub.IndexScrubState
 import com.desklauncher.core.designsystem.scrub.ScrubPhase
@@ -198,7 +199,8 @@ private fun AppList(
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
-            contentPadding = PaddingValues(end = if (state.isSearching) 0.dp else 40.dp, bottom = 16.dp),
+            // 글자 스트립이 가장자리에서 안쪽으로 들어온 만큼 목록 오른쪽을 비운다 (뒤로가기 제스처 회피, SHELL-07)
+            contentPadding = PaddingValues(end = if (state.isSearching) 0.dp else DeskMotion.LetterStripReservedWidth, bottom = 16.dp),
             modifier = Modifier.fillMaxSize(),
         ) {
             state.sections.forEach { section ->
