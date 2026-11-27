@@ -1,6 +1,7 @@
 package com.desklauncher.feature.alarm.ui.list
 
 import android.Manifest
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -79,6 +80,12 @@ fun AlarmListRoute(
         onPauseOrDispose { }
     }
     var notificationsGranted by remember { mutableStateOf(context.hasNotificationPermission()) }
+    val notificationManager = remember(context) { context.getSystemService(NotificationManager::class.java) }
+    var fullScreenAllowed by remember { mutableStateOf(notificationManager.canUseFullScreenIntent()) }
+    LifecycleResumeEffect(notificationManager) {
+        fullScreenAllowed = notificationManager.canUseFullScreenIntent()
+        onPauseOrDispose { }
+    }
     val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { notificationsGranted = it }
     AlarmListScreen(
         state = uiState,
@@ -91,6 +98,10 @@ fun AlarmListRoute(
         modifier = modifier,
         needsNotificationPermission = !notificationsGranted && uiState.items.isNotEmpty(),
         onRequestNotification = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+        needsFullScreenPermission = !fullScreenAllowed && uiState.items.isNotEmpty(),
+        onRequestFullScreen = {
+            context.startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.fromParts("package", context.packageName, null)))
+        },
         onRequestExactAlarm = {
             context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", context.packageName, null)))
         },
@@ -122,6 +133,8 @@ fun AlarmListScreen(
     needsNotificationPermission: Boolean = false,
     onRequestNotification: () -> Unit = {},
     onRequestExactAlarm: () -> Unit = {},
+    needsFullScreenPermission: Boolean = false,
+    onRequestFullScreen: () -> Unit = {},
 ) {
     state.editing?.let { alarm ->
         AlarmEditorSheet(
@@ -161,6 +174,9 @@ fun AlarmListScreen(
         Column(Modifier.fillMaxSize().padding(padding)) {
             if (state.needsExactAlarmPermission) {
                 PermissionBanner(stringResource(R.string.alarm_perm_exact_title), stringResource(R.string.alarm_perm_exact_body), onRequestExactAlarm)
+            }
+            if (needsFullScreenPermission) {
+                PermissionBanner(stringResource(R.string.alarm_perm_fullscreen_title), stringResource(R.string.alarm_perm_fullscreen_body), onRequestFullScreen)
             }
             if (needsNotificationPermission) {
                 PermissionBanner(stringResource(R.string.alarm_perm_notification_title), stringResource(R.string.alarm_perm_notification_body), onRequestNotification)

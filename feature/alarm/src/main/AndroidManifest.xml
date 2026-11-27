@@ -4,10 +4,23 @@
     <!-- PRD §9: 정확한 알람은 사용자가 설정에서 허용 (USE_EXACT_ALARM은 쓰지 않는다) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 잠금화면 위 울림 화면. Android 14+에서 사용자가 끌 수 있어 canUseFullScreenIntent로 확인한다 -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application>
         <receiver
             android:name=".receiver.AlarmReceiver"
             android:exported="false" />
+
+        <!-- 런처 작업과 섞이지 않게 별도 작업, 최근 앱에 남기지 않음 -->
+        <activity
+            android:name=".ring.AlarmRingActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.DeskAlarm"
+            android:turnScreenOn="true" />
     </application>
 </manifest>

@@ -31,4 +31,11 @@
     <string name="alarm_perm_notification_title">알림을 허용해 주세요</string>
     <string name="alarm_perm_notification_body">알람이 울릴 때 알림으로 알려 드려요.</string>
     <string name="alarm_perm_open">허용하러 가기</string>
+    <string name="alarm_ring_dismiss">끄기</string>
+    <string name="alarm_ring_snooze">%1$d분 뒤 다시 울림</string>
+    <string name="alarm_ring_snooze_short">%1$d분 뒤</string>
+    <string name="alarm_channel_vibrate">알람 (소리 + 진동)</string>
+    <string name="alarm_channel_sound_only">알람 (소리만)</string>
+    <string name="alarm_perm_fullscreen_title">잠금화면에서 알람 화면을 띄우려면</string>
+    <string name="alarm_perm_fullscreen_body">\'전체 화면 알림\'을 허용해 주세요. 허용하지 않으면 알림으로만 울려요.</string>
 </resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 울림 화면: 잠금화면 위에 바로 그리므로 첫 프레임 전 배경도 어둡게 -->
+    <style name="Theme.DeskAlarm" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>
