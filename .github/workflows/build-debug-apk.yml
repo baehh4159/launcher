@@ -1,0 +1,82 @@
+# 디버그 APK 자동 빌드·배포 — 폰 브라우저에서 바로 받아 설치하기 위함.
+# 결과: Actions Artifact(압축) + Releases `latest-debug`(app-debug.apk 원본, 매번 덮어씀)
+name: Build debug APK
+
+on:
+  push:
+    branches:
+      - main
+      - ccr-f20f251d-va0g6p
+  workflow_dispatch:
+
+permissions:
+  contents: write # Release 생성·갱신과 latest-debug 태그 이동
+
+# 두 브랜치가 거의 동시에 푸시돼도 같은 Release를 번갈아 덮어쓰지 않게 하나씩 실행한다.
+concurrency:
+  group: debug-apk-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # AGP 9 / Gradle 9는 JDK 17+ 필요. 로컬 검증과 같은 21 사용 (소스·타깃은 build-logic에서 17로 고정)
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      # 러너 기본 SDK에 없을 수 있는 compileSdk 37.2와 build-tools를 설치한다
+      - name: Install Android SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-37.2" "build-tools;36.1.0" "platform-tools"
+
+      # 러너마다 새 디버그 키가 생기면 서명이 달라 폰에서 '업데이트 설치'가 막힌다.
+      # 저장소에 둔 고정 디버그 키(공개 기본 비밀번호 android, 디버그 전용)를 기본 위치에 놓는다.
+      - name: Use fixed debug keystore
+        run: |
+          mkdir -p "$HOME/.android"
+          cp .github/ci/debug.keystore "$HOME/.android/debug.keystore"
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      # Release는 태그가 가리키는 커밋을 따라가므로, 이번 커밋으로 태그를 옮긴 뒤 APK를 덮어쓴다
+      - name: Move latest-debug tag to this commit
+        run: |
+          git tag -f latest-debug "$GITHUB_SHA"
+          git push -f origin refs/tags/latest-debug
+
+      - name: Publish to GitHub Releases (latest-debug)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-debug
+          name: 최신 디버그 APK
+          prerelease: true
+          overwrite_files: true
+          files: app/build/outputs/apk/debug/app-debug.apk
+          body: |
+            자동 빌드된 디버그 APK (매 푸시마다 덮어씀)
+
+            - 브랜치: `${{ github.ref_name }}`
+            - 커밋: ${{ github.sha }}
+            - 실행: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            설치: 아래 Assets의 `app-debug.apk`를 눌러 받은 뒤 열기 → '출처를 알 수 없는 앱' 허용 → 설치
