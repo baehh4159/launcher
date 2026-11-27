@@ -59,6 +59,16 @@ object DeskMotion {
     val ScrubZoneEdgeInset = 32.dp
     val ScrubZoneWidth = 64.dp
 
+    /**
+     * 팝업 창을 오른쪽으로 밀어 닫기(SHELL-05): 창 폭의 이 비율 이상 끌거나, 이 속도 이상으로 튕기면 닫는다.
+     * 30%·1000dp/s는 시스템 예측형 뒤로가기의 확정 감각(대략 1/3 지점·빠른 튕김)에 맞춘 값.
+     */
+    const val PopupSwipeDismissFraction = 0.3f
+    val PopupSwipeDismissVelocity = 1000.dp
+
+    /** 끄는 동안 창이 작아지는 최대 비율 (끝까지 끌면 0.92배) */
+    const val PopupSwipeMaxShrink = 0.08f
+
     /** 시스템이 한쪽 가장자리당 허용하는 제스처 제외 최대 높이 (Android 정책). */
     val GestureExclusionMaxHeight = 200.dp
 

@@ -32,7 +32,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * 책상 위 팝업 창 (SHELL-05). [popupKey]가 null이 아니면 어두운 막 위에 서류철 창을 펼친다.
- * 닫기: 막 누르기, 뒤로가기(도구 첫 화면에서), 홈 버튼(호출부), 도구의 '책상으로' 버튼.
+ * 닫기: 막 누르기, 창 빈 곳을 오른쪽으로 밀기, 뒤로가기(도구 첫 화면에서), 홈 버튼(호출부), 도구의 '책상으로' 버튼.
  */
 @Composable
 internal fun DeskPopupHost(
@@ -58,7 +58,8 @@ internal fun DeskPopupHost(
             label = "deskPopup",
         ) { key ->
             if (key != null) {
-                DeskPopupFrame { content(key) }
+                // 빈 곳을 왼쪽→오른쪽으로 밀면 서류철로 다시 들어간다
+                DeskPopupFrame(onSwipeDismiss = onDismiss) { content(key) }
             }
         }
     }
