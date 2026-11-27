@@ -11,9 +11,13 @@ import com.desklauncher.feature.doodle.navigation.DoodleGraph
 import com.desklauncher.feature.doodle.navigation.doodleGraph
 import javax.inject.Inject
 
+
+/** 도구 id — DB 키이자 탭 색 조회 키. 출시 후 변경 금지. */
+const val DoodleToolId = "doodle"
+
 /** 낙서장 도구. id "doodle"은 출시 후 변경 금지. */
 class DoodleTool @Inject constructor() : DeskTool {
-    override val id: String = "doodle"
+    override val id: String = DoodleToolId
     override val titleRes: Int = R.string.doodle_tool_title
     override val descriptionRes: Int = R.string.doodle_tool_description
     override val icon: ImageVector = Icons.Outlined.Brush

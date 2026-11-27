@@ -36,11 +36,13 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.memo.R
 import com.desklauncher.feature.memo.domain.model.Memo
 import com.desklauncher.feature.memo.ui.preview.MemoPreviewData
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import com.desklauncher.feature.memo.MemoToolId
 
 @Composable
 fun ProjectDetailRoute(
@@ -67,7 +69,7 @@ fun ProjectDetailScreen(
     modifier: Modifier = Modifier,
     zone: ZoneId = ZoneId.systemDefault(),
 ) {
-    val color = state.project?.colorName?.let(DeskTabColor::fromNameOrNull) ?: DeskTabColor.Yellow
+    val color = state.project?.colorName?.let(DeskTabColor::fromNameOrNull) ?: toolTabColor(MemoToolId, DeskTabColor.Yellow)
     Scaffold(
         modifier = modifier,
         topBar = {

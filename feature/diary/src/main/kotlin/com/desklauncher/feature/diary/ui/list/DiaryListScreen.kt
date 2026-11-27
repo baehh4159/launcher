@@ -46,6 +46,7 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.diary.R
 import com.desklauncher.feature.diary.domain.model.DiaryEntry
 import com.desklauncher.feature.diary.domain.model.Mood
@@ -58,6 +59,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
+import com.desklauncher.feature.diary.DiaryToolId
 
 @Composable
 fun DiaryListRoute(
@@ -92,7 +94,7 @@ fun DiaryListScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.diary_tool_title),
-                tabColor = DeskTabColor.Pink,
+                tabColor = toolTabColor(DiaryToolId, DeskTabColor.Pink),
                 backContentDescription = stringResource(R.string.diary_back),
                 onBack = { onAction(DiaryListAction.Back) },
             )
@@ -176,13 +178,13 @@ private fun WrittenDaysCalendar(state: DiaryListUiState, onOpen: (LocalDate) -> 
                             .padding(3.dp)
                             .alpha(if (YearMonth.from(day) == state.month) 1f else 0.35f)
                             .then(if (written) Modifier.background(DeskTabColor.Pink.container.copy(alpha = 0.35f), CircleShape) else Modifier)
-                            .then(if (day == state.today) Modifier.border(1.5.dp, DeskTabColor.Pink.container, CircleShape) else Modifier)
+                            .then(if (day == state.today) Modifier.border(1.5.dp, toolTabColor(DiaryToolId, DeskTabColor.Pink).container, CircleShape) else Modifier)
                             .then(if (!future) Modifier.clickable { onOpen(day) } else Modifier)
                             .semantics { contentDescription = description },
                         contentAlignment = Alignment.Center,
                     ) {
                         if (mood != null) {
-                            Icon(mood.icon(), contentDescription = null, modifier = Modifier.size(20.dp), tint = DeskTabColor.Pink.onContainer)
+                            Icon(mood.icon(), contentDescription = null, modifier = Modifier.size(20.dp), tint = toolTabColor(DiaryToolId, DeskTabColor.Pink).onContainer)
                         } else {
                             Text(day.dayOfMonth.toString(), style = MaterialTheme.typography.bodySmall)
                         }
@@ -206,7 +208,7 @@ private fun DiaryEntryRow(entry: DiaryEntry, onClick: () -> Unit, modifier: Modi
     ) {
         val mood = entry.mood
         if (mood != null) {
-            Icon(mood.icon(), contentDescription = stringResource(mood.labelRes()), tint = DeskTabColor.Pink.container)
+            Icon(mood.icon(), contentDescription = stringResource(mood.labelRes()), tint = toolTabColor(DiaryToolId, DeskTabColor.Pink).container)
         }
         Column(Modifier.weight(1f)) {
             Text(entry.date.format(DateTimeFormatter.ofPattern("M월 d일 EEEE", locale)), style = MaterialTheme.typography.titleSmall)

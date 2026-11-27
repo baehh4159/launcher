@@ -19,12 +19,14 @@ import com.desklauncher.core.datastore.ThemePreference
 import com.desklauncher.core.designsystem.haptics.HapticLevel
 import com.desklauncher.core.designsystem.haptics.LocalDeskHapticLevel
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.LocalToolTabColors
 import com.desklauncher.core.toolapi.ToolRegistry
 import com.desklauncher.navigation.DeskNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /** 단일 액티비티 + 기본 런처(HOME) 진입점. */
@@ -40,6 +42,11 @@ class MainActivity : ComponentActivity() {
     // singleTask라 홈 버튼은 onNewIntent로 들어온다 (SHELL-06).
     private val homePressEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val homePresses = homePressEvents.asSharedFlow()
+
+    /** 도구 id → 도구함에서 고른 탭 색 (도구 화면의 상단 바 등 포인트 색과 맞춘다) */
+    private val toolTabColors by lazy {
+        toolRegistry.allTools.map { tools -> tools.associate { it.id to it.tabColor } }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -63,7 +70,11 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose { }
             }
-            CompositionLocalProvider(LocalDeskHapticLevel provides settings.haptic.toHapticLevel()) {
+            val tabColors by toolTabColors.collectAsStateWithLifecycle(initialValue = emptyMap())
+            CompositionLocalProvider(
+                LocalDeskHapticLevel provides settings.haptic.toHapticLevel(),
+                LocalToolTabColors provides tabColors,
+            ) {
                 DeskTheme(darkTheme = darkTheme) {
                     DeskNavHost(
                         toolRegistry = toolRegistry,

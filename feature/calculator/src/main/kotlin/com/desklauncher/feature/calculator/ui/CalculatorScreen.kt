@@ -31,10 +31,12 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.calculator.R
 import com.desklauncher.feature.calculator.domain.CalcError
 import com.desklauncher.feature.calculator.domain.CalcKey
 import com.desklauncher.feature.calculator.ui.component.CalcKeypad
+import com.desklauncher.feature.calculator.CalculatorToolId
 
 @Composable
 fun CalculatorRoute(
@@ -58,7 +60,7 @@ fun CalculatorScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.calculator_tool_title),
-                tabColor = DeskTabColor.Teal,
+                tabColor = toolTabColor(CalculatorToolId, DeskTabColor.Teal),
                 backContentDescription = stringResource(R.string.calculator_back),
                 onBack = onBack,
             )

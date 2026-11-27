@@ -12,15 +12,4 @@
     <string name="store_color_close">닫기</string>
     <string name="store_empty_title">설치된 도구가 없어요</string>
     <string name="store_empty_body">앱 업데이트로 새 책상 도구가 추가되면 여기에 나타납니다.</string>
-    <string name="store_color_red">빨강</string>
-    <string name="store_color_orange">주황</string>
-    <string name="store_color_yellow">노랑</string>
-    <string name="store_color_green">초록</string>
-    <string name="store_color_teal">청록</string>
-    <string name="store_color_blue">파랑</string>
-    <string name="store_color_indigo">남색</string>
-    <string name="store_color_purple">보라</string>
-    <string name="store_color_pink">분홍</string>
-    <string name="store_color_brown">갈색</string>
-    <string name="store_color_gray">회색</string>
 </resources>

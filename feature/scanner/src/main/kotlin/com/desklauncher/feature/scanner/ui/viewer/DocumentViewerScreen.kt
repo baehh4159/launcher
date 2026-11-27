@@ -46,6 +46,7 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.scanner.R
 import com.desklauncher.feature.scanner.di.ThumbnailEntryPoint
 import com.desklauncher.feature.scanner.domain.model.Document
@@ -59,6 +60,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+import com.desklauncher.feature.scanner.CabinetToolId
 
 @Immutable
 data class DocumentViewerUiState(val isLoading: Boolean = true, val document: Document? = null)
@@ -134,7 +136,7 @@ fun DocumentViewerScreen(
         topBar = {
             ToolTopBar(
                 title = state.document?.title.orEmpty(),
-                tabColor = DeskTabColor.Brown,
+                tabColor = toolTabColor(CabinetToolId, DeskTabColor.Brown),
                 backContentDescription = stringResource(R.string.cabinet_back),
                 onBack = onBack,
                 actions = {

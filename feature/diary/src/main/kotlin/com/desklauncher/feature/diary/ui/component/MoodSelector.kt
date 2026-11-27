@@ -32,8 +32,10 @@ import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.diary.R
 import com.desklauncher.feature.diary.domain.model.Mood
+import com.desklauncher.feature.diary.DiaryToolId
 
 /** 기분 5단계 선택. 같은 기분을 다시 누르면 선택 해제. */
 @Composable
@@ -52,7 +54,7 @@ internal fun MoodSelector(
             Box(
                 modifier = Modifier
                     .size(52.dp)
-                    .background(if (isSelected) DeskTabColor.Pink.container else MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                    .background(if (isSelected) toolTabColor(DiaryToolId, DeskTabColor.Pink).container else MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(if (isSelected) null else mood) })
                     .semantics { contentDescription = label },
                 contentAlignment = Alignment.Center,
@@ -60,7 +62,7 @@ internal fun MoodSelector(
                 Icon(
                     imageVector = mood.icon(),
                     contentDescription = null,
-                    tint = if (isSelected) DeskTabColor.Pink.onContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = if (isSelected) toolTabColor(DiaryToolId, DeskTabColor.Pink).onContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(4.dp).size(30.dp),
                 )
             }

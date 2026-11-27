@@ -30,7 +30,9 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.memo.R
+import com.desklauncher.feature.memo.MemoToolId
 
 @Composable
 fun MemoEditorRoute(
@@ -72,7 +74,7 @@ fun MemoEditorScreen(
         topBar = {
             ToolTopBar(
                 title = if (isSaved) stringResource(R.string.memo_editor_saved) else "",
-                tabColor = DeskTabColor.Yellow,
+                tabColor = toolTabColor(MemoToolId, DeskTabColor.Yellow),
                 backContentDescription = stringResource(R.string.memo_back),
                 onBack = onBack,
                 actions = {
@@ -80,7 +82,7 @@ fun MemoEditorScreen(
                         Icon(
                             Icons.Outlined.PushPin,
                             contentDescription = stringResource(if (pinned) R.string.memo_editor_unpin else R.string.memo_editor_pin),
-                            tint = if (pinned) MaterialTheme.colorScheme.primary else DeskTabColor.Yellow.onContainer,
+                            tint = if (pinned) MaterialTheme.colorScheme.primary else toolTabColor(MemoToolId, DeskTabColor.Yellow).onContainer,
                         )
                     }
                     IconButton(onClick = onDelete) {

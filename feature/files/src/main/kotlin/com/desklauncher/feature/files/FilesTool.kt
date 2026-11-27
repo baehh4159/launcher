@@ -19,9 +19,13 @@ data object FilesGraph
 @Serializable
 data object FilesDestination
 
+
+/** 도구 id — DB 키이자 탭 색 조회 키. 출시 후 변경 금지. */
+const val FilesToolId = "files"
+
 /** 내파일 도구. id "files"는 출시 후 변경 금지. */
 class FilesTool @Inject constructor() : DeskTool {
-    override val id: String = "files"
+    override val id: String = FilesToolId
     override val titleRes: Int = R.string.files_tool_title
     override val descriptionRes: Int = R.string.files_tool_description
     override val icon: ImageVector = Icons.AutoMirrored.Outlined.InsertDriveFile

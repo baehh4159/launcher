@@ -46,6 +46,7 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.scanner.R
 import com.desklauncher.feature.scanner.di.ThumbnailEntryPoint
 import com.desklauncher.feature.scanner.domain.model.Document
@@ -56,6 +57,7 @@ import com.desklauncher.feature.scanner.ui.component.ThumbnailLoader
 import com.desklauncher.feature.scanner.ui.preview.CabinetPreviewData
 import com.desklauncher.feature.scanner.ui.scan.rememberDocumentScannerLauncher
 import dagger.hilt.android.EntryPointAccessors
+import com.desklauncher.feature.scanner.CabinetToolId
 
 @Composable
 fun CabinetRoute(
@@ -114,7 +116,7 @@ fun CabinetScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.cabinet_tool_title),
-                tabColor = DeskTabColor.Brown,
+                tabColor = toolTabColor(CabinetToolId, DeskTabColor.Brown),
                 backContentDescription = stringResource(R.string.cabinet_back),
                 onBack = { onAction(CabinetAction.Back) },
             )

@@ -31,11 +31,13 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.diary.R
 import com.desklauncher.feature.diary.domain.model.Mood
 import com.desklauncher.feature.diary.ui.component.MoodSelector
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import com.desklauncher.feature.diary.DiaryToolId
 
 @Composable
 fun DiaryEditorRoute(
@@ -78,7 +80,7 @@ fun DiaryEditorScreen(
         topBar = {
             ToolTopBar(
                 title = date.format(DateTimeFormatter.ofPattern("M월 d일 EEEE", locale)),
-                tabColor = DeskTabColor.Pink,
+                tabColor = toolTabColor(DiaryToolId, DeskTabColor.Pink),
                 backContentDescription = stringResource(R.string.diary_back),
                 onBack = onBack,
                 actions = {

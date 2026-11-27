@@ -39,6 +39,7 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.calendar.R
 import com.desklauncher.feature.calendar.ui.component.AgendaRow
 import com.desklauncher.feature.calendar.ui.component.EventEditorSheet
@@ -46,6 +47,7 @@ import com.desklauncher.feature.calendar.ui.component.MonthGridView
 import com.desklauncher.feature.calendar.ui.preview.CalendarPreviewData
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import com.desklauncher.feature.calendar.CalendarToolId
 
 @Composable
 fun CalendarRoute(
@@ -77,7 +79,7 @@ fun CalendarScreen(
         topBar = {
             ToolTopBar(
                 title = state.month.format(DateTimeFormatter.ofPattern("yyyy년 M월", locale)),
-                tabColor = ToolColor,
+                tabColor = toolTabColor(CalendarToolId, ToolColor),
                 backContentDescription = stringResource(R.string.calendar_back),
                 onBack = { onAction(CalendarAction.Back) },
                 actions = {

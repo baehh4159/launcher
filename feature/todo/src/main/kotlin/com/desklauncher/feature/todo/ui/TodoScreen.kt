@@ -48,6 +48,7 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.todo.R
 import com.desklauncher.feature.todo.domain.TodoFilter
 import com.desklauncher.feature.todo.domain.model.Todo
@@ -57,6 +58,7 @@ import com.desklauncher.feature.todo.ui.component.TodoMeta
 import com.desklauncher.feature.todo.ui.component.TodoRow
 import com.desklauncher.feature.todo.ui.preview.TodoPreviewData
 import java.time.LocalDate
+import com.desklauncher.feature.todo.TodoToolId
 
 @Composable
 fun TodoRoute(
@@ -110,7 +112,7 @@ fun TodoScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.todo_tool_title),
-                tabColor = ToolColor,
+                tabColor = toolTabColor(TodoToolId, ToolColor),
                 backContentDescription = stringResource(R.string.todo_back),
                 onBack = { onAction(TodoAction.Back) },
             )

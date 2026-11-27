@@ -34,11 +34,13 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.memo.R
 import com.desklauncher.feature.memo.domain.model.Project
 import com.desklauncher.feature.memo.ui.component.ProjectEditorDialog
 import com.desklauncher.feature.memo.ui.component.ProjectRow
 import com.desklauncher.feature.memo.ui.preview.MemoPreviewData
+import com.desklauncher.feature.memo.MemoToolId
 
 @Composable
 fun ProjectListRoute(
@@ -74,7 +76,7 @@ fun ProjectListScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.memo_tool_title),
-                tabColor = DeskTabColor.Yellow,
+                tabColor = toolTabColor(MemoToolId, DeskTabColor.Yellow),
                 backContentDescription = stringResource(R.string.memo_back),
                 onBack = { onAction(ProjectListAction.Back) },
             )

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Checklist
@@ -92,29 +91,6 @@ internal fun StoreToolRow(
                 onCheckedChange = onToggle,
                 modifier = Modifier.semantics { contentDescription = title },
             )
-        }
-    }
-}
-
-/** 색 견본 하나 (대화상자용). */
-@Composable
-internal fun ColorSwatch(
-    color: DeskTabColor,
-    selected: Boolean,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .size(44.dp)
-            .background(color.container, CircleShape)
-            .clickable(onClick = onClick)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) {
-        if (selected) {
-            Box(modifier = Modifier.size(14.dp).background(color.onContainer, CircleShape))
         }
     }
 }

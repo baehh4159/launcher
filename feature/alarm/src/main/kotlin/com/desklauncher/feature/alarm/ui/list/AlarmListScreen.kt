@@ -58,6 +58,7 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.alarm.R
 import com.desklauncher.feature.alarm.domain.model.Alarm
 import com.desklauncher.feature.alarm.ui.component.AlarmEditorSheet
@@ -66,6 +67,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
+import com.desklauncher.feature.alarm.AlarmToolId
 
 @Composable
 fun AlarmListRoute(
@@ -159,7 +161,7 @@ fun AlarmListScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.alarm_tool_title),
-                tabColor = DeskTabColor.Indigo,
+                tabColor = toolTabColor(AlarmToolId, DeskTabColor.Indigo),
                 backContentDescription = stringResource(R.string.alarm_back),
                 onBack = onBack,
             )

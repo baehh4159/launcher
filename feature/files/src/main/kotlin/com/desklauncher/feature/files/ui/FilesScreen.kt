@@ -49,12 +49,14 @@ import com.desklauncher.core.designsystem.component.ToolTopBar
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.files.R
 import com.desklauncher.feature.files.domain.model.FileCategory
 import com.desklauncher.feature.files.domain.model.FileItem
 import com.desklauncher.feature.files.ui.component.FileRow
 import dagger.hilt.android.EntryPointAccessors
 import java.time.Instant
+import com.desklauncher.feature.files.FilesToolId
 
 @Composable
 fun FilesRoute(
@@ -119,7 +121,7 @@ fun FilesScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.files_tool_title),
-                tabColor = DeskTabColor.Gray,
+                tabColor = toolTabColor(FilesToolId, DeskTabColor.Gray),
                 backContentDescription = stringResource(R.string.files_back),
                 onBack = { onAction(FilesAction.Back) },
             )

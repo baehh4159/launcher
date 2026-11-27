@@ -19,9 +19,13 @@ data object CalculatorGraph
 @Serializable
 data object CalculatorDestination
 
+
+/** 도구 id — DB 키이자 탭 색 조회 키. 출시 후 변경 금지. */
+const val CalculatorToolId = "calculator"
+
 /** 계산기 도구. id "calculator"는 출시 후 변경 금지. */
 class CalculatorTool @Inject constructor() : DeskTool {
-    override val id: String = "calculator"
+    override val id: String = CalculatorToolId
     override val titleRes: Int = R.string.calculator_tool_title
     override val descriptionRes: Int = R.string.calculator_tool_description
     override val icon: ImageVector = Icons.Outlined.Calculate

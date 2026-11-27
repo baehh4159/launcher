@@ -22,8 +22,10 @@ import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.calculator.R
 import com.desklauncher.feature.calculator.domain.CalcKey
+import com.desklauncher.feature.calculator.CalculatorToolId
 
 private data class KeySpec(val label: String, val key: CalcKey, val kind: KeyKind, val description: Int? = null)
 
@@ -75,8 +77,8 @@ private fun CalcButton(spec: KeySpec, onClick: () -> Unit, modifier: Modifier = 
     val (container, content) = when (spec.kind) {
         KeyKind.Number -> colors.surfaceVariant to colors.onSurface
         KeyKind.Function -> colors.secondaryContainer to colors.onSecondaryContainer
-        KeyKind.Operator -> DeskTabColor.Teal.container.copy(alpha = 0.22f) to DeskTabColor.Teal.container
-        KeyKind.Equals -> DeskTabColor.Teal.container to DeskTabColor.Teal.onContainer
+        KeyKind.Operator -> toolTabColor(CalculatorToolId, DeskTabColor.Teal).container.copy(alpha = 0.22f) to toolTabColor(CalculatorToolId, DeskTabColor.Teal).container
+        KeyKind.Equals -> toolTabColor(CalculatorToolId, DeskTabColor.Teal).container to toolTabColor(CalculatorToolId, DeskTabColor.Teal).onContainer
     }
     val description = spec.description?.let { stringResource(it) }
     Surface(

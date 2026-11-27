@@ -63,6 +63,7 @@ import com.desklauncher.core.designsystem.theme.DeskDoodlePaper
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.core.storage.DeskStorage
 import com.desklauncher.feature.doodle.R
 import com.desklauncher.feature.doodle.domain.model.Doodle
@@ -83,6 +84,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import com.desklauncher.feature.doodle.DoodleToolId
 
 @Immutable
 data class DoodleListUiState(val isLoading: Boolean = true, val doodles: List<Doodle> = emptyList())
@@ -155,7 +157,7 @@ fun DoodleListScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.doodle_tool_title),
-                tabColor = DeskTabColor.Purple,
+                tabColor = toolTabColor(DoodleToolId, DeskTabColor.Purple),
                 backContentDescription = stringResource(R.string.doodle_back),
                 onBack = onBack,
             )

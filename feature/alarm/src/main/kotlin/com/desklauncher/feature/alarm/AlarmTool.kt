@@ -11,9 +11,13 @@ import com.desklauncher.feature.alarm.navigation.AlarmGraph
 import com.desklauncher.feature.alarm.navigation.alarmGraph
 import javax.inject.Inject
 
+
+/** 도구 id — DB 키이자 탭 색 조회 키. 출시 후 변경 금지. */
+const val AlarmToolId = "alarm"
+
 /** 알람 도구. id "alarm"은 출시 후 변경 금지. */
 class AlarmTool @Inject constructor() : DeskTool {
-    override val id: String = "alarm"
+    override val id: String = AlarmToolId
     override val titleRes: Int = R.string.alarm_tool_title
     override val descriptionRes: Int = R.string.alarm_tool_description
     override val icon: ImageVector = Icons.Outlined.Alarm

@@ -28,6 +28,7 @@ import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskPenColor
 import com.desklauncher.core.designsystem.theme.DeskTabColor
 import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.core.designsystem.theme.toolTabColor
 import com.desklauncher.feature.doodle.R
 import com.desklauncher.feature.doodle.domain.DoodleState
 import com.desklauncher.feature.doodle.domain.EraserWidthDp
@@ -35,6 +36,7 @@ import com.desklauncher.feature.doodle.domain.PenWidth
 import com.desklauncher.feature.doodle.domain.Stroke
 import com.desklauncher.feature.doodle.ui.canvas.DoodleCanvas
 import com.desklauncher.feature.doodle.ui.component.DoodleToolbar
+import com.desklauncher.feature.doodle.DoodleToolId
 
 @Composable
 fun DoodleEditorRoute(
@@ -119,7 +121,7 @@ fun DoodleEditorScreen(
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.doodle_tool_title),
-                tabColor = DeskTabColor.Purple,
+                tabColor = toolTabColor(DoodleToolId, DeskTabColor.Purple),
                 backContentDescription = stringResource(R.string.doodle_back),
                 onBack = onBack,
                 actions = { topBarActions() },
