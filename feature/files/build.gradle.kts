@@ -9,4 +9,5 @@ android {
 dependencies {
     implementation(projects.core.database)
     implementation(projects.core.storage)
+    implementation(libs.androidx.core.ktx)
 }

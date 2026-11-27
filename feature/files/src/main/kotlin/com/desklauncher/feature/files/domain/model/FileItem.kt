@@ -14,4 +14,4 @@ data class FileItem(
     val modifiedAt: Instant,
 )
 
-enum class FileCategory { Scans, Doodles }
+enum class FileCategory { Scans, Doodles, Bookmarks }

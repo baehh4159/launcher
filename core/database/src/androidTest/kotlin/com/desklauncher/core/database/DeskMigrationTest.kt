@@ -158,6 +158,17 @@ class DeskMigrationTest {
         }
     }
 
+    // v9 → v10: file_bookmark 생성, 같은 URI 중복 거부
+    @Test
+    fun migrate9To10_addsFileBookmark() {
+        helper.createDatabase(TestDb, 9).close()
+
+        val db = helper.runMigrationsAndValidate(TestDb, 10, true)
+
+        db.execSQL("INSERT INTO file_bookmark (id, uri, displayName, addedAt) VALUES ('b1', 'content://x/1', 'a.pdf', 0)")
+        assertTrue(runCatching { db.execSQL("INSERT INTO file_bookmark (id, uri, displayName, addedAt) VALUES ('b2', 'content://x/1', 'a.pdf', 0)") }.isFailure)
+    }
+
     private companion object {
         const val TestDb = "migration-test.db"
     }

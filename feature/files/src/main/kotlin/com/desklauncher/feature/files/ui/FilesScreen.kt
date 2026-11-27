@@ -1,5 +1,7 @@
 package com.desklauncher.feature.files.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,13 +15,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,8 +53,13 @@ fun FilesRoute(
     viewModel: FilesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // 사용자가 고른 파일만 읽는다 (MANAGE_EXTERNAL_STORAGE 미사용, PRD §5.10)
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { viewModel.onAction(FilesAction.AddBookmark(it.toString())) }
+    }
     FilesScreen(
         state = uiState,
+        onAddBookmark = { picker.launch(arrayOf("*/*")) },
         onAction = { if (it == FilesAction.Back) onBack() else viewModel.onAction(it) },
         modifier = modifier,
     )
@@ -56,11 +70,28 @@ fun FilesScreen(
     state: FilesUiState,
     onAction: (FilesAction) -> Unit,
     modifier: Modifier = Modifier,
+    onAddBookmark: () -> Unit = {},
     onOpen: (FileItem) -> Unit = {},
     rowTrailing: @Composable (FileItem) -> Unit = {},
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val failedMessage = stringResource(R.string.files_add_failed)
+    LaunchedEffect(state.addFailed) {
+        if (state.addFailed) {
+            snackbarHostState.showSnackbar(failedMessage)
+            onAction(FilesAction.DismissError)
+        }
+    }
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            if (state.category == FileCategory.Bookmarks) {
+                FloatingActionButton(onClick = onAddBookmark) {
+                    Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.files_add_bookmark))
+                }
+            }
+        },
         topBar = {
             ToolTopBar(
                 title = stringResource(R.string.files_tool_title),
@@ -109,11 +140,13 @@ fun FilesScreen(
 internal fun FileCategory.labelRes(): Int = when (this) {
     FileCategory.Scans -> R.string.files_category_scans
     FileCategory.Doodles -> R.string.files_category_doodles
+    FileCategory.Bookmarks -> R.string.files_category_bookmarks
 }
 
 internal fun FileCategory.emptyRes(): Int = when (this) {
     FileCategory.Scans -> R.string.files_empty_scans
     FileCategory.Doodles -> R.string.files_empty_doodles
+    FileCategory.Bookmarks -> R.string.files_empty_bookmarks
 }
 
 @DeskPreviews
@@ -138,4 +171,10 @@ private fun FilesScreenPreview() {
 @Composable
 private fun FilesScreenEmptyPreview() {
     DeskTheme { FilesScreen(state = FilesUiState(isLoading = false, category = FileCategory.Doodles), onAction = {}) }
+}
+
+@DeskPreviews
+@Composable
+private fun FilesScreenBookmarksEmptyPreview() {
+    DeskTheme { FilesScreen(state = FilesUiState(isLoading = false, category = FileCategory.Bookmarks), onAction = {}) }
 }
