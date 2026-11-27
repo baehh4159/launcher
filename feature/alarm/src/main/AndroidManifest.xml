@@ -6,11 +6,26 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 잠금화면 위 울림 화면. Android 14+에서 사용자가 끌 수 있어 canUseFullScreenIntent로 확인한다 -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- 재부팅 뒤 알람 재예약 (ALARM-05) -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application>
         <receiver
             android:name=".receiver.AlarmReceiver"
             android:exported="false" />
+
+        <!-- 시스템 방송만 받으므로 외부 앱에 열지 않는다 -->
+        <receiver
+            android:name=".receiver.AlarmRescheduleReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
 
         <!-- 런처 작업과 섞이지 않게 별도 작업, 최근 앱에 남기지 않음 -->
         <activity
