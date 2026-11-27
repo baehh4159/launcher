@@ -24,6 +24,7 @@ import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -71,7 +72,7 @@ internal fun AlarmEditorContent(
     var days by rememberSaveable(alarm.id) { mutableStateOf(alarm.repeatDays.map { it.value }.toSet()) }
     var label by rememberSaveable(alarm.id) { mutableStateOf(alarm.label) }
     var vibrate by rememberSaveable(alarm.id) { mutableStateOf(alarm.vibrate) }
-    var snooze by rememberSaveable(alarm.id) { mutableStateOf(alarm.snoozeMinutes) }
+    var snooze by rememberSaveable(alarm.id) { mutableIntStateOf(alarm.snoozeMinutes) }
 
     Column(
         modifier = modifier

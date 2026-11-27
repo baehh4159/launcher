@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desklauncher.feature.alarm.domain.AlarmSchedule
+import com.desklauncher.feature.alarm.domain.AlarmScheduler
+import com.desklauncher.feature.alarm.domain.AlarmSync
 import com.desklauncher.feature.alarm.domain.model.Alarm
 import com.desklauncher.feature.alarm.domain.repository.AlarmRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +28,8 @@ data class AlarmItem(val alarm: Alarm, val untilNext: Duration?)
 @Immutable
 data class AlarmListUiState(
     val isLoading: Boolean = true,
+    /** 정확한 알람 권한 없음 → 안내 배너 */
+    val needsExactAlarmPermission: Boolean = false,
     val items: List<AlarmItem> = emptyList(),
     val recentlyDeleted: Alarm? = null,
     val editing: Alarm? = null,
@@ -40,22 +44,29 @@ sealed interface AlarmListAction {
     data class Edit(val alarm: Alarm) : AlarmListAction
     data class Save(val alarm: Alarm) : AlarmListAction
     data object DismissEditor : AlarmListAction
+
+    /** 화면 재개 시 권한 상태 다시 확인 (설정에서 돌아온 경우) */
+    data object RefreshPermission : AlarmListAction
 }
 
-/** 알람 목록 (ALARM-01). 울림 예약은 ALARM-03에서 연결한다. */
+/** 알람 목록 (ALARM-01~03). 모든 변경은 [AlarmSync]로 저장과 시스템 예약을 함께 맞춘다. */
 @HiltViewModel
 class AlarmListViewModel @Inject constructor(
-    private val repository: AlarmRepository,
+    repository: AlarmRepository,
+    private val alarmSync: AlarmSync,
+    private val scheduler: AlarmScheduler,
     private val clock: Clock,
 ) : ViewModel() {
 
     private val recentlyDeleted = MutableStateFlow<Alarm?>(null)
     private val editing = MutableStateFlow<Alarm?>(null)
+    private val needsPermission = MutableStateFlow(!scheduler.canScheduleExact())
 
-    val uiState: StateFlow<AlarmListUiState> = combine(repository.alarms, recentlyDeleted, editing) { alarms, deleted, edit ->
+    val uiState: StateFlow<AlarmListUiState> = combine(repository.alarms, recentlyDeleted, editing, needsPermission) { alarms, deleted, edit, perm ->
         val now = ZonedDateTime.now(clock)
         AlarmListUiState(
             isLoading = false,
+            needsExactAlarmPermission = perm,
             items = alarms.map { AlarmItem(it, if (it.enabled) AlarmSchedule.untilNext(it, now) else null) },
             recentlyDeleted = deleted,
             editing = edit,
@@ -66,26 +77,32 @@ class AlarmListViewModel @Inject constructor(
         when (action) {
             is AlarmListAction.Add -> viewModelScope.launch {
                 val now = clock.instant()
-                repository.save(Alarm(id = UUID.randomUUID().toString(), time = action.time, createdAt = now, updatedAt = now))
+                alarmSync.save(Alarm(id = UUID.randomUUID().toString(), time = action.time, createdAt = now, updatedAt = now))
             }
-            is AlarmListAction.SetEnabled -> viewModelScope.launch { repository.save(action.alarm.copy(enabled = action.enabled)) }
+            is AlarmListAction.SetEnabled -> viewModelScope.launch { alarmSync.save(action.alarm.copy(enabled = action.enabled)) }
             is AlarmListAction.Delete -> viewModelScope.launch {
                 editing.value = null
-                repository.delete(action.alarm.id)
+                alarmSync.delete(action.alarm)
                 recentlyDeleted.value = action.alarm
             }
             AlarmListAction.UndoDelete -> {
                 val alarm = recentlyDeleted.value ?: return
                 recentlyDeleted.value = null
-                viewModelScope.launch { repository.save(alarm) }
+                viewModelScope.launch { alarmSync.save(alarm) }
             }
             AlarmListAction.DismissUndo -> recentlyDeleted.value = null
             is AlarmListAction.Edit -> editing.value = action.alarm
             is AlarmListAction.Save -> {
                 editing.value = null
-                viewModelScope.launch { repository.save(action.alarm) }
+                viewModelScope.launch { alarmSync.save(action.alarm) }
             }
             AlarmListAction.DismissEditor -> editing.value = null
+            AlarmListAction.RefreshPermission -> {
+                val missing = !scheduler.canScheduleExact()
+                // 방금 허용했다면 그동안 예약 못 한 알람을 예약
+                if (needsPermission.value && !missing) viewModelScope.launch { alarmSync.rescheduleAll() }
+                needsPermission.value = missing
+            }
         }
     }
 }

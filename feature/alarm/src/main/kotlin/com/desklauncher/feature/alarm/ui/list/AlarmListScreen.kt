@@ -1,10 +1,21 @@
 package com.desklauncher.feature.alarm.ui.list
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,10 +28,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -60,7 +73,43 @@ fun AlarmListRoute(
     viewModel: AlarmListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    AlarmListScreen(state = uiState, onAction = viewModel::onAction, onBack = onBack, modifier = modifier)
+    val context = LocalContext.current
+    LifecycleResumeEffect(Unit) {
+        viewModel.onAction(AlarmListAction.RefreshPermission)
+        onPauseOrDispose { }
+    }
+    var notificationsGranted by remember { mutableStateOf(context.hasNotificationPermission()) }
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { notificationsGranted = it }
+    AlarmListScreen(
+        state = uiState,
+        onAction = { action ->
+            // 첫 알람을 만들 때 알림 권한을 묻는다 (PRD §9)
+            if (action is AlarmListAction.Add && !notificationsGranted) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            viewModel.onAction(action)
+        },
+        onBack = onBack,
+        modifier = modifier,
+        needsNotificationPermission = !notificationsGranted && uiState.items.isNotEmpty(),
+        onRequestNotification = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+        onRequestExactAlarm = {
+            context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", context.packageName, null)))
+        },
+    )
+}
+
+private fun Context.hasNotificationPermission(): Boolean =
+    ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+/** 권한 안내 배너 (ALARM-03) */
+@Composable
+private fun PermissionBanner(title: String, body: String, onOpen: () -> Unit) {
+    Surface(color = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(body, style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = onOpen) { Text(stringResource(R.string.alarm_perm_open)) }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +119,9 @@ fun AlarmListScreen(
     onAction: (AlarmListAction) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    needsNotificationPermission: Boolean = false,
+    onRequestNotification: () -> Unit = {},
+    onRequestExactAlarm: () -> Unit = {},
 ) {
     state.editing?.let { alarm ->
         AlarmEditorSheet(
@@ -106,26 +158,34 @@ fun AlarmListScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            when {
-                state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                state.items.isEmpty() -> DeskEmptyState(
-                    title = stringResource(R.string.alarm_empty_title),
-                    body = stringResource(R.string.alarm_empty_body),
-                    icon = Icons.Outlined.Alarm,
-                    modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                )
-                else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 88.dp)) {
-                    items(state.items, key = { it.alarm.id }) { item ->
-                        Column(Modifier.animateItem()) {
-                            AlarmRow(
-                                alarm = item.alarm,
-                                untilNext = item.untilNext,
-                                onToggle = { onAction(AlarmListAction.SetEnabled(item.alarm, it)) },
-                                onClick = { onAction(AlarmListAction.Edit(item.alarm)) },
-                                onDelete = { onAction(AlarmListAction.Delete(item.alarm)) },
-                            )
-                            HorizontalDivider()
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            if (state.needsExactAlarmPermission) {
+                PermissionBanner(stringResource(R.string.alarm_perm_exact_title), stringResource(R.string.alarm_perm_exact_body), onRequestExactAlarm)
+            }
+            if (needsNotificationPermission) {
+                PermissionBanner(stringResource(R.string.alarm_perm_notification_title), stringResource(R.string.alarm_perm_notification_body), onRequestNotification)
+            }
+            Box(Modifier.fillMaxSize()) {
+                when {
+                    state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    state.items.isEmpty() -> DeskEmptyState(
+                        title = stringResource(R.string.alarm_empty_title),
+                        body = stringResource(R.string.alarm_empty_body),
+                        icon = Icons.Outlined.Alarm,
+                        modifier = Modifier.align(Alignment.Center).padding(32.dp),
+                    )
+                    else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 88.dp)) {
+                        items(state.items, key = { it.alarm.id }) { item ->
+                            Column(Modifier.animateItem()) {
+                                AlarmRow(
+                                    alarm = item.alarm,
+                                    untilNext = item.untilNext,
+                                    onToggle = { onAction(AlarmListAction.SetEnabled(item.alarm, it)) },
+                                    onClick = { onAction(AlarmListAction.Edit(item.alarm)) },
+                                    onDelete = { onAction(AlarmListAction.Delete(item.alarm)) },
+                                )
+                                HorizontalDivider()
+                            }
                         }
                     }
                 }
@@ -159,9 +219,17 @@ private fun AlarmListScreenPreview() {
     )
     DeskTheme {
         AlarmListScreen(
-            state = AlarmListUiState(false, alarms.map { AlarmItem(it, if (it.enabled) Duration.ofMinutes(500) else null) }),
+            state = AlarmListUiState(isLoading = false, items = alarms.map { AlarmItem(it, if (it.enabled) Duration.ofMinutes(500) else null) }),
             onAction = {}, onBack = {},
         )
+    }
+}
+
+@DeskPreviews
+@Composable
+private fun AlarmListScreenPermissionPreview() {
+    DeskTheme {
+        AlarmListScreen(state = AlarmListUiState(false, needsExactAlarmPermission = true), onAction = {}, onBack = {}, needsNotificationPermission = true)
     }
 }
 

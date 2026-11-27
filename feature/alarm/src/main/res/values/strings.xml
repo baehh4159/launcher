@@ -26,4 +26,9 @@
     <string name="alarm_editor_vibrate">진동</string>
     <string name="alarm_editor_snooze">다시 울림 간격</string>
     <string name="alarm_editor_save">저장</string>
+    <string name="alarm_perm_exact_title">정확한 시각에 울리려면 권한이 필요해요</string>
+    <string name="alarm_perm_exact_body">‘알람 및 리마인더’ 권한을 허용해야 절전 중에도 제시간에 울려요.</string>
+    <string name="alarm_perm_notification_title">알림을 허용해 주세요</string>
+    <string name="alarm_perm_notification_body">알람이 울릴 때 알림으로 알려 드려요.</string>
+    <string name="alarm_perm_open">허용하러 가기</string>
 </resources>
