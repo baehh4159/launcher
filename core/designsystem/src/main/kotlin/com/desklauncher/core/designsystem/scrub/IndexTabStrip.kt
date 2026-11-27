@@ -4,8 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.clickable
@@ -174,11 +172,8 @@ fun IndexTabStrip(
             )
 
             if (split) {
-                ScrubZone(
-                    state = state,
-                    items = items,
-                    active = active,
-                    extentPx = extentPx,
+                // 훑는 영역은 보이지 않는 터치 영역이다 (눈금 없음 — 사용자 결정)
+                Box(
                     modifier = Modifier
                         .align(scrubSide.edgeAlignment())
                         .then(
@@ -190,6 +185,7 @@ fun IndexTabStrip(
                         )
                         .width(DeskMotion.ScrubZoneWidth)
                         .fillMaxHeight()
+                        .clearAndSetSemantics { }
                         .indexScrubGesture(
                             state = state,
                             itemExtentPx = extentPx,
@@ -223,39 +219,6 @@ fun IndexTabStrip(
             }
         }
     }
-}
-
-/**
- * 훑는 영역의 눈금: 가는 세로선 + 서류철마다 점. 스크럽 중에는 현재 칸의 점이 그 서류철 색으로 커진다.
- * 값은 그리기 단계에서만 읽어 재구성을 피한다.
- */
-@Composable
-private fun ScrubZone(
-    state: IndexScrubState,
-    items: List<IndexTabItem>,
-    active: State<Float>,
-    extentPx: Float,
-    modifier: Modifier = Modifier,
-) {
-    val line = DeskTheme.colors.lineStrong
-    Box(
-        modifier = modifier
-            .clearAndSetSemantics { }
-            .drawBehind {
-                val x = size.width / 2f
-                drawLine(line, Offset(x, extentPx / 2f), Offset(x, size.height - extentPx / 2f), strokeWidth = DeskLine.Hairline.toPx())
-                val focused = state.focusedIndex.coerceIn(0, items.lastIndex)
-                val dot = ScrubDotRadius.toPx()
-                items.forEachIndexed { index, item ->
-                    val center = Offset(x, index * extentPx + extentPx / 2f)
-                    if (index == focused && active.value > 0f) {
-                        drawCircle(item.color.container, radius = dot * (1f + 1.5f * active.value), center = center)
-                    } else {
-                        drawCircle(line, radius = dot, center = center)
-                    }
-                }
-            },
-    )
 }
 
 /** Idle 0 → 스크럽 1 (취소 대기 중에는 0.35로 움츠러듦) */
@@ -369,7 +332,6 @@ private fun TabIndicator(
 }
 
 private val TabIconInset = 11.dp
-private val ScrubDotRadius = 2.dp
 private val RightTabShape = AbsoluteRoundedCornerShape(topLeft = 10.dp, bottomLeft = 10.dp)
 private val LeftTabShape = AbsoluteRoundedCornerShape(topRight = 10.dp, bottomRight = 10.dp)
 private val PillShape = RoundedCornerShape(percent = 50)
@@ -419,7 +381,7 @@ private fun IndexTabStripLeftScrubbingPreview() {
     }
 }
 
-/** 책상 배치 스냅샷: 서류철은 왼쪽, 엄지는 오른쪽 눈금을 훑는 중 (네 번째 칸) */
+/** 책상 배치 스냅샷: 서류철은 왼쪽, 엄지는 오른쪽(보이지 않는 영역)을 훑는 중 (네 번째 칸) */
 @DeskPreviews
 @Composable
 private fun IndexTabStripSplitScrubbingPreview() {
