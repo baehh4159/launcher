@@ -7,16 +7,14 @@ import org.junit.Test
 
 class StripVisualStateReduceTest {
 
-    // 탐색 시작 → 칸 이동 → 취소 대기 → 떼면 다시 Idle
+    // 탐색 시작 → 칸 이동 → 취소되면 즉시 Idle(탭이 접힌다)
     @Test
     fun reduce_followsScrubLifecycle() {
         val claimed = StripVisualState.Idle.reduce(ScrubEvent.Claimed(2))
         assertEquals(StripVisualState(focused = 2, exploring = true), claimed)
         val moved = claimed.reduce(ScrubEvent.FocusChanged(3))
         assertEquals(3, moved.focused)
-        val armed = moved.reduce(ScrubEvent.CancelArmed(true))
-        assertEquals(true, armed.cancelArmed)
-        assertEquals(StripVisualState.Idle, armed.reduce(ScrubEvent.Cancelled))
+        assertEquals(StripVisualState.Idle, moved.reduce(ScrubEvent.Cancelled))
     }
 
     // 열기 사건 뒤에는 돌출이 접힌다

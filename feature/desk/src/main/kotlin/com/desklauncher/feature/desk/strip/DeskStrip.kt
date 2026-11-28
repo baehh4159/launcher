@@ -61,7 +61,6 @@ import kotlin.math.roundToInt
 data class StripVisualState(
     val focused: Int? = null,
     val exploring: Boolean = false,
-    val cancelArmed: Boolean = false,
 ) {
     companion object {
         val Idle = StripVisualState()
@@ -90,8 +89,8 @@ object StripDimens {
     val LabelLift: Dp = 4.dp
     /** 분리형 훑기 영역 폭 — 엄지 폭 약 1.5배 [실험] (PRD §4.1) */
     val ScrubZoneWidth: Dp = 64.dp
-    /** 훑기 중 본문 쪽으로 이만큼 빼면 취소 대기 */
-    val CancelDistance: Dp = 64.dp
+    /** 탐색 중 훑기 영역 왼쪽 끝에서 화면 가운데 쪽으로 이만큼 빠지면 즉시 취소 [실험] (PRD §4.2) */
+    val CancelLeft: Dp = 56.dp
 }
 
 /**
@@ -114,11 +113,7 @@ fun DeskStrip(
     val heightDp = with(density) { geometry.height.toDp() }
     val reduced = LocalReducedMotion.current
     val active by animateFloatAsState(
-        targetValue = when {
-            !state.exploring -> 0f
-            state.cancelArmed -> 0.35f
-            else -> 1f
-        },
+        targetValue = if (state.exploring) 1f else 0f,
         animationSpec = if (reduced) snap() else tween(DeskMotion.RevealMillis, easing = DeskMotion.EaseOut),
         label = "stripActive",
     )
@@ -152,7 +147,7 @@ fun DeskStrip(
                 label = "labelY",
             )
             NameLabel(
-                text = if (state.cancelArmed) stringResource(R.string.slot_cancel) else slotName(slots[focused], focused),
+                text = slotName(slots[focused], focused),
                 side = side,
                 edgeInset = edgeInset,
                 active = { active },
@@ -349,11 +344,6 @@ private fun DeskStripBottomRowPreview() = PreviewStrip(StripVisualState(focused 
 @DeskPreviews
 @Composable
 private fun DeskStripExploringPreview() = PreviewStrip(StripVisualState(focused = 1, exploring = true))
-
-/** 정지 스냅샷: 탐색 중 본문 쪽으로 빼서 취소 대기 */
-@DeskPreviews
-@Composable
-private fun DeskStripCancelPreview() = PreviewStrip(StripVisualState(focused = 4, exploring = true, cancelArmed = true))
 
 /** 비교군(STRIP-04): 오른쪽 표시 */
 @DeskPreviews

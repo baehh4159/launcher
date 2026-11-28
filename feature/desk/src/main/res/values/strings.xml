@@ -9,7 +9,6 @@
     <string name="slot_apps_name">앱 서랍</string>
     <string name="slot_empty_name">빈 고정 자리 %1$d</string>
     <string name="slot_pinned_description">%1$d번째 고정 공책, %2$s</string>
-    <string name="slot_cancel">취소</string>
     <string name="slot_open_action">열기</string>
 
     <!-- 책상 (HOME-02) -->

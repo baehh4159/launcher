@@ -111,7 +111,7 @@ fun DeskRoute(
                     viewModel.onScrubbedOpen()
                     state.slots.getOrNull(event.index)?.let(onOpenSlot)
                 }
-                is ScrubEvent.CancelArmed, ScrubEvent.Cancelled -> Unit
+                ScrubEvent.Cancelled -> Unit
             }
         },
     )
@@ -119,9 +119,9 @@ fun DeskRoute(
 
 /** 훑기 사건 → 보이는 상태 (순수) */
 internal fun StripVisualState.reduce(event: ScrubEvent): StripVisualState = when (event) {
-    is ScrubEvent.Claimed -> StripVisualState(focused = event.focus, exploring = true, cancelArmed = false)
+    is ScrubEvent.Claimed -> StripVisualState(focused = event.focus, exploring = true)
     is ScrubEvent.FocusChanged -> copy(focused = event.focus)
-    is ScrubEvent.CancelArmed -> copy(cancelArmed = event.armed)
+    // 열기·취소 즉시 탭과 이름표를 거둔다 (PRD §3.1, §4.2)
     is ScrubEvent.Open, ScrubEvent.Cancelled -> StripVisualState.Idle
 }
 
@@ -170,7 +170,7 @@ fun DeskScreen(
             zoneWidth = (if (side == StripSide.Left) StripDimens.ScrubZoneWidth else StripDimens.RightTabWidth).toPx(),
             stripBottomInset = StripBottomPadding.toPx(),
             holdMillis = holdMillis,
-            cancelDistance = StripDimens.CancelDistance.toPx(),
+            cancelLeft = StripDimens.CancelLeft.toPx(),
             onEvent = onScrubEvent,
         )
     }
