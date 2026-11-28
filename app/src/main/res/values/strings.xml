@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">책상·공책</string>
+
+    <!-- 아직 만들지 않은 창 (M0 시제품: 칸·훑기 감각 시험용 안내) -->
+    <string name="soon_notebook_title">공책</string>
+    <string name="soon_all_title">전체 공책</string>
+    <string name="soon_tools_title">문구</string>
+    <string name="soon_quick_write_title">바로 적기</string>
+    <string name="soon_resume_title">첫 기록 적기</string>
+    <string name="soon_notebook_body">공책 만들기·고정·쓰기는 M2 단계에서 열려요.</string>
+    <string name="soon_tools_body">계산기와 종이 클립은 M4 단계에서 열려요.</string>
+    <string name="soon_paper_body">임시 종이와 정리는 다음 단계(M1)에서 열려요.</string>
+    <string name="soon_footer">지금은 서류철 위치와 훑기·진동 감각을 시험하는 시제품이에요. 빈 곳을 오른쪽으로 밀거나 뒤로 가면 닫혀요.</string>
 </resources>

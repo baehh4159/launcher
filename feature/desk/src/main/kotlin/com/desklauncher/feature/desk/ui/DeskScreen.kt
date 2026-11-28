@@ -61,6 +61,8 @@ fun DeskRoute(
     onQuickWrite: () -> Unit,
     onResume: () -> Unit,
     modifier: Modifier = Modifier,
+    /** 창이 열려 있으면 false — 책상 훑기 영역 비활성 (PRD §4.2) */
+    scrubEnabled: Boolean = true,
     viewModel: DeskViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -83,6 +85,7 @@ fun DeskRoute(
         },
         modifier = modifier,
         stripState = stripState,
+        scrubEnabled = scrubEnabled,
         onScrubEvent = { event ->
             stripState = stripState.reduce(event)
             if (event is ScrubEvent.Open) state.slots.getOrNull(event.index)?.let(onOpenSlot)

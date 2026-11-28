@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="apps_search_hint">앱 이름이나 초성 (예: ㅋㅋㅇ)</string>
+    <string name="apps_search_clear">검색어 지우기</string>
+    <string name="apps_no_result">\'%1$s\'와 맞는 앱이 없어요</string>
+    <string name="apps_empty">실행할 수 있는 앱이 없어요</string>
+    <string name="apps_launch_failed">앱을 열 수 없어요</string>
+    <string name="apps_index_description">초성 색인</string>
+</resources>
