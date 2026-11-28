@@ -157,6 +157,9 @@ fun DeskScreen(
     // 내용이 서류철·비교군 탭을 피하는 여백
     val contentStart = if (side == StripSide.Left) StripDimens.SpineVisible + DeskSpacing.m else DeskSpacing.l
     val contentEnd = if (side == StripSide.Right) rightTabInset + StripDimens.RightTabWidth + DeskSpacing.s else DeskSpacing.m
+    // 바로 적기는 책등이 튀어나온 상태에서도 닿지 않는 곳에서 시작한다 (PRD §3.1: 앱 ┆ 간격 ┆ 바로 적기)
+    val barStart = if (side == StripSide.Left) StripDimens.SpineVisible + StripDimens.SpinePop + DeskSpacing.s else DeskSpacing.l
+    val stripBand = with(density) { geometry.height.toDp() } + StripBottomPadding
     val holdMillis = ScrubTracker.holdMillis(LocalViewConfiguration.current.longPressTimeoutMillis)
     val scrub = with(density) {
         Modifier.stripScrub(
@@ -174,19 +177,20 @@ fun DeskScreen(
 
     Box(modifier = modifier.fillMaxSize().background(DeskTheme.colors.desk)) {
         Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).then(scrub)) {
+            // 벽 줄과 서류철 영역 사이 남는 공간의 가운데에 펼친 공책 한 장 (화면 비율이 아니라 공간에 맞춤)
             Column(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .fillMaxWidth()
-                    .padding(start = contentStart, end = contentEnd, top = DeskSpacing.m),
+                    .fillMaxSize()
+                    .padding(start = contentStart, end = contentEnd, top = DeskSpacing.xs, bottom = stripBand + DeskSpacing.m),
             ) {
                 WallLine(clock = clock, onOpenSettings = { onAction(DeskAction.OpenSettings) })
-                Spacer(Modifier.height(DeskSpacing.l))
-                ResumeCard(resume = state.resume, onClick = { onAction(DeskAction.Resume) })
                 if (!isDefaultHome) {
-                    Spacer(Modifier.height(DeskSpacing.s))
                     DefaultHomeCard(onSet = { onAction(DeskAction.SetDefaultHome) })
                 }
+                Spacer(Modifier.weight(1f))
+                ResumeCard(resume = state.resume, onClick = { onAction(DeskAction.Resume) })
+                Spacer(Modifier.weight(1f))
             }
 
             // 첫 실행: 보이지 않는 훑기 영역 위에 안내 (서류철 구간 가운데)
@@ -203,7 +207,7 @@ fun DeskScreen(
                 onClick = { onAction(DeskAction.QuickWrite) },
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(start = contentStart, end = contentEnd, bottom = StripBottomPadding)
+                    .padding(start = barStart, end = contentEnd, bottom = StripBottomPadding)
                     .height(StripDimens.Extent - StripDimens.SlotInnerGap),
             )
 
@@ -245,6 +249,20 @@ private fun DeskScreenPreview() {
 @Composable
 private fun DeskScreenResumePreview() {
     DeskTheme { DeskScreen(state = DeskPreviewData.withWork, clock = DeskPreviewData.clock, onAction = {}) }
+}
+
+/** 정지 스냅샷: 맨 아래 앱 칸 탐색 — 앱 책등이 튀어나와도 바로 적기와 간격이 남고 이름표는 줄 위 */
+@DeskPreviews
+@Composable
+private fun DeskScreenBottomRowPreview() {
+    DeskTheme {
+        DeskScreen(
+            state = DeskPreviewData.withWork,
+            clock = DeskPreviewData.clock,
+            onAction = {},
+            stripState = StripVisualState(focused = 5, exploring = true),
+        )
+    }
 }
 
 /** 정지 스냅샷: 엄지가 두 번째 공책 칸에 있다 */

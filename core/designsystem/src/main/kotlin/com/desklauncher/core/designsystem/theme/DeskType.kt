@@ -10,7 +10,10 @@ import androidx.compose.ui.unit.sp
  * Material3 Typography 슬롯에 매핑해 기본 컴포넌트도 같은 단계를 쓰게 한다.
  */
 object DeskType {
+    /** 덮은 책상의 큰 시계 (HOME-03) */
     val wallClock = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Light)
+    /** 펼친 책상의 벽 줄 시각 — 작업 페이지에 자리를 준다 (PRD §3.1) */
+    val wallClockCompact = TextStyle(fontSize = 20.sp, lineHeight = 26.sp, fontWeight = FontWeight.Normal)
     val pageTitle = TextStyle(fontSize = 20.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium)
     val cardTitle = TextStyle(fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium)
     /** 공책 본문 — 한글 긴 문단 가독성 위해 줄높이 1.6 */
