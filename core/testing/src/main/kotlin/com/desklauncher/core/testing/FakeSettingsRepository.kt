@@ -13,5 +13,5 @@ class FakeSettingsRepository(initial: DeskSettings = DeskSettings()) : SettingsR
     override val settings: StateFlow<DeskSettings> = state
     override suspend fun setHaptics(value: HapticSetting) = state.update { it.copy(haptics = value) }
     override suspend fun setStripLayout(value: StripLayout) = state.update { it.copy(stripLayout = value) }
-    override suspend fun setScrubHintDone() = state.update { it.copy(scrubHintDone = true) }
+    override suspend fun setScrubHintDone(done: Boolean) = state.update { it.copy(scrubHintDone = done) }
 }

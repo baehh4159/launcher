@@ -25,6 +25,7 @@ class SettingsViewModel @Inject constructor(
             when (action) {
                 is SettingsAction.SetHaptics -> repository.setHaptics(action.value)
                 is SettingsAction.SetStripLayout -> repository.setStripLayout(action.value)
+                SettingsAction.ReplayScrubHint -> repository.setScrubHintDone(false)
             }
         }
     }

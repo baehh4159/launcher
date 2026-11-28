@@ -11,4 +11,5 @@ data class SettingsUiState(val settings: DeskSettings = DeskSettings())
 sealed interface SettingsAction {
     data class SetHaptics(val value: HapticSetting) : SettingsAction
     data class SetStripLayout(val value: StripLayout) : SettingsAction
+    data object ReplayScrubHint : SettingsAction
 }

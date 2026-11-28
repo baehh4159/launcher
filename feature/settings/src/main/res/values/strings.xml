@@ -13,4 +13,7 @@
     <string name="settings_strip_split_desc">서류철은 왼쪽, 엄지는 오른쪽 보이지 않는 영역에서 훑기</string>
     <string name="settings_strip_right">오른쪽 표시 (비교군)</string>
     <string name="settings_strip_right_desc">서류철을 오른쪽에 두고 탭 위를 직접 훑기</string>
+    <string name="settings_hint_section">안내</string>
+    <string name="settings_hint_replay">훑기 안내 다시 보기</string>
+    <string name="settings_hint_replay_desc">책상 오른쪽에 훑는 곳 안내를 다시 띄워요</string>
 </resources>

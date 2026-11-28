@@ -1,5 +1,6 @@
 package com.desklauncher.feature.settings.ui
 
+import com.desklauncher.core.datastore.DeskSettings
 import com.desklauncher.core.datastore.HapticSetting
 import com.desklauncher.core.datastore.StripLayout
 import com.desklauncher.core.testing.FakeSettingsRepository
@@ -34,5 +35,16 @@ class SettingsViewModelTest {
         viewModel.onAction(SettingsAction.SetStripLayout(StripLayout.RightVisible))
 
         assertEquals(StripLayout.RightVisible, repository.settings.value.stripLayout)
+    }
+
+    // 안내 다시 보기는 훑기 안내 완료 표시를 지운다
+    @Test
+    fun replayScrubHint_resetsFlag() = runTest {
+        val repository = FakeSettingsRepository(DeskSettings(scrubHintDone = true))
+        val viewModel = SettingsViewModel(repository)
+
+        viewModel.onAction(SettingsAction.ReplayScrubHint)
+
+        assertEquals(false, repository.settings.value.scrubHintDone)
     }
 }

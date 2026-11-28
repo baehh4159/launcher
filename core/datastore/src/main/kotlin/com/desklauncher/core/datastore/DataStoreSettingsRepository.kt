@@ -34,8 +34,8 @@ internal class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.StripLayout] = value.name }
     }
 
-    override suspend fun setScrubHintDone() {
-        dataStore.edit { it[Keys.ScrubHintDone] = true }
+    override suspend fun setScrubHintDone(done: Boolean) {
+        dataStore.edit { it[Keys.ScrubHintDone] = done }
     }
 
     private object Keys {

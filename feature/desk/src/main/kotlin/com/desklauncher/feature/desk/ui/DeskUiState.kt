@@ -27,4 +27,5 @@ sealed interface DeskAction {
     data object QuickWrite : DeskAction
     data object Resume : DeskAction
     data object OpenSettings : DeskAction
+    data object SetDefaultHome : DeskAction
 }

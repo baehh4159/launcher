@@ -58,6 +58,16 @@ fun SettingsScreen(state: SettingsUiState, onAction: (SettingsAction) -> Unit, m
             )
         }
 
+        Spacer(Modifier.height(DeskSpacing.l))
+        Text(stringResource(R.string.settings_hint_section), style = DeskType.caption, color = colors.muted)
+        Spacer(Modifier.height(DeskSpacing.xs))
+        ChoiceRow(
+            title = stringResource(R.string.settings_hint_replay),
+            description = stringResource(R.string.settings_hint_replay_desc),
+            selected = !state.settings.scrubHintDone,
+            onClick = { onAction(SettingsAction.ReplayScrubHint) },
+        )
+
         // 개발용 비교 실험 (STRIP-04). 출시 기본값은 분리형.
         Spacer(Modifier.height(DeskSpacing.l))
         Text(stringResource(R.string.settings_experiment_section), style = DeskType.caption, color = colors.muted)

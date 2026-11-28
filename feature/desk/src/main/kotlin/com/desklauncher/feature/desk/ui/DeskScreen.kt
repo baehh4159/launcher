@@ -47,8 +47,10 @@ import com.desklauncher.feature.desk.strip.StripSide
 import com.desklauncher.feature.desk.strip.StripSlot
 import com.desklauncher.feature.desk.strip.StripVisualState
 import com.desklauncher.feature.desk.strip.stripScrub
+import com.desklauncher.feature.desk.ui.component.DefaultHomeCard
 import com.desklauncher.feature.desk.ui.component.QuickWriteBar
 import com.desklauncher.feature.desk.ui.component.ResumeCard
+import com.desklauncher.feature.desk.ui.component.ScrubHint
 import com.desklauncher.feature.desk.ui.component.WallLine
 import com.desklauncher.feature.desk.ui.preview.DeskPreviewData
 import java.time.ZoneId
@@ -62,9 +64,12 @@ fun DeskRoute(
     onQuickWrite: () -> Unit,
     onResume: () -> Unit,
     onOpenSettings: () -> Unit,
+    onSetDefaultHome: () -> Unit,
     modifier: Modifier = Modifier,
     /** 창이 열려 있으면 false — 책상 훑기 영역 비활성 (PRD §4.2) */
     scrubEnabled: Boolean = true,
+    /** 이 앱이 기본 홈 역할을 가졌는지 — 아니면 설정 카드를 보인다 (HOME-01) */
+    isDefaultHome: Boolean = true,
     viewModel: DeskViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,11 +94,13 @@ fun DeskRoute(
                 DeskAction.QuickWrite -> onQuickWrite()
                 DeskAction.Resume -> onResume()
                 DeskAction.OpenSettings -> onOpenSettings()
+                DeskAction.SetDefaultHome -> onSetDefaultHome()
             }
         },
         modifier = modifier,
         stripState = stripState,
         scrubEnabled = scrubEnabled,
+        isDefaultHome = isDefaultHome,
         onScrubEvent = { event ->
             stripState = stripState.reduce(event)
             // 두 단계 촉각 (STRIP-03, PRD §5): 탐색 시작·칸 이동 = 약한 틱, 열기 = 확정. 취소에는 없음.
@@ -101,6 +108,7 @@ fun DeskRoute(
                 is ScrubEvent.Claimed, is ScrubEvent.FocusChanged -> haptics.tick()
                 is ScrubEvent.Open -> {
                     haptics.confirm()
+                    viewModel.onScrubbedOpen()
                     state.slots.getOrNull(event.index)?.let(onOpenSlot)
                 }
                 is ScrubEvent.CancelArmed, ScrubEvent.Cancelled -> Unit
@@ -131,6 +139,7 @@ fun DeskScreen(
     /** 훑기 사건 (STRIP-02). 창이 열려 있으면 호출부가 [scrubEnabled]를 끈다 */
     onScrubEvent: (ScrubEvent) -> Unit = {},
     scrubEnabled: Boolean = true,
+    isDefaultHome: Boolean = true,
 ) {
     val density = LocalDensity.current
     val geometry = remember(density, state.slots.size) {
@@ -174,6 +183,19 @@ fun DeskScreen(
                 WallLine(clock = clock, onOpenSettings = { onAction(DeskAction.OpenSettings) })
                 Spacer(Modifier.height(DeskSpacing.l))
                 ResumeCard(resume = state.resume, onClick = { onAction(DeskAction.Resume) })
+                if (!isDefaultHome) {
+                    Spacer(Modifier.height(DeskSpacing.s))
+                    DefaultHomeCard(onSet = { onAction(DeskAction.SetDefaultHome) })
+                }
+            }
+
+            // 첫 실행: 보이지 않는 훑기 영역 위에 안내 (서류철 구간 가운데)
+            if (state.showScrubHint && side == StripSide.Left && !stripState.exploring) {
+                ScrubHint(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = rightTabInset, bottom = with(density) { (geometry.height / 2f).toDp() }),
+                )
             }
 
             // 맨 아래 한 줄: 앱 칸(서류철 마지막 칸) | 바로 적기 (PRD §3.1)
@@ -235,6 +257,20 @@ private fun DeskScreenScrubbingPreview() {
             clock = DeskPreviewData.clock,
             onAction = {},
             stripState = StripVisualState(focused = 1, exploring = true),
+        )
+    }
+}
+
+/** 첫 실행: 기본 홈 설정 카드 + 훑기 안내 */
+@DeskPreviews
+@Composable
+private fun DeskScreenFirstRunPreview() {
+    DeskTheme {
+        DeskScreen(
+            state = DeskPreviewData.empty.copy(showScrubHint = true),
+            clock = DeskPreviewData.clock,
+            onAction = {},
+            isDefaultHome = false,
         )
     }
 }

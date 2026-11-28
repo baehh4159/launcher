@@ -19,4 +19,10 @@
     <string name="desk_resume_action">이어서 쓰기</string>
     <string name="desk_quick_write">바로 적기</string>
     <string name="desk_settings">설정</string>
+
+    <!-- 기본 홈·첫 실행 안내 (HOME-01) -->
+    <string name="desk_default_home_title">이 책상을 홈 화면으로</string>
+    <string name="desk_default_home_body">홈 버튼을 누르면 언제나 이 책상이 나와요.</string>
+    <string name="desk_default_home_action">기본 홈으로 설정</string>
+    <string name="desk_scrub_hint">여기를 위아래로 훑어 보세요</string>
 </resources>
