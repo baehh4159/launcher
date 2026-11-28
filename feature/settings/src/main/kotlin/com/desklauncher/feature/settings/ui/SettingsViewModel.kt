@@ -24,6 +24,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             when (action) {
                 is SettingsAction.SetHaptics -> repository.setHaptics(action.value)
+                is SettingsAction.SetStripLayout -> repository.setStripLayout(action.value)
             }
         }
     }

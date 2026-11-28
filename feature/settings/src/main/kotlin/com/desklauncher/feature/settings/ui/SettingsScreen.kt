@@ -16,6 +16,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.desklauncher.core.datastore.DeskSettings
 import com.desklauncher.core.datastore.HapticSetting
+import com.desklauncher.core.datastore.StripLayout
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskSpacing
 import com.desklauncher.core.designsystem.theme.DeskTheme
@@ -54,6 +55,23 @@ fun SettingsScreen(state: SettingsUiState, onAction: (SettingsAction) -> Unit, m
                 description = stringResource(description),
                 selected = state.settings.haptics == option,
                 onClick = { onAction(SettingsAction.SetHaptics(option)) },
+            )
+        }
+
+        // 개발용 비교 실험 (STRIP-04). 출시 기본값은 분리형.
+        Spacer(Modifier.height(DeskSpacing.l))
+        Text(stringResource(R.string.settings_experiment_section), style = DeskType.caption, color = colors.muted)
+        Spacer(Modifier.height(DeskSpacing.xs))
+        StripLayout.entries.forEach { option ->
+            val (title, description) = when (option) {
+                StripLayout.Split -> R.string.settings_strip_split to R.string.settings_strip_split_desc
+                StripLayout.RightVisible -> R.string.settings_strip_right to R.string.settings_strip_right_desc
+            }
+            ChoiceRow(
+                title = stringResource(title),
+                description = stringResource(description),
+                selected = state.settings.stripLayout == option,
+                onClick = { onAction(SettingsAction.SetStripLayout(option)) },
             )
         }
     }

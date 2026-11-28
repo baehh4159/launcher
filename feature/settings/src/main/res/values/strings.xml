@@ -8,4 +8,9 @@
     <string name="settings_haptics_confirm_desc">열거나 꽂을 때만</string>
     <string name="settings_haptics_off">끔</string>
     <string name="settings_haptics_off_desc">진동 없이 화면 강조만</string>
+    <string name="settings_experiment_section">실험 — 서류철 배치 비교 (PRD §17)</string>
+    <string name="settings_strip_split">분리형 (기본)</string>
+    <string name="settings_strip_split_desc">서류철은 왼쪽, 엄지는 오른쪽 보이지 않는 영역에서 훑기</string>
+    <string name="settings_strip_right">오른쪽 표시 (비교군)</string>
+    <string name="settings_strip_right_desc">서류철을 오른쪽에 두고 탭 위를 직접 훑기</string>
 </resources>
