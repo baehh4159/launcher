@@ -96,7 +96,7 @@ beUI의 Motion 스프링(stiffness / damping / mass)을 Compose `spring(dampingR
 | 내용 교체 | 나감 120ms 위 4dp / 들어옴 180ms 아래 4dp | beUI content swap |
 | 창 열기·닫기 | 칸 위치에서 펼침 `Folder` 스프링 / 닫힘 280ms `EaseDrawer`, 막은 같은 곡선으로 페이드 | beUI Bloom menu, Bottom sheet |
 | 창 밀어 닫기 | 120dp 넘게 끌거나 600dp/s 넘게 튕기면 닫힘, 아니면 제자리 | beUI Bottom sheet 해제 규칙 |
-| 서류철 돌출 | 칸 진입 시 `TabPop`, 이웃 칸 30%·8% | PRD §4.2 |
+| 서류철 돌출 | 칸 진입 시 `TabPop`, **포커스 칸 하나만** (이웃은 그대로) | PRD §3.1 |
 | 움직임 줄이기 | 이동·크기·스프링 없이 150ms 페이드 | D3 |
 
 ---

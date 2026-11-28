@@ -86,6 +86,8 @@ object StripDimens {
     /** 이름표와 탭 사이 */
     val LabelGap: Dp = 8.dp
     val LabelHeight: Dp = 36.dp
+    /** 맨 아래 줄 이름표를 그 줄 위로 띄우는 틈 */
+    val LabelLift: Dp = 4.dp
     /** 분리형 훑기 영역 폭 — 엄지 폭 약 1.5배 [실험] (PRD §4.1) */
     val ScrubZoneWidth: Dp = 64.dp
     /** 훑기 중 본문 쪽으로 이만큼 빼면 취소 대기 */
@@ -142,8 +144,10 @@ fun DeskStrip(
 
         val focused = state.focused
         if (focused != null && focused in slots.indices) {
+            val labelHeightPx = with(density) { StripDimens.LabelHeight.toPx() }
+            val liftPx = with(density) { StripDimens.LabelLift.toPx() }
             val labelY by animateFloatAsState(
-                targetValue = geometry.center(focused),
+                targetValue = geometry.labelCenter(focused, labelHeightPx, liftPx),
                 animationSpec = if (reduced) snap() else DeskMotion.glide(),
                 label = "labelY",
             )
@@ -335,6 +339,11 @@ private fun PreviewStrip(state: StripVisualState, side: StripSide = StripSide.Le
 @DeskPreviews
 @Composable
 private fun DeskStripIdlePreview() = PreviewStrip(StripVisualState.Idle)
+
+/** 정지 스냅샷: 맨 아래 앱 칸 — 이름표가 그 줄 위에 뜬다 */
+@DeskPreviews
+@Composable
+private fun DeskStripBottomRowPreview() = PreviewStrip(StripVisualState(focused = 5, exploring = true))
 
 /** 정지 스냅샷: 두 번째 공책(개발)에 엄지가 머문 상태 */
 @DeskPreviews

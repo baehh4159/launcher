@@ -59,14 +59,20 @@ class StripGeometryTest {
         assertEquals(4, geometry.nextFocus(current = null, y = 238f, hysteresisFraction = 0.15f))
     }
 
-    // 돌출 정도는 포커스 1, 이웃 0.3, 두 칸 0.08
+    // 포커스 칸 하나만 튀어나온다 (평상시 책등 폭 통일)
     @Test
-    fun popLevel_decreasesWithDistance() {
+    fun popLevel_onlyFocusedSlot() {
         assertEquals(1f, geometry.popLevel(2, 2), 0f)
-        assertEquals(0.3f, geometry.popLevel(3, 2), 0f)
-        assertEquals(0.08f, geometry.popLevel(0, 2), 0f)
-        assertEquals(0f, geometry.popLevel(5, 2), 0f)
+        assertEquals(0f, geometry.popLevel(3, 2), 0f)
+        assertEquals(0f, geometry.popLevel(1, 2), 0f)
         assertEquals(0f, geometry.popLevel(2, null), 0f)
+    }
+
+    // 맨 아래(앱) 칸 이름표는 그 줄 위에, 다른 칸은 칸 가운데
+    @Test
+    fun labelCenter_liftsBottomRowAboveItself() {
+        assertEquals(geometry.center(2), geometry.labelCenter(2, labelHeight = 36f, lift = 4f), 0f)
+        assertEquals(geometry.top(5) - 4f - 18f, geometry.labelCenter(5, labelHeight = 36f, lift = 4f), 0f)
     }
 
     // 구분이 없으면 칸이 이어진다

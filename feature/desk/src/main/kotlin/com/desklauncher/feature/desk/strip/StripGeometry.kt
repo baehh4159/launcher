@@ -58,14 +58,16 @@ class StripGeometry(
         return slotAt(y) ?: current
     }
 
-    /** 돌출 정도: 포커스 칸 1, 이웃 0.3, 그다음 0.08 (PRD §4.2) */
-    fun popLevel(index: Int, focused: Int?): Float {
-        if (focused == null) return 0f
-        return when (abs(index - focused)) {
-            0 -> 1f
-            1 -> 0.3f
-            2 -> 0.08f
-            else -> 0f
-        }
-    }
+    /**
+     * 돌출 정도: **포커스 칸 하나만** 1, 나머지는 0 (PRD §3.1 — 1차 실기기 피드백).
+     * 이웃까지 조금씩 튀어나오면 평상시 책등 폭이 들쭉날쭉해 보이고 맨 아래 줄이 바로 적기에 닿는다.
+     */
+    fun popLevel(index: Int, focused: Int?): Float = if (focused != null && index == focused) 1f else 0f
+
+    /**
+     * 이름표(탐색 미리보기)의 세로 중심. 맨 아래 칸(앱 — 바로 적기와 같은 줄)은 바로 적기를 가리지 않도록
+     * 그 줄 위에 띄운다 (PRD §3.1).
+     */
+    fun labelCenter(index: Int, labelHeight: Float, lift: Float): Float =
+        if (index == count - 1) top(index) - lift - labelHeight / 2f else center(index)
 }
