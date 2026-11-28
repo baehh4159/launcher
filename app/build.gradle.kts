@@ -30,6 +30,8 @@ dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.datastore)
 
+    implementation(projects.feature.desk)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

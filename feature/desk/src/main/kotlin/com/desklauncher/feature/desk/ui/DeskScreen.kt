@@ -1,0 +1,184 @@
+package com.desklauncher.feature.desk.ui
+
+import android.text.format.DateFormat
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemGestures
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.desklauncher.core.datastore.StripLayout
+import com.desklauncher.core.designsystem.preview.DeskPreviews
+import com.desklauncher.core.designsystem.theme.DeskSpacing
+import com.desklauncher.core.designsystem.theme.DeskTheme
+import com.desklauncher.feature.desk.clock.WallClockFormatter
+import com.desklauncher.feature.desk.clock.WallClockText
+import com.desklauncher.feature.desk.clock.rememberCurrentMinute
+import com.desklauncher.feature.desk.strip.DefaultStrip
+import com.desklauncher.feature.desk.strip.DeskStrip
+import com.desklauncher.feature.desk.strip.StripDimens
+import com.desklauncher.feature.desk.strip.StripGeometry
+import com.desklauncher.feature.desk.strip.StripSide
+import com.desklauncher.feature.desk.strip.StripSlot
+import com.desklauncher.feature.desk.strip.StripVisualState
+import com.desklauncher.feature.desk.ui.component.QuickWriteBar
+import com.desklauncher.feature.desk.ui.component.ResumeCard
+import com.desklauncher.feature.desk.ui.component.WallLine
+import com.desklauncher.feature.desk.ui.preview.DeskPreviewData
+import java.time.ZoneId
+
+/**
+ * 책상 연결부. 칸을 열거나 바로 적기·이어서 쓰기를 누르면 어떤 창을 띄울지는 app이 정한다 (AGENTS.md §4.5).
+ */
+@Composable
+fun DeskRoute(
+    onOpenSlot: (StripSlot) -> Unit,
+    onQuickWrite: () -> Unit,
+    onResume: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DeskViewModel = hiltViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val now = rememberCurrentMinute()
+    val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0]
+    val clock = remember(now, locale) {
+        WallClockFormatter.format(now, ZoneId.systemDefault(), DateFormat.is24HourFormat(context), locale)
+    }
+    DeskScreen(
+        state = state,
+        clock = clock,
+        onAction = { action ->
+            when (action) {
+                is DeskAction.OpenSlot -> state.slots.getOrNull(action.index)?.let(onOpenSlot)
+                DeskAction.QuickWrite -> onQuickWrite()
+                DeskAction.Resume -> onResume()
+            }
+        },
+        modifier = modifier,
+    )
+}
+
+/**
+ * 책상 (HOME-02, PRD §3). 스크롤하지 않는다 — 넘치면 접는다(§3.2).
+ * 서류철은 하단 기준 고정 간격이라 위쪽 내용이 바뀌어도 칸이 움직이지 않는다(§4.1).
+ */
+@Composable
+fun DeskScreen(
+    state: DeskUiState,
+    clock: WallClockText,
+    onAction: (DeskAction) -> Unit,
+    modifier: Modifier = Modifier,
+    stripState: StripVisualState = StripVisualState.Idle,
+) {
+    val density = LocalDensity.current
+    val geometry = remember(density, state.slots.size) {
+        with(density) {
+            StripGeometry(
+                extent = StripDimens.Extent.toPx(),
+                gap = StripDimens.Gap.toPx(),
+                count = state.slots.size,
+                gapBefore = DefaultStrip.GapBeforeIndex,
+            )
+        }
+    }
+    val side = if (state.stripLayout == StripLayout.RightVisible) StripSide.Right else StripSide.Left
+    val rightTabInset = rememberGestureEdgeInset()
+    // 내용이 서류철·비교군 탭을 피하는 여백
+    val contentStart = if (side == StripSide.Left) StripDimens.SpineVisible + DeskSpacing.m else DeskSpacing.l
+    val contentEnd = if (side == StripSide.Right) rightTabInset + StripDimens.RightTabWidth + DeskSpacing.s else DeskSpacing.m
+
+    Box(modifier = modifier.fillMaxSize().background(DeskTheme.colors.desk)) {
+        Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .padding(start = contentStart, end = contentEnd, top = DeskSpacing.m),
+            ) {
+                WallLine(clock = clock)
+                Spacer(Modifier.height(DeskSpacing.l))
+                ResumeCard(resume = state.resume, onClick = { onAction(DeskAction.Resume) })
+            }
+
+            // 맨 아래 한 줄: 앱 칸(서류철 마지막 칸) | 바로 적기 (PRD §3.1)
+            QuickWriteBar(
+                onClick = { onAction(DeskAction.QuickWrite) },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = contentStart, end = contentEnd, bottom = StripBottomPadding)
+                    .height(StripDimens.Extent - StripDimens.SlotInnerGap),
+            )
+
+            DeskStrip(
+                slots = state.slots,
+                geometry = geometry,
+                state = stripState,
+                onSlotClick = { index -> onAction(DeskAction.OpenSlot(index, viaScrub = false)) },
+                side = side,
+                edgeInset = rightTabInset,
+                modifier = Modifier.align(Alignment.BottomStart).padding(bottom = StripBottomPadding),
+            )
+        }
+    }
+}
+
+/** 서류철 아래 여백 — 시스템 내비게이션 위로 살짝 띄운다 */
+private val StripBottomPadding = 8.dp
+
+/** 오른쪽 가장자리에서 훑기·비교군 탭을 띄우는 거리 = 시스템 제스처 인셋(안전 영역 밖 부분) + 여유 8dp (PRD §4.1) */
+@Composable
+internal fun rememberGestureEdgeInset(): Dp {
+    val density = LocalDensity.current
+    val direction = LocalLayoutDirection.current
+    val gestures = WindowInsets.systemGestures.getRight(density, direction)
+    val safe = WindowInsets.safeDrawing.getRight(density, direction)
+    return with(density) { (gestures - safe).coerceAtLeast(0).toDp() } + GestureInsetMargin
+}
+
+private val GestureInsetMargin = 8.dp
+
+@DeskPreviews
+@Composable
+private fun DeskScreenPreview() {
+    DeskTheme { DeskScreen(state = DeskPreviewData.empty, clock = DeskPreviewData.clock, onAction = {}) }
+}
+
+@DeskPreviews
+@Composable
+private fun DeskScreenResumePreview() {
+    DeskTheme { DeskScreen(state = DeskPreviewData.withWork, clock = DeskPreviewData.clock, onAction = {}) }
+}
+
+/** 정지 스냅샷: 엄지가 두 번째 공책 칸에 있다 */
+@DeskPreviews
+@Composable
+private fun DeskScreenScrubbingPreview() {
+    DeskTheme {
+        DeskScreen(
+            state = DeskPreviewData.withWork,
+            clock = DeskPreviewData.clock,
+            onAction = {},
+            stripState = StripVisualState(focused = 1, exploring = true),
+        )
+    }
+}

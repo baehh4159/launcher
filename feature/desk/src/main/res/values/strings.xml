@@ -11,4 +11,11 @@
     <string name="slot_pinned_description">%1$d번째 고정 공책, %2$s</string>
     <string name="slot_cancel">취소</string>
     <string name="slot_open_action">열기</string>
+
+    <!-- 책상 (HOME-02) -->
+    <string name="desk_first_write_title">첫 기록 적기</string>
+    <string name="desk_first_write_body">떠오르는 것을 한 줄 적어 보세요. 공책은 나중에 골라도 돼요.</string>
+    <string name="desk_resume_path">%1$s › %2$s</string>
+    <string name="desk_resume_action">이어서 쓰기</string>
+    <string name="desk_quick_write">바로 적기</string>
 </resources>
