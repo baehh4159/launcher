@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">책상 런처</string>
-    <string name="missing_tool_title">이 도구를 찾을 수 없어요</string>
-    <string name="missing_tool_body">앱에서 빠진 플러그인이에요. 데이터는 그대로 남아 있어요.</string>
-    <string name="missing_tool_back">책상으로</string>
-</resources>

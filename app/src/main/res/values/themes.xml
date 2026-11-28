@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- 실제 UI 테마는 Compose DeskTheme. 이 테마는 창 배경·시스템 바만 담당한다. -->
-    <style name="Theme.Desk" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/desk_window_background</item>
-    </style>
-</resources>

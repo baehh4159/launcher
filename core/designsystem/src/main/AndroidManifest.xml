@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- DeskHaptics의 Composition 진동(벽 효과)에 필요 (PRD §9) -->
-    <uses-permission android:name="android.permission.VIBRATE" />
-</manifest>
