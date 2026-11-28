@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.desklauncher.core.designsystem.preview.DeskFontScalePreviews
 import com.desklauncher.core.designsystem.theme.DeskLine
 import com.desklauncher.core.designsystem.theme.DeskShape
@@ -27,22 +29,18 @@ import com.desklauncher.core.designsystem.theme.DeskTheme
 import com.desklauncher.core.designsystem.theme.DeskType
 import com.desklauncher.feature.desk.R
 
-/** 이 앱이 아직 기본 홈이 아닐 때만 보이는 안내 카드 (HOME-01) */
+/**
+ * 이 앱이 아직 기본 홈이 아닐 때만 보이는 **한 줄** 안내 (HOME-01, PRD §3.1). 지정되면 접힌다.
+ * 큰 카드는 중앙 작업 페이지보다 먼저 눈에 띄어 한 줄로 줄였다(1차 실기기 피드백).
+ */
 @Composable
 fun DefaultHomeCard(onSet: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = DeskTheme.colors
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(colors.desk, DeskShape.card)
-            .border(DeskLine.hairline, colors.lineStrong, DeskShape.card)
-            .padding(start = DeskSpacing.m, end = DeskSpacing.xs, top = DeskSpacing.s, bottom = DeskSpacing.xxs),
+    TextButton(
+        onClick = onSet,
+        contentPadding = PaddingValues(horizontal = 0.dp, vertical = DeskSpacing.xxs),
+        modifier = modifier,
     ) {
-        Text(stringResource(R.string.desk_default_home_title), style = DeskType.label, color = colors.onPaper)
-        Text(stringResource(R.string.desk_default_home_body), style = DeskType.caption, color = colors.muted)
-        TextButton(onClick = onSet, modifier = Modifier.align(Alignment.End)) {
-            Text(stringResource(R.string.desk_default_home_action), style = DeskType.label, color = colors.ink)
-        }
+        Text(stringResource(R.string.desk_default_home_line), style = DeskType.label, color = DeskTheme.colors.ink)
     }
 }
 
