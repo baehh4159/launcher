@@ -86,6 +86,10 @@ object StripDimens {
     /** 이름표와 탭 사이 */
     val LabelGap: Dp = 8.dp
     val LabelHeight: Dp = 36.dp
+    /** 분리형 훑기 영역 폭 — 엄지 폭 약 1.5배 [실험] (PRD §4.1) */
+    val ScrubZoneWidth: Dp = 64.dp
+    /** 훑기 중 본문 쪽으로 이만큼 빼면 취소 대기 */
+    val CancelDistance: Dp = 64.dp
 }
 
 /**

@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +24,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -35,11 +38,14 @@ import com.desklauncher.feature.desk.clock.WallClockText
 import com.desklauncher.feature.desk.clock.rememberCurrentMinute
 import com.desklauncher.feature.desk.strip.DefaultStrip
 import com.desklauncher.feature.desk.strip.DeskStrip
+import com.desklauncher.feature.desk.strip.ScrubEvent
+import com.desklauncher.feature.desk.strip.ScrubTracker
 import com.desklauncher.feature.desk.strip.StripDimens
 import com.desklauncher.feature.desk.strip.StripGeometry
 import com.desklauncher.feature.desk.strip.StripSide
 import com.desklauncher.feature.desk.strip.StripSlot
 import com.desklauncher.feature.desk.strip.StripVisualState
+import com.desklauncher.feature.desk.strip.stripScrub
 import com.desklauncher.feature.desk.ui.component.QuickWriteBar
 import com.desklauncher.feature.desk.ui.component.ResumeCard
 import com.desklauncher.feature.desk.ui.component.WallLine
@@ -58,6 +64,7 @@ fun DeskRoute(
     viewModel: DeskViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var stripState by remember { mutableStateOf(StripVisualState.Idle) }
     val now = rememberCurrentMinute()
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
@@ -75,7 +82,20 @@ fun DeskRoute(
             }
         },
         modifier = modifier,
+        stripState = stripState,
+        onScrubEvent = { event ->
+            stripState = stripState.reduce(event)
+            if (event is ScrubEvent.Open) state.slots.getOrNull(event.index)?.let(onOpenSlot)
+        },
     )
+}
+
+/** 훑기 사건 → 보이는 상태 (순수) */
+internal fun StripVisualState.reduce(event: ScrubEvent): StripVisualState = when (event) {
+    is ScrubEvent.Claimed -> StripVisualState(focused = event.focus, exploring = true, cancelArmed = false)
+    is ScrubEvent.FocusChanged -> copy(focused = event.focus)
+    is ScrubEvent.CancelArmed -> copy(cancelArmed = event.armed)
+    is ScrubEvent.Open, ScrubEvent.Cancelled -> StripVisualState.Idle
 }
 
 /**
@@ -89,6 +109,9 @@ fun DeskScreen(
     onAction: (DeskAction) -> Unit,
     modifier: Modifier = Modifier,
     stripState: StripVisualState = StripVisualState.Idle,
+    /** 훑기 사건 (STRIP-02). 창이 열려 있으면 호출부가 [scrubEnabled]를 끈다 */
+    onScrubEvent: (ScrubEvent) -> Unit = {},
+    scrubEnabled: Boolean = true,
 ) {
     val density = LocalDensity.current
     val geometry = remember(density, state.slots.size) {
@@ -106,9 +129,23 @@ fun DeskScreen(
     // 내용이 서류철·비교군 탭을 피하는 여백
     val contentStart = if (side == StripSide.Left) StripDimens.SpineVisible + DeskSpacing.m else DeskSpacing.l
     val contentEnd = if (side == StripSide.Right) rightTabInset + StripDimens.RightTabWidth + DeskSpacing.s else DeskSpacing.m
+    val holdMillis = ScrubTracker.holdMillis(LocalViewConfiguration.current.longPressTimeoutMillis)
+    val scrub = with(density) {
+        Modifier.stripScrub(
+            enabled = scrubEnabled,
+            geometry = geometry,
+            zoneRightInset = rightTabInset.toPx(),
+            // 분리형: 보이지 않는 64dp 영역 / 비교군: 오른쪽 탭 자체가 훑는 곳
+            zoneWidth = (if (side == StripSide.Left) StripDimens.ScrubZoneWidth else StripDimens.RightTabWidth).toPx(),
+            stripBottomInset = StripBottomPadding.toPx(),
+            holdMillis = holdMillis,
+            cancelDistance = StripDimens.CancelDistance.toPx(),
+            onEvent = onScrubEvent,
+        )
+    }
 
     Box(modifier = modifier.fillMaxSize().background(DeskTheme.colors.desk)) {
-        Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+        Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).then(scrub)) {
             Column(
                 modifier = Modifier
                     .align(Alignment.TopStart)
