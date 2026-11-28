@@ -8,5 +8,6 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.datastore)
     implementation(libs.androidx.core.ktx)
 }

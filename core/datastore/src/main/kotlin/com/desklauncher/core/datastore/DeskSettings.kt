@@ -6,6 +6,8 @@ data class DeskSettings(
     val stripLayout: StripLayout = StripLayout.Split,
     /** 첫 실행 훑기 안내를 본 뒤 한 번이라도 훑기로 열었는지 (PRD §4.2 첫 실행 안내) */
     val scrubHintDone: Boolean = false,
+    /** 앱 서랍 하단 고정 앱 줄 — ComponentName 문자열, 사용자 순서 (APPS-02, 최대 5) */
+    val pinnedApps: List<String> = emptyList(),
 )
 
 /** 촉각 설정 (PRD §5). 저장 값은 이름 문자열이므로 이름을 바꾸지 않는다. */

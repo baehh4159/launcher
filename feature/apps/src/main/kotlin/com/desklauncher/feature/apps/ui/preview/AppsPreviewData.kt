@@ -9,6 +9,7 @@ internal object AppsPreviewData {
         .mapIndexed { index, label -> InstalledApp("pkg$index/.Main", "pkg$index", label) }
 
     val list = AppsUiState(isLoading = false, sections = AppIndex.sections(apps))
+    val withPinned = list.copy(pinned = listOf(apps[0], apps[10], apps[1]))
     val searching = AppsUiState(isLoading = false, query = "ㅋㅋ", sections = AppIndex.sections(apps.filter { AppIndex.matches(it.label, "ㅋㅋ") }))
     val noResult = AppsUiState(isLoading = false, query = "ㅎㅎㅎ")
 }

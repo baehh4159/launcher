@@ -6,4 +6,11 @@
     <string name="apps_empty">실행할 수 있는 앱이 없어요</string>
     <string name="apps_launch_failed">앱을 열 수 없어요</string>
     <string name="apps_index_description">초성 색인</string>
+    <!-- 고정 앱 줄 (APPS-02) -->
+    <string name="apps_pin">아래 줄에 고정</string>
+    <string name="apps_unpin">고정 해제</string>
+    <string name="apps_move_earlier">앞으로</string>
+    <string name="apps_move_later">뒤로</string>
+    <string name="apps_pin_full">고정은 5개까지예요. 하나를 해제해 주세요.</string>
+    <string name="apps_menu">메뉴</string>
 </resources>

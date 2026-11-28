@@ -22,6 +22,7 @@ internal class DataStoreSettingsRepository @Inject constructor(
                 haptics = prefs[Keys.Haptics].toEnum(HapticSetting.Full),
                 stripLayout = prefs[Keys.StripLayout].toEnum(StripLayout.Split),
                 scrubHintDone = prefs[Keys.ScrubHintDone] ?: false,
+                pinnedApps = prefs[Keys.PinnedApps]?.split(ListSeparator)?.filter(String::isNotEmpty).orEmpty(),
             )
         }
         .distinctUntilChanged()
@@ -38,12 +39,20 @@ internal class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.ScrubHintDone] = done }
     }
 
+    override suspend fun setPinnedApps(keys: List<String>) {
+        dataStore.edit { it[Keys.PinnedApps] = keys.joinToString(ListSeparator) }
+    }
+
     private object Keys {
         val Haptics = stringPreferencesKey("haptics")
         val StripLayout = stringPreferencesKey("strip_layout")
         val ScrubHintDone = booleanPreferencesKey("scrub_hint_done")
+        val PinnedApps = stringPreferencesKey("pinned_apps")
     }
 }
+
+/** 순서 있는 문자열 목록 구분자 — ComponentName에는 줄바꿈이 없다 */
+private const val ListSeparator = "\n"
 
 /** 알 수 없는 값(이전 버전 등)은 기본값으로 */
 private inline fun <reified T : Enum<T>> String?.toEnum(default: T): T =

@@ -34,6 +34,7 @@ import com.desklauncher.feature.apps.R
 import com.desklauncher.feature.apps.ui.component.AppIconProvider
 import com.desklauncher.feature.apps.ui.component.AppRow
 import com.desklauncher.feature.apps.ui.component.LetterIndex
+import com.desklauncher.feature.apps.ui.component.PinnedRow
 import com.desklauncher.feature.apps.ui.component.SearchPill
 import com.desklauncher.feature.apps.ui.preview.AppsPreviewData
 import kotlinx.coroutines.launch
@@ -49,11 +50,13 @@ fun AppsRoute(
     val context = LocalContext.current
     val currentOnLaunched by rememberUpdatedState(onLaunched)
     val failedText = stringResource(R.string.apps_launch_failed)
+    val pinFullText = stringResource(R.string.apps_pin_full)
     LaunchedEffect(viewModel) {
         viewModel.eventFlow.collect { event ->
             when (event) {
                 AppsEvent.Launched -> currentOnLaunched()
                 AppsEvent.LaunchFailed -> Toast.makeText(context, failedText, Toast.LENGTH_SHORT).show()
+                AppsEvent.PinFull -> Toast.makeText(context, pinFullText, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -106,7 +109,14 @@ fun AppsScreen(
                                 )
                             }
                             items(section.apps, key = { it.key }, contentType = { "app" }) { app ->
-                                AppRow(app = app, iconProvider = iconProvider, onClick = { onAction(AppsAction.Launch(app)) })
+                                val pinned = app in state.pinned
+                                AppRow(
+                                    app = app,
+                                    iconProvider = iconProvider,
+                                    onClick = { onAction(AppsAction.Launch(app)) },
+                                    isPinned = pinned,
+                                    onTogglePin = { onAction(if (pinned) AppsAction.Unpin(app) else AppsAction.Pin(app)) },
+                                )
                             }
                         }
                     }
@@ -121,6 +131,17 @@ fun AppsScreen(
             }
         }
         HorizontalDivider(thickness = DeskLine.hairline, color = colors.line)
+        // 고정 앱 줄: 검색 중에는 접어 결과 자리를 넓힌다 (PRD §12)
+        if (!state.isSearching) {
+            PinnedRow(
+                apps = state.pinned,
+                iconProvider = iconProvider,
+                onLaunch = { onAction(AppsAction.Launch(it)) },
+                onMove = { app, delta -> onAction(AppsAction.MovePinned(app, delta)) },
+                onUnpin = { onAction(AppsAction.Unpin(it)) },
+                modifier = Modifier.padding(top = DeskSpacing.xs),
+            )
+        }
         SearchPill(
             query = state.query,
             onQueryChange = { onAction(AppsAction.Query(it)) },
@@ -136,6 +157,12 @@ private val IndexReserve = DeskSpacing.xl + DeskSpacing.xxs
 @Composable
 private fun AppsScreenPreview() {
     DeskTheme { AppsScreen(state = AppsPreviewData.list, onAction = {}) }
+}
+
+@DeskPreviews
+@Composable
+private fun AppsScreenPinnedPreview() {
+    DeskTheme { AppsScreen(state = AppsPreviewData.withPinned, onAction = {}) }
 }
 
 @DeskPreviews

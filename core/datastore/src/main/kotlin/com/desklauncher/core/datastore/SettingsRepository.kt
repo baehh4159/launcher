@@ -8,4 +8,5 @@ interface SettingsRepository {
     suspend fun setStripLayout(value: StripLayout)
     /** 훑기로 처음 열면 true, 설정의 '안내 다시 보기'는 false */
     suspend fun setScrubHintDone(done: Boolean)
+    suspend fun setPinnedApps(keys: List<String>)
 }
