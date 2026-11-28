@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        백업: 클라우드 백업은 쓰지 않는다. 기기 간 이전은 DATA-02에서 허용으로 바꾼다 (PRD §14).
+        그 전까지는 둘 다 제외한다.
+    -->
+    <application
+        android:name=".DeskApplication"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:enableOnBackInvokedCallback="true"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Desk"
+        tools:targetApi="36">
+
+        <!--
+            기본 홈 액티비티 (HOME-01). singleTask: 홈 버튼은 같은 인스턴스의 onNewIntent로 들어온다.
+            폰 세로 고정 (PRD 머리말).
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:clearTaskOnLaunch="true"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
