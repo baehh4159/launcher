@@ -18,4 +18,5 @@
     <string name="desk_resume_path">%1$s › %2$s</string>
     <string name="desk_resume_action">이어서 쓰기</string>
     <string name="desk_quick_write">바로 적기</string>
+    <string name="desk_settings">설정</string>
 </resources>

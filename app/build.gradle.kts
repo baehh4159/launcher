@@ -32,6 +32,7 @@ dependencies {
 
     implementation(projects.feature.desk)
     implementation(projects.feature.apps)
+    implementation(projects.feature.settings)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

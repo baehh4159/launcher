@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">설정</string>
+    <string name="settings_haptics_section">촉각</string>
+    <string name="settings_haptics_full">탐색 + 확정</string>
+    <string name="settings_haptics_full_desc">칸을 넘을 때 약하게, 열 때 분명하게</string>
+    <string name="settings_haptics_confirm">확정만</string>
+    <string name="settings_haptics_confirm_desc">열거나 꽂을 때만</string>
+    <string name="settings_haptics_off">끔</string>
+    <string name="settings_haptics_off_desc">진동 없이 화면 강조만</string>
+</resources>

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.desklauncher.core.datastore.StripLayout
+import com.desklauncher.core.designsystem.haptics.rememberDeskHaptics
 import com.desklauncher.core.designsystem.preview.DeskPreviews
 import com.desklauncher.core.designsystem.theme.DeskSpacing
 import com.desklauncher.core.designsystem.theme.DeskTheme
@@ -60,6 +61,7 @@ fun DeskRoute(
     onOpenSlot: (StripSlot) -> Unit,
     onQuickWrite: () -> Unit,
     onResume: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     /** 창이 열려 있으면 false — 책상 훑기 영역 비활성 (PRD §4.2) */
     scrubEnabled: Boolean = true,
@@ -67,6 +69,7 @@ fun DeskRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var stripState by remember { mutableStateOf(StripVisualState.Idle) }
+    val haptics = rememberDeskHaptics()
     val now = rememberCurrentMinute()
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
@@ -78,9 +81,14 @@ fun DeskRoute(
         clock = clock,
         onAction = { action ->
             when (action) {
-                is DeskAction.OpenSlot -> state.slots.getOrNull(action.index)?.let(onOpenSlot)
+                is DeskAction.OpenSlot -> state.slots.getOrNull(action.index)?.let { slot ->
+                    // 직접 탭으로 열 때도 확정 진동 (PRD §4.2)
+                    haptics.confirm()
+                    onOpenSlot(slot)
+                }
                 DeskAction.QuickWrite -> onQuickWrite()
                 DeskAction.Resume -> onResume()
+                DeskAction.OpenSettings -> onOpenSettings()
             }
         },
         modifier = modifier,
@@ -88,7 +96,15 @@ fun DeskRoute(
         scrubEnabled = scrubEnabled,
         onScrubEvent = { event ->
             stripState = stripState.reduce(event)
-            if (event is ScrubEvent.Open) state.slots.getOrNull(event.index)?.let(onOpenSlot)
+            // 두 단계 촉각 (STRIP-03, PRD §5): 탐색 시작·칸 이동 = 약한 틱, 열기 = 확정. 취소에는 없음.
+            when (event) {
+                is ScrubEvent.Claimed, is ScrubEvent.FocusChanged -> haptics.tick()
+                is ScrubEvent.Open -> {
+                    haptics.confirm()
+                    state.slots.getOrNull(event.index)?.let(onOpenSlot)
+                }
+                is ScrubEvent.CancelArmed, ScrubEvent.Cancelled -> Unit
+            }
         },
     )
 }
@@ -155,7 +171,7 @@ fun DeskScreen(
                     .fillMaxWidth()
                     .padding(start = contentStart, end = contentEnd, top = DeskSpacing.m),
             ) {
-                WallLine(clock = clock)
+                WallLine(clock = clock, onOpenSettings = { onAction(DeskAction.OpenSettings) })
                 Spacer(Modifier.height(DeskSpacing.l))
                 ResumeCard(resume = state.resume, onClick = { onAction(DeskAction.Resume) })
             }

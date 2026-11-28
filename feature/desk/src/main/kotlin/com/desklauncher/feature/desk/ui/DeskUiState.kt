@@ -26,4 +26,5 @@ sealed interface DeskAction {
     data class OpenSlot(val index: Int, val viaScrub: Boolean) : DeskAction
     data object QuickWrite : DeskAction
     data object Resume : DeskAction
+    data object OpenSettings : DeskAction
 }

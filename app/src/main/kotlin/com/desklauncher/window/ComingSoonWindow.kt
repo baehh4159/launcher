@@ -24,7 +24,7 @@ fun ComingSoonWindow(key: DeskWindowKey, modifier: Modifier = Modifier) {
         DeskWindowKey.SoonAll -> R.string.soon_all_title to R.string.soon_notebook_body
         DeskWindowKey.SoonTools -> R.string.soon_tools_title to R.string.soon_tools_body
         DeskWindowKey.SoonQuickWrite -> R.string.soon_quick_write_title to R.string.soon_paper_body
-        DeskWindowKey.SoonResume, DeskWindowKey.Apps -> R.string.soon_resume_title to R.string.soon_paper_body
+        DeskWindowKey.SoonResume, DeskWindowKey.Apps, DeskWindowKey.Settings -> R.string.soon_resume_title to R.string.soon_paper_body
     }
     val colors = DeskTheme.colors
     Column(
