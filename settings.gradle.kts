@@ -33,3 +33,4 @@ include(":core:datastore")
 include(":core:testing")
 
 // feature — 각 기능 ID 작업을 시작할 때 추가한다
+include(":feature:desk")
